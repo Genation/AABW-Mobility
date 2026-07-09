@@ -1,42 +1,42 @@
 {
   "totalCases": 60,
   "metrics": {
-    "mrr": 0.8522,
-    "recallAt1": 0.6833,
-    "recallAt3": 0.7944,
-    "recallAt5": 0.8028,
-    "recallAt10": 0.8194,
-    "precisionAt5": 0.8194,
-    "precisionAt10": 0.8194,
-    "successRate": 0.9167,
-    "coverage": 0.7813,
-    "avgLatencyMs": 0.05,
+    "mrr": 0.8817,
+    "recallAt1": 0.7167,
+    "recallAt3": 0.8111,
+    "recallAt5": 0.8194,
+    "recallAt10": 0.8444,
+    "precisionAt5": 0.8444,
+    "precisionAt10": 0.8444,
+    "successRate": 0.95,
+    "coverage": 0.8021,
+    "avgLatencyMs": 0.08,
     "p50LatencyMs": 0.03,
-    "p95LatencyMs": 0.2,
-    "p99LatencyMs": 0.79
+    "p95LatencyMs": 0.36,
+    "p99LatencyMs": 1.09
   },
   "byDifficulty": {
     "Easy": {
       "count": 16,
-      "mrr": 0.9375,
-      "successRate": 0.9375
+      "mrr": 0.94375,
+      "successRate": 1
     },
     "Medium": {
       "count": 25,
-      "mrr": 0.8853333333333333,
+      "mrr": 0.912,
       "successRate": 1
     },
     "Hard": {
       "count": 19,
-      "mrr": 0.7368421052631579,
-      "successRate": 0.7894736842105263
+      "mrr": 0.7894736842105263,
+      "successRate": 0.8421052631578947
     }
   },
   "byType": {
     "Brand Suggestions": {
       "count": 6,
-      "mrr": 0.8333,
-      "successRate": 0.8333
+      "mrr": 0.85,
+      "successRate": 1
     },
     "Category Suggestions": {
       "count": 2,
@@ -55,8 +55,8 @@
     },
     "POI Suggestions": {
       "count": 9,
-      "mrr": 0.8148,
-      "successRate": 0.8889
+      "mrr": 1,
+      "successRate": 1
     },
     "Discovery Search": {
       "count": 17,
@@ -91,19 +91,19 @@
   },
   "bySource": {
     "exact": {
-      "count": 52,
-      "mrr": 0.8871794871794871,
-      "avgLatencyMs": 0.045769230769230736
+      "count": 53,
+      "mrr": 0.9037735849056604,
+      "avgLatencyMs": 0.06584905660377349
     },
     "fuzzy": {
       "count": 4,
       "mrr": 1,
-      "avgLatencyMs": 0.1325
+      "avgLatencyMs": 0.205
     },
     "popular": {
-      "count": 4,
-      "mrr": 0.25,
-      "avgLatencyMs": 0.055
+      "count": 3,
+      "mrr": 0.3333333333333333,
+      "avgLatencyMs": 0.06333333333333334
     }
   },
   "failures": [
@@ -127,21 +127,6 @@
       "prefix": "my khe hotel",
       "expected": [
         "Khách sạn gần biển Mỹ Khê"
-      ]
-    },
-    {
-      "caseId": "PUB036",
-      "prefix": "dh bk",
-      "expected": [
-        "Đại học Bách Khoa"
-      ]
-    },
-    {
-      "caseId": "PUB037",
-      "prefix": "phuc long",
-      "expected": [
-        "Phúc Long gần đây",
-        "Phúc Long Coffee & Tea"
       ]
     }
   ],
@@ -176,7 +161,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.79
+      "latencyMs": 1.09
     },
     {
       "caseId": "PUB002",
@@ -207,7 +192,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.2
+      "latencyMs": 0.36
     },
     {
       "caseId": "PUB003",
@@ -239,7 +224,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.04
+      "latencyMs": 0.1
     },
     {
       "caseId": "PUB004",
@@ -260,7 +245,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.07
+      "latencyMs": 0.14
     },
     {
       "caseId": "PUB005",
@@ -282,7 +267,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.04
+      "latencyMs": 0.1
     },
     {
       "caseId": "PUB006",
@@ -309,7 +294,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.05
+      "latencyMs": 0.13
     },
     {
       "caseId": "PUB007",
@@ -330,7 +315,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.06
+      "latencyMs": 0.09
     },
     {
       "caseId": "PUB008",
@@ -351,7 +336,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.02
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB009",
@@ -377,7 +362,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.02
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB010",
@@ -408,7 +393,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.06
+      "latencyMs": 0.09
     },
     {
       "caseId": "PUB011",
@@ -428,7 +413,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "fuzzy",
-      "latencyMs": 0.32
+      "latencyMs": 0.55
     },
     {
       "caseId": "PUB012",
@@ -448,7 +433,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.03
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB013",
@@ -470,7 +455,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.03
+      "latencyMs": 0.05
     },
     {
       "caseId": "PUB014",
@@ -501,7 +486,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.1
+      "latencyMs": 0.12
     },
     {
       "caseId": "PUB015",
@@ -551,7 +536,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.03
+      "latencyMs": 0.05
     },
     {
       "caseId": "PUB017",
@@ -573,7 +558,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "fuzzy",
-      "latencyMs": 0.1
+      "latencyMs": 0.12
     },
     {
       "caseId": "PUB018",
@@ -602,7 +587,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "popular",
-      "latencyMs": 0.06
+      "latencyMs": 0.07
     },
     {
       "caseId": "PUB019",
@@ -633,7 +618,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.02
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB020",
@@ -691,7 +676,7 @@
       "rankOfFirstMatch": null,
       "reciprocalRank": 0,
       "source": "exact",
-      "latencyMs": 0.04
+      "latencyMs": 0.05
     },
     {
       "caseId": "PUB022",
@@ -759,7 +744,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.11
+      "latencyMs": 0.14
     },
     {
       "caseId": "PUB025",
@@ -789,7 +774,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.01
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB026",
@@ -821,7 +806,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.02
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB027",
@@ -874,7 +859,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.02
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB029",
@@ -896,7 +881,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.02
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB030",
@@ -956,7 +941,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.02
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB032",
@@ -1030,7 +1015,7 @@
       "rankOfFirstMatch": null,
       "reciprocalRank": 0,
       "source": "popular",
-      "latencyMs": 0.04
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB035",
@@ -1042,6 +1027,7 @@
         "Đại học Bách Khoa Hà Nội"
       ],
       "found": [
+        "Đại học Bách Khoa",
         "Đại lý du lịch",
         "Đại lý vé",
         "đại học bách khoa tp hcm",
@@ -1050,14 +1036,13 @@
         "đại học kinh tế tp hcm",
         "đại nội huế",
         "đại học ngoại thương hà nội",
-        "Đại học gần đây",
-        "Đại học Bách Khoa"
+        "Đại học gần đây"
       ],
       "matched": [
         "Đại học Bách Khoa Hà Nội"
       ],
-      "rankOfFirstMatch": 3,
-      "reciprocalRank": 0.3333333333333333,
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
       "source": "exact",
       "latencyMs": 0.03
     },
@@ -1071,22 +1056,17 @@
         "Đại học Bách Khoa"
       ],
       "found": [
-        "sân bay nội bài",
-        "thời tiết hôm nay",
-        "dự báo thời tiết",
-        "bão mới nhất",
-        "khách sạn gần đây",
-        "atm gần nhất",
-        "quán ăn ngon gần đây",
-        "trạm xăng gần nhất",
-        "nhà hàng ngon gần đây",
-        "cửa hàng tiện lợi 24h"
+        "Đại học Bách Khoa",
+        "đại học bách khoa tp hcm",
+        "đại học bách khoa hà nội"
       ],
-      "matched": [],
-      "rankOfFirstMatch": null,
-      "reciprocalRank": 0,
-      "source": "popular",
-      "latencyMs": 0.03
+      "matched": [
+        "Đại học Bách Khoa"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.01
     },
     {
       "caseId": "PUB037",
@@ -1108,13 +1088,15 @@
         "Phuc Long Cần Thơ",
         "Phuc Long Hải Phòng",
         "Phuc Long Vũng Tàu",
-        "Phuc Long TP.HCM TP.HCM"
+        "Phúc Long gần đây"
       ],
-      "matched": [],
-      "rankOfFirstMatch": null,
-      "reciprocalRank": 0,
+      "matched": [
+        "Phúc Long gần đây"
+      ],
+      "rankOfFirstMatch": 10,
+      "reciprocalRank": 0.1,
       "source": "exact",
-      "latencyMs": 0.01
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB038",
@@ -1186,7 +1168,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.01
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB041",
@@ -1215,7 +1197,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "fuzzy",
-      "latencyMs": 0.06
+      "latencyMs": 0.07
     },
     {
       "caseId": "PUB042",
@@ -1258,7 +1240,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.03
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB044",
@@ -1376,7 +1358,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.07
+      "latencyMs": 0.09
     },
     {
       "caseId": "PUB049",
@@ -1416,7 +1398,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.01
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB051",
@@ -1554,7 +1536,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.02
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB057",
@@ -1598,7 +1580,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.02
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB059",
@@ -1618,7 +1600,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "fuzzy",
-      "latencyMs": 0.05
+      "latencyMs": 0.08
     },
     {
       "caseId": "PUB060",
@@ -1639,7 +1621,7 @@
       "rankOfFirstMatch": 2,
       "reciprocalRank": 0.5,
       "source": "exact",
-      "latencyMs": 0.01
+      "latencyMs": 0.02
     }
   ]
 }

@@ -3,8 +3,7 @@ import { track4Repo } from "../repo/repo.ts";
 import { normalize } from "../core/nlp.ts";
 
 const FAILING_CASES = [
-  "PUB021", "PUB032", "PUB033", "PUB034",
-  "PUB036", "PUB037", "PUB039", "PUB046",
+  "PUB036", "PUB037",
 ];
 
 async function debug() {

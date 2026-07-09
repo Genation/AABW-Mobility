@@ -1054,7 +1054,7 @@ export async function buildSnapshot(): Promise<BuildStats> {
     ["quan ca phe hoc", "Quán cà phê phù hợp học tập", "Discovery Search"],
     ["quan ca phe hoc tap", "Quán cà phê phù hợp học tập", "Discovery Search"],
     ["cafe co wi fi", "Quán cà phê có Wi-Fi", "Attribute Search"],
-    ["phuc long gan day", "Phúc Long gần đây", "Brand Search"],
+    ["phuc long", "Phúc Long gần đây", "Brand Search"],
     ["cong ca phe gan day", "Cộng Cà Phê gần đây", "Brand Search"],
     ["cong cafe gan day", "Cộng Cà Phê gần đây", "Brand Search"],
     ["cong ca phe ho guom", "Cộng Cà Phê Hồ Gươm", "Brand Search"],
@@ -1071,7 +1071,10 @@ export async function buildSnapshot(): Promise<BuildStats> {
   ];
 
   for (const [norm, display, tp] of semanticPairs) {
-    const sc = scoreTemplate("discovery");
+    const sc = tp === "Brand Search" ? 0.52 :
+      tp === "Category Search" ? 0.48 :
+      tp === "POI Suggestion" ? 0.52 :
+      scoreTemplate("discovery");
     insertWithPrefixes(
       trie,
       norm,
