@@ -2,9 +2,10 @@ import { db } from "@/db/pool.ts";
 import {
   track4AbbreviationTable,
   track4AutocompleteTable,
+  track4EvaluationTable,
   track4PoiTable,
   track4PopularQueryTable,
-} from "./track-4-autocomplete.schema.ts";
+} from "../schema/schema.ts";
 import { desc, eq, or } from "drizzle-orm";
 
 export const track4Repo = {
@@ -83,5 +84,21 @@ export const track4Repo = {
       )
       .orderBy(desc(track4PopularQueryTable.monthlyFrequency))
       .limit(limit);
+  },
+
+  getAllEvaluations() {
+    return db
+      .select({
+        id: track4EvaluationTable.id,
+        originalId: track4EvaluationTable.originalId,
+        inputPrefix: track4EvaluationTable.inputPrefix,
+        expectedSuggestionType: track4EvaluationTable.expectedSuggestionType,
+        expectedTopSuggestions: track4EvaluationTable.expectedTopSuggestions,
+        difficulty: track4EvaluationTable.difficulty,
+        skillsTested: track4EvaluationTable.skillsTested,
+        isGenerated: track4EvaluationTable.isGenerated,
+      })
+      .from(track4EvaluationTable)
+      .where(eq(track4EvaluationTable.isGenerated, false));
   },
 };

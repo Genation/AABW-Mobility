@@ -6,7 +6,7 @@ import {
   track4EvaluationTable,
   track4PoiTable,
   track4PopularQueryTable,
-} from "./track-4-autocomplete.schema.ts";
+} from "./schema.ts";
 
 // =============================================================================
 // POI DTOs

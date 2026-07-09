@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { insertTopK, Suggestion, Trie } from "../track-4-autocomplete.trie.ts";
+import { insertTopK, Suggestion, Trie } from "../core/trie.ts";
 
 function makeSuggestion(
   text: string,

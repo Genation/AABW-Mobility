@@ -1,7 +1,7 @@
 import { Hono } from "@hono/hono";
 import healthRouter from "@/modules/health/health.router.ts";
 import apiKeyRouter from "@/modules/api-key/api-key.router.ts";
-import track4AutocompleteRouter from "@/modules/track-4-autocomplete/track-4-autocomplete.router.ts";
+import track4AutocompleteRouter from "@/modules/track-4-autocomplete/api/router.ts";
 import type { AppEnv } from "@/shared/utils/hono.ts";
 
 const prefix = "/api/v1";

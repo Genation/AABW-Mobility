@@ -11,7 +11,7 @@ import {
   normalize,
   normalizePair,
   stripAccents,
-} from "../track-4-autocomplete.nlp.ts";
+} from "../core/nlp.ts";
 
 // ─── stripAccents ─────────────────────────────────────────────────────────────
 

@@ -47,8 +47,15 @@
     {
       "idx": 6,
       "version": "7",
-      "when": 1783573841789,
+      "when": 1775510000000,
       "tag": "0006_seed-llm",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775600000000,
+      "tag": "0007_fix-abbreviation-bk",
       "breakpoints": true
     }
   ]

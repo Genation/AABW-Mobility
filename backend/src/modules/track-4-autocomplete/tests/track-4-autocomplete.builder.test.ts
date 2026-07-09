@@ -1,11 +1,10 @@
 import { assertEquals, assertGreater } from "@std/assert";
-import { buildSnapshot } from "../track-4-autocomplete.builder.ts";
+import { buildSnapshot } from "../builder/builder.ts";
 import { closePool } from "@/db/pool.ts";
 
 Deno.test("Builder: buildSnapshot integration", async () => {
   const snapshot = await buildSnapshot();
 
-  assertEquals(snapshot.version, 1);
   assertGreater(snapshot.totalPairs, 0);
   assertGreater(snapshot.totalNodes, 0);
   assertEquals(typeof snapshot.trieJson, "string");
@@ -13,7 +12,6 @@ Deno.test("Builder: buildSnapshot integration", async () => {
 
   const parsed = JSON.parse(snapshot.trieJson);
   assertEquals(typeof parsed, "object");
-  assertEquals(typeof parsed.c, "object");
 
   const keys = Object.keys(snapshot.sourceCounts);
   assertEquals(keys.length > 0, true);

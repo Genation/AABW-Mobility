@@ -198,13 +198,29 @@ export function generatePrefixes(
 
 /**
  * Build abbreviation lookup map from abbreviation table rows.
+ * Priority order for collisions: category > brand > district > city > street > service > airport > alias.
+ * This ensures map-search-relevant expansions win (e.g. bk → Bách Khoa, not bk → Bắc Kạn).
  */
 export function buildAbbreviationMap(
-  rows: { abbreviation: string; expandedForm: string }[],
+  rows: { abbreviation: string; expandedForm: string; type?: string }[],
 ): Map<string, string> {
+  const TYPE_PRIORITY: Record<string, number> = {
+    category: 10, brand: 9, district: 8, city: 7,
+    street: 6, service: 5, airport: 4, alias: 3,
+  };
   const map = new Map<string, string>();
+  const priorities = new Map<string, number>();
+
   for (const row of rows) {
-    map.set(row.abbreviation.toLowerCase(), row.expandedForm);
+    const key = row.abbreviation.toLowerCase();
+    const priority = TYPE_PRIORITY[row.type ?? ""] ?? 0;
+    const existing = priorities.get(key) ?? -1;
+
+    if (priority > existing) {
+      priorities.set(key, priority);
+      map.set(key, row.expandedForm);
+    }
   }
+
   return map;
 }

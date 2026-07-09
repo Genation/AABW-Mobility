@@ -1,5 +1,5 @@
-import { autocompleteEngine } from "./track-4-autocomplete.engine.ts";
-import { buildSnapshot } from "./track-4-autocomplete.builder.ts";
+import { autocompleteEngine } from "../engine/engine.ts";
+import { buildSnapshot } from "../builder/builder.ts";
 import { logger } from "@/configs/logger.ts";
 
 export const track4Service = {
@@ -9,7 +9,11 @@ export const track4Service = {
       await autocompleteEngine.load(snapshot);
       logger.info("Track 4 engine initialized from fresh build");
     } catch (err) {
-      logger.error(err, "Track 4 engine init failed");
+      logger.error(
+        err,
+        "Track 4 engine init failed — attempting file fallback",
+      );
+      await autocompleteEngine.load();
     }
   },
 

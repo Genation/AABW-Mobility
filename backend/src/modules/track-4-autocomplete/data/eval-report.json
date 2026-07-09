@@ -1,0 +1,1718 @@
+{
+  "totalCases": 60,
+  "metrics": {
+    "mrr": 0.7649,
+    "recallAt1": 0.6194,
+    "recallAt3": 0.6889,
+    "recallAt5": 0.6972,
+    "recallAt10": 0.7306,
+    "precisionAt5": 0.7306,
+    "precisionAt10": 0.7306,
+    "successRate": 0.8167,
+    "coverage": 0.7083,
+    "avgLatencyMs": 0.05,
+    "p50LatencyMs": 0.03,
+    "p95LatencyMs": 0.16,
+    "p99LatencyMs": 0.49
+  },
+  "byDifficulty": {
+    "Easy": {
+      "count": 16,
+      "mrr": 0.8125,
+      "successRate": 0.8125
+    },
+    "Medium": {
+      "count": 25,
+      "mrr": 0.7157142857142857,
+      "successRate": 0.84
+    },
+    "Hard": {
+      "count": 19,
+      "mrr": 0.7894736842105263,
+      "successRate": 0.7894736842105263
+    }
+  },
+  "byType": {
+    "Brand Suggestions": {
+      "count": 6,
+      "mrr": 0.8333,
+      "successRate": 0.8333
+    },
+    "Category Suggestions": {
+      "count": 2,
+      "mrr": 0.5,
+      "successRate": 0.5
+    },
+    "Nearby Suggestions": {
+      "count": 7,
+      "mrr": 1,
+      "successRate": 1
+    },
+    "Address Suggestions": {
+      "count": 4,
+      "mrr": 1,
+      "successRate": 1
+    },
+    "POI Suggestions": {
+      "count": 9,
+      "mrr": 0.5926,
+      "successRate": 0.6667
+    },
+    "Discovery Search": {
+      "count": 17,
+      "mrr": 0.6569,
+      "successRate": 0.7059
+    },
+    "Ambiguous": {
+      "count": 2,
+      "mrr": 1,
+      "successRate": 1
+    },
+    "Attribute Search": {
+      "count": 1,
+      "mrr": 0.25,
+      "successRate": 1
+    },
+    "Category Search": {
+      "count": 9,
+      "mrr": 0.7937,
+      "successRate": 0.8889
+    },
+    "Navigation": {
+      "count": 2,
+      "mrr": 1,
+      "successRate": 1
+    },
+    "Coordinate Search": {
+      "count": 1,
+      "mrr": 1,
+      "successRate": 1
+    }
+  },
+  "bySource": {
+    "exact": {
+      "count": 49,
+      "mrr": 0.8520408163265305,
+      "avgLatencyMs": 0.04448979591836735
+    },
+    "fuzzy": {
+      "count": 4,
+      "mrr": 0.75,
+      "avgLatencyMs": 0.125
+    },
+    "popular": {
+      "count": 7,
+      "mrr": 0.16326530612244897,
+      "avgLatencyMs": 0.04571428571428571
+    }
+  },
+  "failures": [
+    {
+      "caseId": "PUB002",
+      "prefix": "cafe",
+      "expected": [
+        "Quán cà phê gần đây",
+        "Highlands Coffee",
+        "Cà phê mở cửa 24/7"
+      ]
+    },
+    {
+      "caseId": "PUB005",
+      "prefix": "ben th",
+      "expected": [
+        "Chợ Bến Thành",
+        "Khách sạn gần Chợ Bến Thành"
+      ]
+    },
+    {
+      "caseId": "PUB021",
+      "prefix": "quan cafe hoc",
+      "expected": [
+        "Quán cà phê phù hợp học tập",
+        "Cafe có Wi-Fi"
+      ]
+    },
+    {
+      "caseId": "PUB032",
+      "prefix": "halal hcm",
+      "expected": [
+        "Nhà hàng halal TP.HCM"
+      ]
+    },
+    {
+      "caseId": "PUB033",
+      "prefix": "bien my",
+      "expected": [
+        "Bãi biển Mỹ Khê"
+      ]
+    },
+    {
+      "caseId": "PUB034",
+      "prefix": "my khe hotel",
+      "expected": [
+        "Khách sạn gần biển Mỹ Khê"
+      ]
+    },
+    {
+      "caseId": "PUB036",
+      "prefix": "dh bk",
+      "expected": [
+        "Đại học Bách Khoa"
+      ]
+    },
+    {
+      "caseId": "PUB037",
+      "prefix": "phuc long",
+      "expected": [
+        "Phúc Long gần đây",
+        "Phúc Long Coffee & Tea"
+      ]
+    },
+    {
+      "caseId": "PUB039",
+      "prefix": "ho guom cafe",
+      "expected": [
+        "Quán cà phê gần Hồ Gươm"
+      ]
+    },
+    {
+      "caseId": "PUB047",
+      "prefix": "quan an tre em",
+      "expected": [
+        "Nhà hàng phù hợp cho trẻ em"
+      ]
+    },
+    {
+      "caseId": "PUB055",
+      "prefix": "cafe yen tinh",
+      "expected": [
+        "Quán cà phê yên tĩnh"
+      ]
+    }
+  ],
+  "details": [
+    {
+      "caseId": "PUB001",
+      "inputPrefix": "vin",
+      "difficulty": "Easy",
+      "expectedType": "Brand Suggestions",
+      "suggestedType": "Brand Suggestions",
+      "expected": [
+        "Vincom Center",
+        "Vinmec",
+        "Vinpearl"
+      ],
+      "found": [
+        "Vincom Center",
+        "Vinmec",
+        "Vinpearl",
+        "vincom đồng khởi",
+        "Vincom Quán cà phê Phan Chu Trinh TP.HCM",
+        "Vincom Center Đồng Khởi",
+        "Vinmec Times City",
+        "Vincom Trung tâm thương mại Trần Duy Hưng Đà Nẵng",
+        "Vincom Quán cà phê Phan Chu Trinh TP.HCM TP.HCM",
+        "Vincom Center Đồng Khởi TP.HCM"
+      ],
+      "matched": [
+        "Vincom Center",
+        "Vinmec",
+        "Vinpearl"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.49
+    },
+    {
+      "caseId": "PUB002",
+      "inputPrefix": "cafe",
+      "difficulty": "Easy",
+      "expectedType": "Category Suggestions",
+      "suggestedType": "Category Suggestions",
+      "expected": [
+        "Quán cà phê gần đây",
+        "Highlands Coffee",
+        "Cà phê mở cửa 24/7"
+      ],
+      "found": [
+        "Cafe sách",
+        "Cafe thú cưng",
+        "Cafe rooftop",
+        "Cafe làm việc",
+        "cafe phố cổ hà nội",
+        "cafe hồ tây",
+        "cafe wifi miễn phí",
+        "cafe đà nẵng",
+        "cafe trứng hà nội",
+        "cafe view đẹp hà nội"
+      ],
+      "matched": [],
+      "rankOfFirstMatch": null,
+      "reciprocalRank": 0,
+      "source": "exact",
+      "latencyMs": 0.15
+    },
+    {
+      "caseId": "PUB003",
+      "inputPrefix": "atm",
+      "difficulty": "Easy",
+      "expectedType": "Nearby Suggestions",
+      "suggestedType": "Nearby Suggestions",
+      "expected": [
+        "ATM Vietcombank gần nhất",
+        "ATM BIDV gần đây",
+        "ATM gần sân bay"
+      ],
+      "found": [
+        "ATM Vietcombank gần nhất",
+        "ATM BIDV gần đây",
+        "ATM gần sân bay",
+        "atm vcb gần nhất",
+        "ATM Vietcombank Nguyễn Huệ",
+        "ATM Vietcombank Nguyễn Huệ TP.HCM",
+        "atm gần nhất",
+        "atm vietcombank quận 1",
+        "atm gần đây hà nội",
+        "atm đà nẵng"
+      ],
+      "matched": [
+        "ATM Vietcombank gần nhất",
+        "ATM BIDV gần đây",
+        "ATM gần sân bay"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.04
+    },
+    {
+      "caseId": "PUB004",
+      "inputPrefix": "nguyen h",
+      "difficulty": "Medium",
+      "expectedType": "Address Suggestions",
+      "suggestedType": "Address Suggestions",
+      "expected": [
+        "Nguyễn Huệ, Quận 1, TP.HCM",
+        "Highlands Coffee Nguyễn Huệ"
+      ],
+      "found": [
+        "Nguyễn Huệ, Quận 1, TP.HCM"
+      ],
+      "matched": [
+        "Nguyễn Huệ, Quận 1, TP.HCM"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.05
+    },
+    {
+      "caseId": "PUB005",
+      "inputPrefix": "ben th",
+      "difficulty": "Easy",
+      "expectedType": "POI Suggestions",
+      "suggestedType": "POI Suggestions",
+      "expected": [
+        "Chợ Bến Thành",
+        "Khách sạn gần Chợ Bến Thành"
+      ],
+      "found": [
+        "Bến phà",
+        "bún thịt nướng quận 1",
+        "bún thang hà nội",
+        "bến tàu nha trang",
+        "bến phà cát bà",
+        "Bến phà gần đây",
+        "Bến phà TP.HCM",
+        "Bến phà Hà Nội",
+        "Bến phà Đà Nẵng"
+      ],
+      "matched": [],
+      "rankOfFirstMatch": null,
+      "reciprocalRank": 0,
+      "source": "fuzzy",
+      "latencyMs": 0.23
+    },
+    {
+      "caseId": "PUB006",
+      "inputPrefix": "ks d",
+      "difficulty": "Medium",
+      "expectedType": "Category Suggestions",
+      "suggestedType": "Category Suggestions",
+      "expected": [
+        "Khách sạn Đà Nẵng",
+        "Khách sạn gần biển Đà Nẵng"
+      ],
+      "found": [
+        "Khách sạn Đà Nẵng",
+        "Khách sạn Đà Nẵng gần biển",
+        "khách sạn đà lạt",
+        "khách sạn đà nẵng gần sân bay",
+        "Khách sạn Đống Đa",
+        "Khách sạn đặt bàn"
+      ],
+      "matched": [
+        "Khách sạn Đà Nẵng",
+        "Khách sạn gần biển Đà Nẵng"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.06
+    },
+    {
+      "caseId": "PUB007",
+      "inputPrefix": "bv bach",
+      "difficulty": "Easy",
+      "expectedType": "POI Suggestions",
+      "suggestedType": "POI Suggestions",
+      "expected": [
+        "Bệnh viện Bạch Mai"
+      ],
+      "found": [
+        "Bệnh viện Bạch Mai",
+        "Bệnh viện Bạch Mai Hà Nội"
+      ],
+      "matched": [
+        "Bệnh viện Bạch Mai"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.03
+    },
+    {
+      "caseId": "PUB008",
+      "inputPrefix": "cay x",
+      "difficulty": "Easy",
+      "expectedType": "Nearby Suggestions",
+      "suggestedType": "Nearby Suggestions",
+      "expected": [
+        "Cây xăng gần đây"
+      ],
+      "found": [
+        "cây xăng",
+        "Cây xăng gần đây",
+        "Cây xăng trên đường đi"
+      ],
+      "matched": [
+        "Cây xăng gần đây"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.01
+    },
+    {
+      "caseId": "PUB009",
+      "inputPrefix": "pho th",
+      "difficulty": "Medium",
+      "expectedType": "POI Suggestions",
+      "suggestedType": "POI Suggestions",
+      "expected": [
+        "Phở Thìn Lò Đúc"
+      ],
+      "found": [
+        "Phở Thìn Lò Đúc",
+        "Phở Thìn Lò Đúc Hà Nội",
+        "Pho Thin Hà Nội",
+        "Pho Thin TP.HCM",
+        "Pho Thin Hà Nội Hà Nội",
+        "Pho Thin TP.HCM TP.HCM",
+        "Phở Thìn",
+        "Phở Thìn gần nhất"
+      ],
+      "matched": [
+        "Phở Thìn Lò Đúc"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB010",
+      "inputPrefix": "coffee near",
+      "difficulty": "Medium",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Coffee near me",
+        "Quán cà phê gần đây"
+      ],
+      "found": [
+        "Cà phê gần đây",
+        "Cà phê gần biển",
+        "Coffee near me",
+        "Coffee near me TP.HCM",
+        "Coffee near me Hà Nội",
+        "Coffee near me Đà Nẵng",
+        "Coffee near me Hải Phòng",
+        "Coffee near me Nha Trang",
+        "Coffee near me Đà Lạt",
+        "Coffee near me Cần Thơ"
+      ],
+      "matched": [
+        "Coffee near me",
+        "Quán cà phê gần đây"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.04
+    },
+    {
+      "caseId": "PUB011",
+      "inputPrefix": "nguyen huee",
+      "difficulty": "Medium",
+      "expectedType": "Address Suggestions",
+      "suggestedType": "Address Suggestions",
+      "expected": [
+        "Nguyễn Huệ, Quận 1, TP.HCM"
+      ],
+      "found": [
+        "Nguyễn Huệ, Quận 1, TP.HCM"
+      ],
+      "matched": [
+        "Nguyễn Huệ, Quận 1, TP.HCM"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "fuzzy",
+      "latencyMs": 0.04
+    },
+    {
+      "caseId": "PUB012",
+      "inputPrefix": "vincom dong k",
+      "difficulty": "Medium",
+      "expectedType": "POI Suggestions",
+      "suggestedType": "POI Suggestions",
+      "expected": [
+        "Vincom Center Đồng Khởi"
+      ],
+      "found": [
+        "vincom đồng khởi"
+      ],
+      "matched": [
+        "Vincom Center Đồng Khởi"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.01
+    },
+    {
+      "caseId": "PUB013",
+      "inputPrefix": "atm vcb q",
+      "difficulty": "Hard",
+      "expectedType": "Nearby Suggestions",
+      "suggestedType": "Nearby Suggestions",
+      "expected": [
+        "ATM Vietcombank Quận 1",
+        "ATM Vietcombank Quận 7"
+      ],
+      "found": [
+        "atm vietcombank quận 1"
+      ],
+      "matched": [
+        "ATM Vietcombank Quận 1",
+        "ATM Vietcombank Quận 7"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB014",
+      "inputPrefix": "quan an khu",
+      "difficulty": "Medium",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Quán ăn mở cửa khuya",
+        "Ăn đêm gần đây"
+      ],
+      "found": [
+        "Quán ăn mở cửa khuya",
+        "Quán ăn mở cửa khuyaTP.HCM",
+        "Quán ăn mở cửa khuyaHà Nội",
+        "Quán ăn mở cửa khuyaĐà Nẵng",
+        "Quán ăn mở cửa khuyaHải Phòng",
+        "Quán ăn mở cửa khuyaNha Trang",
+        "Quán ăn mở cửa khuyaĐà Lạt",
+        "Quán ăn mở cửa khuyaCần Thơ",
+        "Quán ăn mở cửa khuyaHuế",
+        "Quán ăn mở cửa khuyaVũng Tàu"
+      ],
+      "matched": [
+        "Quán ăn mở cửa khuya"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.06
+    },
+    {
+      "caseId": "PUB015",
+      "inputPrefix": "tra sua ng",
+      "difficulty": "Medium",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Trà sữa gần đây",
+        "Trà sữa ngon"
+      ],
+      "found": [
+        "Trà sữa ngon gần đây",
+        "Trà sữa ngon Quận 1",
+        "Trà sữa ngon nhất Hà Nội",
+        "Trà sữa ngon nhất Sài Gòn",
+        "Trà sữa ngon"
+      ],
+      "matched": [
+        "Trà sữa gần đây",
+        "Trà sữa ngon"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB016",
+      "inputPrefix": "hotel da n",
+      "difficulty": "Medium",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Khách sạn Đà Nẵng gần biển",
+        "Hotel Đà Nẵng"
+      ],
+      "found": [
+        "Khách sạn Đà Nẵng",
+        "Khách sạn Đà Nẵng gần biển",
+        "khách sạn đà nẵng gần sân bay",
+        "hotel Đà Nẵng"
+      ],
+      "matched": [
+        "Khách sạn Đà Nẵng gần biển",
+        "Hotel Đà Nẵng"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.03
+    },
+    {
+      "caseId": "PUB017",
+      "inputPrefix": "san bay n",
+      "difficulty": "Easy",
+      "expectedType": "POI Suggestions",
+      "suggestedType": "POI Suggestions",
+      "expected": [
+        "Sân bay Nội Bài"
+      ],
+      "found": [
+        "sân bay nội bài",
+        "Sân bay Nội Bài Hà Nội",
+        "Sân bay Nha Trang"
+      ],
+      "matched": [
+        "Sân bay Nội Bài"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "fuzzy",
+      "latencyMs": 0.12
+    },
+    {
+      "caseId": "PUB018",
+      "inputPrefix": "noi bai atm",
+      "difficulty": "Hard",
+      "expectedType": "Nearby Suggestions",
+      "suggestedType": "Nearby Suggestions",
+      "expected": [
+        "ATM gần sân bay Nội Bài"
+      ],
+      "found": [
+        "sân bay nội bài",
+        "thời tiết hôm nay",
+        "dự báo thời tiết",
+        "bão mới nhất",
+        "khách sạn gần đây",
+        "atm gần nhất",
+        "quán ăn ngon gần đây",
+        "trạm xăng gần nhất",
+        "nhà hàng ngon gần đây",
+        "cửa hàng tiện lợi 24h"
+      ],
+      "matched": [
+        "ATM gần sân bay Nội Bài"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "popular",
+      "latencyMs": 0.05
+    },
+    {
+      "caseId": "PUB019",
+      "inputPrefix": "galaxy",
+      "difficulty": "Hard",
+      "expectedType": "Ambiguous",
+      "suggestedType": "Ambiguous",
+      "expected": [
+        "Galaxy Cinema",
+        "Samsung Galaxy Store",
+        "Galaxy Hotel"
+      ],
+      "found": [
+        "Galaxy Cinema Nguyễn Du",
+        "Galaxy Cinema Nguyễn Du TP.HCM",
+        "Galaxy Cinema TP.HCM",
+        "Galaxy Cinema Hà Nội",
+        "Galaxy Cinema Đà Nẵng",
+        "Galaxy Cinema Hải Phòng",
+        "Galaxy Cinema TP.HCM TP.HCM",
+        "Galaxy Cinema Hà Nội Hà Nội",
+        "Galaxy Cinema Đà Nẵng Đà Nẵng",
+        "Galaxy Cinema Hải Phòng Hải Phòng"
+      ],
+      "matched": [
+        "Galaxy Cinema"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB020",
+      "inputPrefix": "big c",
+      "difficulty": "Hard",
+      "expectedType": "Ambiguous",
+      "suggestedType": "Ambiguous",
+      "expected": [
+        "GO! / Big C",
+        "Big C Thăng Long",
+        "Big C Miền Đông"
+      ],
+      "found": [
+        "Big C gần nhất",
+        "Big C TP.HCM",
+        "Big C Hà Nội",
+        "Big C Đà Nẵng",
+        "Big C Hải Phòng",
+        "Big C Cần Thơ",
+        "Big C Quận 1",
+        "Big C Quận 2",
+        "Big C Quận 3",
+        "Big C Quận 5"
+      ],
+      "matched": [
+        "GO! / Big C"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB021",
+      "inputPrefix": "quan cafe hoc",
+      "difficulty": "Hard",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Quán cà phê phù hợp học tập",
+        "Cafe có Wi-Fi"
+      ],
+      "found": [
+        "quán cafe học bài",
+        "quán cafe gần đây hà nội",
+        "quán cafe đẹp hà nội",
+        "quán cafe view đẹp sài gòn",
+        "quán cafe đẹp đà lạt",
+        "quán cafe làm việc quận 1",
+        "quán cafe làm việc hà nội",
+        "quán cafe view biển đà nẵng",
+        "quán cafe yên tĩnh quận 1",
+        "quán cafe có wifi mạnh"
+      ],
+      "matched": [],
+      "rankOfFirstMatch": null,
+      "reciprocalRank": 0,
+      "source": "exact",
+      "latencyMs": 0.04
+    },
+    {
+      "caseId": "PUB022",
+      "inputPrefix": "12 ngu",
+      "difficulty": "Medium",
+      "expectedType": "Address Suggestions",
+      "suggestedType": "Address Suggestions",
+      "expected": [
+        "12 Nguyễn Huệ, Quận 1, TP.HCM"
+      ],
+      "found": [
+        "12 Ngu"
+      ],
+      "matched": [
+        "12 Nguyễn Huệ, Quận 1, TP.HCM"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB023",
+      "inputPrefix": "12 nguyen hue q",
+      "difficulty": "Hard",
+      "expectedType": "Address Suggestions",
+      "suggestedType": "Address Suggestions",
+      "expected": [
+        "12 Nguyễn Huệ, Quận 1, TP.HCM"
+      ],
+      "found": [
+        "12 Nguyen hue q"
+      ],
+      "matched": [
+        "12 Nguyễn Huệ, Quận 1, TP.HCM"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.01
+    },
+    {
+      "caseId": "PUB024",
+      "inputPrefix": "trạm x",
+      "difficulty": "Easy",
+      "expectedType": "Nearby Suggestions",
+      "suggestedType": "Nearby Suggestions",
+      "expected": [
+        "Trạm xăng gần đây",
+        "Cây xăng gần đây"
+      ],
+      "found": [
+        "Trạm xăng gần đây",
+        "Trạm xe buýt",
+        "trạm xăng gần nhất",
+        "trạm xăng dầu hà nội",
+        "trạm xe buýt gần đây",
+        "trạm xe buýt hà nội",
+        "Trạm xe buýt gần đây",
+        "Trạm xe buýt TP.HCM",
+        "Trạm xe buýt Đà Nẵng",
+        "Trạm xe buýt Hải Phòng"
+      ],
+      "matched": [
+        "Trạm xăng gần đây",
+        "Cây xăng gần đây"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.15
+    },
+    {
+      "caseId": "PUB025",
+      "inputPrefix": "win",
+      "difficulty": "Easy",
+      "expectedType": "Brand Suggestions",
+      "suggestedType": "Brand Suggestions",
+      "expected": [
+        "WinMart",
+        "WinMart+ gần đây"
+      ],
+      "found": [
+        "WinMart ATM Pasteur Hải Phòng",
+        "WinMart TP.HCM",
+        "WinMart Hà Nội",
+        "WinMart Đà Nẵng",
+        "WinMart Nha Trang",
+        "WinMart Đà Lạt",
+        "WinMart Hải Phòng",
+        "WinMart Cần Thơ",
+        "WinMart Huế",
+        "WinMart Vũng Tàu"
+      ],
+      "matched": [
+        "WinMart"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB026",
+      "inputPrefix": "lotte",
+      "difficulty": "Medium",
+      "expectedType": "Brand Suggestions",
+      "suggestedType": "Brand Suggestions",
+      "expected": [
+        "Lotte Mart",
+        "Lotteria",
+        "Lotte Cinema"
+      ],
+      "found": [
+        "Lotte Mart Cây xăng Hai Bà Trưng Hải Phòng",
+        "Lotteria Nguyễn Văn Linh",
+        "Lotte Mart Cây xăng Hai Bà Trưng Hải Phòng Hải Phòng",
+        "Lotte Mart Quán cà phê Phan Chu Trinh Hải Phòng",
+        "Lotte Mart Quán cà phê Lê Lợi Hà Nội",
+        "Lotteria TP.HCM",
+        "Lotteria Hà Nội",
+        "Lotteria Đà Nẵng",
+        "Lotteria Nha Trang",
+        "Lotteria Đà Lạt"
+      ],
+      "matched": [
+        "Lotte Mart",
+        "Lotteria"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB027",
+      "inputPrefix": "ha noi an",
+      "difficulty": "Medium",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Quán ăn Hà Nội",
+        "Ăn đêm Hà Nội"
+      ],
+      "found": [
+        "Ăn đêm Hà Nội",
+        "Hà Nội Ăn vặt",
+        "Hà Nội Ăn gì"
+      ],
+      "matched": [
+        "Quán ăn Hà Nội",
+        "Ăn đêm Hà Nội"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB028",
+      "inputPrefix": "da lat check",
+      "difficulty": "Medium",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Địa điểm check-in đẹp ở Đà Lạt"
+      ],
+      "found": [
+        "Đà Lạt",
+        "Đà Lạt Quán cà phê",
+        "Đà Lạt Chợ",
+        "Đà Lạt Trung tâm thương mại",
+        "Đà Lạt ATM",
+        "Đà Lạt Bệnh viện",
+        "Đà Lạt Sân bay",
+        "Đà Lạt Rạp chiếu phim",
+        "Đà Lạt Khách sạn",
+        "Đà Lạt Cây xăng"
+      ],
+      "matched": [
+        "Địa điểm check-in đẹp ở Đà Lạt"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.04
+    },
+    {
+      "caseId": "PUB029",
+      "inputPrefix": "rooftop q1",
+      "difficulty": "Hard",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Rooftop Quận 1",
+        "Quán bar rooftop Quận 1"
+      ],
+      "found": [
+        "Rooftop Quận 1"
+      ],
+      "matched": [
+        "Rooftop Quận 1",
+        "Quán bar rooftop Quận 1"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.03
+    },
+    {
+      "caseId": "PUB030",
+      "inputPrefix": "cafe wifi",
+      "difficulty": "Medium",
+      "expectedType": "Attribute Search",
+      "suggestedType": "Attribute Search",
+      "expected": [
+        "Quán cà phê có Wi-Fi",
+        "Cafe làm việc"
+      ],
+      "found": [
+        "Cafe sách",
+        "Cafe thú cưng",
+        "Cafe rooftop",
+        "Cafe làm việc",
+        "cafe wifi miễn phí",
+        "cafe phố cổ hà nội",
+        "cafe hồ tây",
+        "cafe đà nẵng",
+        "cafe trứng hà nội",
+        "cafe view đẹp hà nội"
+      ],
+      "matched": [
+        "Cafe làm việc"
+      ],
+      "rankOfFirstMatch": 4,
+      "reciprocalRank": 0.25,
+      "source": "exact",
+      "latencyMs": 0.03
+    },
+    {
+      "caseId": "PUB031",
+      "inputPrefix": "quan chay",
+      "difficulty": "Easy",
+      "expectedType": "Category Search",
+      "suggestedType": "Category Search",
+      "expected": [
+        "Nhà hàng chay gần đây",
+        "Quán chay"
+      ],
+      "found": [
+        "quán chay quận 1",
+        "Quán chay gần đây",
+        "Quán chay TP.HCM",
+        "Quán chay Hà Nội",
+        "Quán chay Đà Nẵng",
+        "Quán chay Hải Phòng",
+        "Quán chay Cần Thơ",
+        "Quán chay Nha Trang",
+        "Quán chay Đà Lạt",
+        "Quán chay Vũng Tàu"
+      ],
+      "matched": [
+        "Nhà hàng chay gần đây",
+        "Quán chay"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.03
+    },
+    {
+      "caseId": "PUB032",
+      "inputPrefix": "halal hcm",
+      "difficulty": "Hard",
+      "expectedType": "Category Search",
+      "suggestedType": "Category Search",
+      "expected": [
+        "Nhà hàng halal TP.HCM"
+      ],
+      "found": [
+        "sân bay nội bài",
+        "thời tiết hôm nay",
+        "dự báo thời tiết",
+        "bão mới nhất",
+        "khách sạn gần đây",
+        "atm gần nhất",
+        "quán ăn ngon gần đây",
+        "trạm xăng gần nhất",
+        "nhà hàng ngon gần đây",
+        "cửa hàng tiện lợi 24h"
+      ],
+      "matched": [],
+      "rankOfFirstMatch": null,
+      "reciprocalRank": 0,
+      "source": "popular",
+      "latencyMs": 0.07
+    },
+    {
+      "caseId": "PUB033",
+      "inputPrefix": "bien my",
+      "difficulty": "Medium",
+      "expectedType": "POI Suggestions",
+      "suggestedType": "POI Suggestions",
+      "expected": [
+        "Bãi biển Mỹ Khê"
+      ],
+      "found": [
+        "sân bay nội bài",
+        "thời tiết hôm nay",
+        "dự báo thời tiết",
+        "bão mới nhất",
+        "khách sạn gần đây",
+        "atm gần nhất",
+        "quán ăn ngon gần đây",
+        "trạm xăng gần nhất",
+        "nhà hàng ngon gần đây",
+        "cửa hàng tiện lợi 24h"
+      ],
+      "matched": [],
+      "rankOfFirstMatch": null,
+      "reciprocalRank": 0,
+      "source": "popular",
+      "latencyMs": 0.06
+    },
+    {
+      "caseId": "PUB034",
+      "inputPrefix": "my khe hotel",
+      "difficulty": "Hard",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Khách sạn gần biển Mỹ Khê"
+      ],
+      "found": [
+        "sân bay nội bài",
+        "thời tiết hôm nay",
+        "dự báo thời tiết",
+        "bão mới nhất",
+        "khách sạn gần đây",
+        "atm gần nhất",
+        "quán ăn ngon gần đây",
+        "trạm xăng gần nhất",
+        "nhà hàng ngon gần đây",
+        "cửa hàng tiện lợi 24h"
+      ],
+      "matched": [],
+      "rankOfFirstMatch": null,
+      "reciprocalRank": 0,
+      "source": "popular",
+      "latencyMs": 0.03
+    },
+    {
+      "caseId": "PUB035",
+      "inputPrefix": "dai hoc bach",
+      "difficulty": "Medium",
+      "expectedType": "POI Suggestions",
+      "suggestedType": "POI Suggestions",
+      "expected": [
+        "Đại học Bách Khoa Hà Nội"
+      ],
+      "found": [
+        "Đại lý du lịch",
+        "Đại lý vé",
+        "đại học bách khoa tp hcm",
+        "đại học bách khoa hà nội",
+        "đại học quốc gia hà nội",
+        "đại học kinh tế tp hcm",
+        "đại nội huế",
+        "đại học ngoại thương hà nội",
+        "Đại học gần đây",
+        "Đại học TP.HCM"
+      ],
+      "matched": [
+        "Đại học Bách Khoa Hà Nội"
+      ],
+      "rankOfFirstMatch": 3,
+      "reciprocalRank": 0.3333333333333333,
+      "source": "exact",
+      "latencyMs": 0.05
+    },
+    {
+      "caseId": "PUB036",
+      "inputPrefix": "dh bk",
+      "difficulty": "Hard",
+      "expectedType": "POI Suggestions",
+      "suggestedType": "POI Suggestions",
+      "expected": [
+        "Đại học Bách Khoa"
+      ],
+      "found": [
+        "sân bay nội bài",
+        "thời tiết hôm nay",
+        "dự báo thời tiết",
+        "bão mới nhất",
+        "khách sạn gần đây",
+        "atm gần nhất",
+        "quán ăn ngon gần đây",
+        "trạm xăng gần nhất",
+        "nhà hàng ngon gần đây",
+        "cửa hàng tiện lợi 24h"
+      ],
+      "matched": [],
+      "rankOfFirstMatch": null,
+      "reciprocalRank": 0,
+      "source": "popular",
+      "latencyMs": 0.03
+    },
+    {
+      "caseId": "PUB037",
+      "inputPrefix": "phuc long",
+      "difficulty": "Easy",
+      "expectedType": "Brand Suggestions",
+      "suggestedType": "Brand Suggestions",
+      "expected": [
+        "Phúc Long gần đây",
+        "Phúc Long Coffee & Tea"
+      ],
+      "found": [
+        "Phúc Long Trung tâm thương mại Nguyễn Trãi TP.HCM",
+        "Phúc Long Trung tâm thương mại Nguyễn Trãi TP.HCM TP.HCM",
+        "Phuc Long TP.HCM",
+        "Phuc Long Hà Nội",
+        "Phuc Long Đà Nẵng",
+        "Phuc Long Nha Trang",
+        "Phuc Long Cần Thơ",
+        "Phuc Long Hải Phòng",
+        "Phuc Long Vũng Tàu",
+        "Phuc Long TP.HCM TP.HCM"
+      ],
+      "matched": [],
+      "rankOfFirstMatch": null,
+      "reciprocalRank": 0,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB038",
+      "inputPrefix": "cong cafe",
+      "difficulty": "Easy",
+      "expectedType": "Brand Suggestions",
+      "suggestedType": "Brand Suggestions",
+      "expected": [
+        "Cộng Cà Phê gần đây",
+        "Cộng Cà Phê Hồ Gươm"
+      ],
+      "found": [
+        "Cộng Cà Phê gần đây"
+      ],
+      "matched": [
+        "Cộng Cà Phê gần đây",
+        "Cộng Cà Phê Hồ Gươm"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB039",
+      "inputPrefix": "ho guom cafe",
+      "difficulty": "Medium",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Quán cà phê gần Hồ Gươm"
+      ],
+      "found": [
+        "sân bay nội bài",
+        "thời tiết hôm nay",
+        "dự báo thời tiết",
+        "bão mới nhất",
+        "khách sạn gần đây",
+        "atm gần nhất",
+        "quán ăn ngon gần đây",
+        "trạm xăng gần nhất",
+        "nhà hàng ngon gần đây",
+        "cửa hàng tiện lợi 24h"
+      ],
+      "matched": [],
+      "rankOfFirstMatch": null,
+      "reciprocalRank": 0,
+      "source": "popular",
+      "latencyMs": 0.04
+    },
+    {
+      "caseId": "PUB040",
+      "inputPrefix": "pizza 4",
+      "difficulty": "Easy",
+      "expectedType": "Brand Suggestions",
+      "suggestedType": "Brand Suggestions",
+      "expected": [
+        "Pizza 4P's",
+        "Pizza 4P's Bến Nghé"
+      ],
+      "found": [
+        "Pizza 4P's TP.HCM",
+        "Pizza 4P's Hà Nội",
+        "Pizza 4P's Đà Nẵng",
+        "Pizza 4P's Nha Trang",
+        "Pizza 4P's TP.HCM TP.HCM",
+        "Pizza 4P's Hà Nội Hà Nội",
+        "Pizza 4P's Đà Nẵng Đà Nẵng",
+        "Pizza 4P's Nha Trang Nha Trang",
+        "pizza 4p s sài gòn",
+        "pizza 4p s đà nẵng"
+      ],
+      "matched": [
+        "Pizza 4P's"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.03
+    },
+    {
+      "caseId": "PUB041",
+      "inputPrefix": "sua xe gan",
+      "difficulty": "Medium",
+      "expectedType": "Category Search",
+      "suggestedType": "Category Search",
+      "expected": [
+        "Tiệm sửa xe gần đây"
+      ],
+      "found": [
+        "rửa xe gần đây",
+        "Rửa xe gần đây",
+        "Rửa xe gần sân bay",
+        "Rửa xe gần bến xe",
+        "Rửa xe gần chợ",
+        "Rửa xe gần biển",
+        "Rửa xe gần hồ",
+        "Rửa xe gần công viên",
+        "Rửa xe gần Chợ Bến Thành",
+        "Rửa xe gần Hồ Gươm"
+      ],
+      "matched": [
+        "Tiệm sửa xe gần đây"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "fuzzy",
+      "latencyMs": 0.11
+    },
+    {
+      "caseId": "PUB042",
+      "inputPrefix": "gara oto",
+      "difficulty": "Medium",
+      "expectedType": "Category Search",
+      "suggestedType": "Category Search",
+      "expected": [
+        "Garage ô tô gần đây"
+      ],
+      "found": [
+        "Garage ô tô",
+        "Garage ô tô gần đây"
+      ],
+      "matched": [
+        "Garage ô tô gần đây"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB043",
+      "inputPrefix": "duong den ben",
+      "difficulty": "Hard",
+      "expectedType": "Navigation",
+      "suggestedType": "Navigation",
+      "expected": [
+        "Chỉ đường đến Chợ Bến Thành",
+        "Chỉ đường đến bến xe"
+      ],
+      "found": [
+        "Chỉ đường đến bến xe"
+      ],
+      "matched": [
+        "Chỉ đường đến Chợ Bến Thành",
+        "Chỉ đường đến bến xe"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.05
+    },
+    {
+      "caseId": "PUB044",
+      "inputPrefix": "chi duong san",
+      "difficulty": "Hard",
+      "expectedType": "Navigation",
+      "suggestedType": "Navigation",
+      "expected": [
+        "Chỉ đường đến sân bay Nội Bài",
+        "Chỉ đường đến sân bay Tân Sơn Nhất"
+      ],
+      "found": [
+        "Chỉ đường đến sân bay Nội Bài",
+        "Chỉ đường đến sân bay Tân Sơn Nhất"
+      ],
+      "matched": [
+        "Chỉ đường đến sân bay Nội Bài",
+        "Chỉ đường đến sân bay Tân Sơn Nhất"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.04
+    },
+    {
+      "caseId": "PUB045",
+      "inputPrefix": "10.77",
+      "difficulty": "Hard",
+      "expectedType": "Coordinate Search",
+      "suggestedType": "Coordinate Search",
+      "expected": [
+        "10.7769,106.7009"
+      ],
+      "found": [
+        "10.77,106.7009"
+      ],
+      "matched": [
+        "10.7769,106.7009"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB046",
+      "inputPrefix": "xang tren duong",
+      "difficulty": "Hard",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Cây xăng trên đường đi",
+        "Trạm dừng có cây xăng"
+      ],
+      "found": [
+        "xang trên đường đi",
+        "xang gần đây"
+      ],
+      "matched": [
+        "Cây xăng trên đường đi"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.16
+    },
+    {
+      "caseId": "PUB047",
+      "inputPrefix": "quan an tre em",
+      "difficulty": "Medium",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Nhà hàng phù hợp cho trẻ em"
+      ],
+      "found": [
+        "Quán ăn trẻ em",
+        "Quán ăn mở cửa khuya",
+        "Quán ăn mở cửa khuyaTP.HCM",
+        "Quán ăn mở cửa khuyaHà Nội",
+        "Quán ăn mở cửa khuyaĐà Nẵng",
+        "Quán ăn mở cửa khuyaHải Phòng",
+        "Quán ăn mở cửa khuyaNha Trang",
+        "Quán ăn mở cửa khuyaĐà Lạt",
+        "Quán ăn mở cửa khuyaCần Thơ",
+        "Quán ăn mở cửa khuyaHuế"
+      ],
+      "matched": [],
+      "rankOfFirstMatch": null,
+      "reciprocalRank": 0,
+      "source": "exact",
+      "latencyMs": 0.03
+    },
+    {
+      "caseId": "PUB048",
+      "inputPrefix": "cf lam viec",
+      "difficulty": "Hard",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Cà phê làm việc",
+        "Quán cà phê có Wi-Fi"
+      ],
+      "found": [
+        "cà phê làm việc",
+        "Cà phê",
+        "Quán cà phê gần đây",
+        "Quán cà phê học bài"
+      ],
+      "matched": [
+        "Cà phê làm việc",
+        "Quán cà phê có Wi-Fi"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.06
+    },
+    {
+      "caseId": "PUB049",
+      "inputPrefix": "atm bidv",
+      "difficulty": "Easy",
+      "expectedType": "Nearby Suggestions",
+      "suggestedType": "Nearby Suggestions",
+      "expected": [
+        "ATM BIDV gần đây"
+      ],
+      "found": [
+        "ATM BIDV gần đây"
+      ],
+      "matched": [
+        "ATM BIDV gần đây"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.01
+    },
+    {
+      "caseId": "PUB050",
+      "inputPrefix": "benh vien gan san",
+      "difficulty": "Hard",
+      "expectedType": "Nearby Suggestions",
+      "suggestedType": "Nearby Suggestions",
+      "expected": [
+        "Bệnh viện gần sân bay"
+      ],
+      "found": [
+        "Bệnh viện gần sân bay"
+      ],
+      "matched": [
+        "Bệnh viện gần sân bay"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB051",
+      "inputPrefix": "spa gan day",
+      "difficulty": "Easy",
+      "expectedType": "Category Search",
+      "suggestedType": "Category Search",
+      "expected": [
+        "Spa gần đây"
+      ],
+      "found": [
+        "Spa gần đây"
+      ],
+      "matched": [
+        "Spa gần đây"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.01
+    },
+    {
+      "caseId": "PUB052",
+      "inputPrefix": "gym 24",
+      "difficulty": "Medium",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Phòng gym mở cửa 24/7"
+      ],
+      "found": [
+        "gym quận 2",
+        "gym gần đây",
+        "gym hà nội",
+        "gym đà nẵng",
+        "phòng gym 24h hà nội",
+        "Phòng gym 24/7",
+        "Phòng gym"
+      ],
+      "matched": [
+        "Phòng gym mở cửa 24/7"
+      ],
+      "rankOfFirstMatch": 6,
+      "reciprocalRank": 0.16666666666666666,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB053",
+      "inputPrefix": "sieuthi gan",
+      "difficulty": "Easy",
+      "expectedType": "Category Search",
+      "suggestedType": "Category Search",
+      "expected": [
+        "Siêu thị gần đây"
+      ],
+      "found": [
+        "Siêu thị gần đây"
+      ],
+      "matched": [
+        "Siêu thị gần đây"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.01
+    },
+    {
+      "caseId": "PUB054",
+      "inputPrefix": "quan nuong q7",
+      "difficulty": "Medium",
+      "expectedType": "Category Search",
+      "suggestedType": "Category Search",
+      "expected": [
+        "Quán nướng Quận 7"
+      ],
+      "found": [
+        "Quán nướng Quận 7"
+      ],
+      "matched": [
+        "Quán nướng Quận 7"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB055",
+      "inputPrefix": "cafe yen tinh",
+      "difficulty": "Medium",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Quán cà phê yên tĩnh"
+      ],
+      "found": [
+        "Cafe sách",
+        "Cafe thú cưng",
+        "Cafe rooftop",
+        "Cafe làm việc",
+        "cafe phố cổ hà nội",
+        "cafe hồ tây",
+        "cafe wifi miễn phí",
+        "cafe đà nẵng",
+        "cafe trứng hà nội",
+        "cafe view đẹp hà nội"
+      ],
+      "matched": [],
+      "rankOfFirstMatch": null,
+      "reciprocalRank": 0,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB056",
+      "inputPrefix": "hotel near beach danang",
+      "difficulty": "Hard",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Khách sạn gần biển Đà Nẵng"
+      ],
+      "found": [
+        "khách sạn gần biển đà nẵng"
+      ],
+      "matched": [
+        "Khách sạn gần biển Đà Nẵng"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.04
+    },
+    {
+      "caseId": "PUB057",
+      "inputPrefix": "bến xe miền đông",
+      "difficulty": "Hard",
+      "expectedType": "POI Suggestions",
+      "suggestedType": "POI Suggestions",
+      "expected": [
+        "Bến xe Miền Đông mới",
+        "Bến xe Miền Đông cũ"
+      ],
+      "found": [
+        "Bến xe Miền Đông mới",
+        "Bến xe Miền Đông mới TP.HCM"
+      ],
+      "matched": [
+        "Bến xe Miền Đông mới",
+        "Bến xe Miền Đông cũ"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    },
+    {
+      "caseId": "PUB058",
+      "inputPrefix": "hoc vien gan day",
+      "difficulty": "Medium",
+      "expectedType": "Category Search",
+      "suggestedType": "Category Search",
+      "expected": [
+        "Học viện gần đây",
+        "Trung tâm đào tạo gần đây"
+      ],
+      "found": [
+        "Học viện gần đây"
+      ],
+      "matched": [
+        "Học viện gần đây"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.01
+    },
+    {
+      "caseId": "PUB059",
+      "inputPrefix": "do an vat",
+      "difficulty": "Medium",
+      "expectedType": "Category Search",
+      "suggestedType": "Category Search",
+      "expected": [
+        "Quán ăn vặt gần đây"
+      ],
+      "found": [
+        "sân bay nội bài",
+        "thời tiết hôm nay",
+        "dự báo thời tiết",
+        "bão mới nhất",
+        "khách sạn gần đây",
+        "atm gần nhất",
+        "quán ăn ngon gần đây",
+        "trạm xăng gần nhất",
+        "nhà hàng ngon gần đây",
+        "cửa hàng tiện lợi 24h"
+      ],
+      "matched": [
+        "Quán ăn vặt gần đây"
+      ],
+      "rankOfFirstMatch": 7,
+      "reciprocalRank": 0.14285714285714285,
+      "source": "popular",
+      "latencyMs": 0.04
+    },
+    {
+      "caseId": "PUB060",
+      "inputPrefix": "cafe dep song ao",
+      "difficulty": "Hard",
+      "expectedType": "Discovery Search",
+      "suggestedType": "Discovery Search",
+      "expected": [
+        "Quán cà phê đẹp để check-in"
+      ],
+      "found": [
+        "Quán cà phê đẹp để check-in"
+      ],
+      "matched": [
+        "Quán cà phê đẹp để check-in"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
+    }
+  ]
+}
