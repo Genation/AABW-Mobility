@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1774107234737,
+      "tag": "0000_health-table",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1775190933883,
+      "tag": "0001_lame_shocker",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775200749380,
+      "tag": "0002_common_callisto",
+      "breakpoints": true
+    }
+  ]
+}

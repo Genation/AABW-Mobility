@@ -1,0 +1,12 @@
+name: mcp-local
+variables:
+  - name: mcp_host
+    value: http://localhost:8909
+  - name: mcp_session_id
+    value: ""
+  - name: access_token
+    value: eyJhbGciOiJFUzI1NiIsImtpZCI6ImI4MTI2OWYxLTIxZDgtNGYyZS1iNzE5LWMyMjQwYTg0MGQ5MCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjU0MzIxL2F1dGgvdjEiLCJzdWIiOiJiODIzMDNmYi03YmQ4LTRkZTktOGYwMS0wMzc0NDI3MjQyNTIiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzc1MTMzNzM0LCJpYXQiOjE3NzUxMzAxMzQsImVtYWlsIjoiYWRtaW4tdGVzdEBleGFtcGxlLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5hbWUiOiJUZXN0IFVzZXIifSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc3NTEzMDEzNH1dLCJzZXNzaW9uX2lkIjoiN2EwYmRiZDYtODY3ZC00OWEwLTk2OWQtZGVhNTkyMzQ1M2E5IiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.kzRTHWLC33vFxBtwkOEOvh-2n3vaRSXHaDbYzrmhduyxmFmie4aicqutDlS8ALkAVQod7EdXts2dKVsh5fh30Q
+  - name: user_id
+    value: ""
+  - name: created_record_id
+    value: ""

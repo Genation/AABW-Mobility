@@ -1,0 +1,19 @@
+info:
+  name: "11 - close session"
+  type: http
+  seq: 11
+
+http:
+  method: DELETE
+  url: "{{mcp_host}}/mcp"
+  headers:
+    - name: Authorization
+      value: Bearer {{access_token}}
+    - name: mcp-session-id
+      value: "{{mcp_session_id}}"
+
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5

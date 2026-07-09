@@ -1,0 +1,39 @@
+info:
+  name: "07 - health_delete"
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{mcp_host}}/mcp"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json, text/event-stream
+    - name: Authorization
+      value: Bearer {{access_token}}
+    - name: mcp-session-id
+      value: "{{mcp_session_id}}"
+    - name: MCP-Protocol-Version
+      value: "2025-11-25"
+  body:
+    type: json
+    data: |-
+      {
+        "jsonrpc": "2.0",
+        "id": 14,
+        "method": "tools/call",
+        "params": {
+          "name": "health_delete",
+          "arguments": {
+            "id": {{created_record_id}}
+          }
+        }
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,25 @@
+info:
+  name: update
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{host}}/health/:id"
+  params:
+    - name: id
+      value: "1"
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "data": "test_updated"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

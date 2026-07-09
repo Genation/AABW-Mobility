@@ -1,0 +1,52 @@
+info:
+  name: "14 - resources/read health://stats"
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{mcp_host}}/mcp"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json, text/event-stream
+    - name: Authorization
+      value: Bearer {{access_token}}
+    - name: mcp-session-id
+      value: "{{mcp_session_id}}"
+    - name: MCP-Protocol-Version
+      value: "2025-11-25"
+  body:
+    type: json
+    data: |-
+      {
+        "jsonrpc": "2.0",
+        "id": 22,
+        "method": "resources/read",
+        "params": {
+          "uri": "health://stats"
+        }
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const body = res.getBody();
+        console.log('resources/read response:', JSON.stringify(body, null, 2));
+        try {
+          const result = typeof body === 'string' ? JSON.parse(body) : body;
+          if (result.result?.contents?.[0]?.text) {
+            const stats = JSON.parse(result.result.contents[0].text);
+            console.log('Stats:', JSON.stringify(stats, null, 2));
+          }
+        } catch (e) {
+          console.log('Could not parse stats:', e.message);
+        }

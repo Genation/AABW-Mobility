@@ -1,0 +1,33 @@
+opencollection: 1.0.0
+
+info:
+  name: Template
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  auth:
+    type: bearer
+    token: "{{access_token}}"
+  variables:
+    - name: host
+      value: http://localhost:8907/api/v1
+    - name: mcp_host
+      value: http://localhost:8909
+    - name: access_token
+      value: eyJhbGciOiJFUzI1NiIsImtpZCI6ImI4MTI2OWYxLTIxZDgtNGYyZS1iNzE5LWMyMjQwYTg0MGQ5MCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjU0MzIxL2F1dGgvdjEiLCJzdWIiOiJiODIzMDNmYi03YmQ4LTRkZTktOGYwMS0wMzc0NDI3MjQyNTIiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzc1MTMzNjA1LCJpYXQiOjE3NzUxMzAwMDUsImVtYWlsIjoiYWRtaW4tdGVzdEBleGFtcGxlLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5hbWUiOiJUZXN0IFVzZXIifSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc3NTEzMDAwNX1dLCJzZXNzaW9uX2lkIjoiYzljZTIyMDAtODdkYS00M2M3LTg2ZTQtMTJjYzBmOGE0NmU5IiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.oQ926uk0bgw8SPoLHqAJTTz5cxMcLLw4Y9o5gmUOpoQh1CfY77az1nfnUdehfrf24CA0dTpgUjScDD29giQMPQ
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

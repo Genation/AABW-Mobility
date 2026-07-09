@@ -1,0 +1,34 @@
+info:
+  name: 08 - tools/list
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{mcp_host}}/mcp"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json, text/event-stream
+    - name: Authorization
+      value: Bearer {{access_token}}
+    - name: mcp-session-id
+      value: "{{mcp_session_id}}"
+    - name: MCP-Protocol-Version
+      value: 2025-11-25
+  body:
+    type: json
+    data: |-
+      {
+        "jsonrpc": "2.0",
+        "id": 20,
+        "method": "tools/list",
+        "params": {}
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5

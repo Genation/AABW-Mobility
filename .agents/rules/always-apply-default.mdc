@@ -1,0 +1,733 @@
+---
+description: Backend architecture conventions v2 — Hono, Drizzle, BullMQ, Vertical Slices, Internal Services, AI Pipeline
+globs: backend/src/**/*.ts
+alwaysApply: true
+---
+
+# Backend Architecture Conventions v2
+
+## Table of Contents
+
+1. [System Architecture Overview](#1-system-architecture-overview)
+2. [Entry Points — API vs Worker](#2-entry-points--api-vs-worker)
+3. [Module Layer (HTTP-exposed)](#3-module-layer-http-exposed)
+4. [Internal Service Layer (Business Logic)](#4-internal-service-layer-business-logic)
+5. [Processor Composition Pattern](#5-processor-composition-pattern)
+6. [Data Layer — Schema & Repo](#6-data-layer--schema--repo)
+7. [Database Migration Workflow](#7-database-migration-workflow)
+8. [Queue-Based Async Processing](#8-queue-based-async-processing)
+9. [Cross-Module & Cross-Layer Communication](#9-cross-module--cross-layer-communication)
+10. [AI / Embedding Services](#10-ai--embedding-services)
+11. [Naming, DTO, and Conventions](#11-naming-dto-and-conventions)
+12. [Pre-Commit Verification](#12-pre-commit-verification)
+
+---
+
+## 1. System Architecture Overview
+
+The system is a **two-process architecture**:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Process 1: API Server (main.ts → Oak Application)                     │
+│                                                                         │
+│   HTTP Request                                                           │
+│       │                                                                  │
+│       ▼                                                                  │
+│   routes.ts  ──►  Module Router  ──►  Controller  ──►  Service          │
+│                                               │           │             │
+│                                               │           ├──► Repo     │
+│                                               │           │   (sync)     │
+│                                               │           │             │
+│                                               │           └──► Queue   │
+│                                               │               (async)    │
+│                                               ▼                          │
+│                                        HTTP Response                      │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ BullMQ Job
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Process 2: Worker (main-worker.ts → BullMQ Worker)                   │
+│                                                                         │
+│   processEvaluateJob(url, query)                                        │
+│       │                                                                  │
+│       ├──► coreService.processEval()  ─────────────────────────────────┐ │
+│       │         │                                                     │ │
+│       │         ├──► queryProcessor       (LLM + embeddings)          │ │
+│       │         │         ├──► llmService.expandQuery()             │ │
+│       │         │         └──► embeddingService.calcEmbedding()      │ │
+│       │         │                                                     │ │
+│       │         ├──► urlProcessor         (fetch + chunk + embed)      │ │
+│       │         │         ├──► webService.getContent()                │ │
+│       │         │         │     ├──► Jina Reader API                 │ │
+│       │         │         │     ├──► Firecrawl API (fallback)        │ │
+│       │         │         │     └──► Local fetch + Readability       │ │
+│       │         │         ├──► chunkService.splitMarkdown()          │ │
+│       │         │         └──► embeddingService.calcEmbedding()       │ │
+│       │         │                                                     │ │
+│       │         ├──► semanticScoreProcessor (MaxSim algorithm)        │ │
+│       │         │         └──► embeddingService.calculateSimilarity()│ │
+│       │         │                                                     │ │
+│       │         ├──► articleScoreProcessor (quality signals)         │ │
+│       │         │         └──► signalsService.extractSignals()        │ │
+│       │         │                                                     │ │
+│       │         └──► Repo.update()   (write results)                 │ │
+│       │                                                                   │
+│   BullMQ Redis                                                           │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Key principle**: Modules are thin HTTP wrappers. All heavy logic lives in
+`intenals/` and is orchestrated by the worker.
+
+---
+
+## 2. Entry Points — API vs Worker
+
+There are exactly **two entry points** and they must never share a process:
+
+```typescript
+// main.ts — API server only (Oak Application)
+const app = createApp(AppMode.MAIN);
+await app.listen({ port: 8000 });
+
+// main-worker.ts — BullMQ worker only (NO Oak, NO HTTP)
+const worker = createWorker(redis, processEvaluateJob, QUEUE_NAMES.WORKER_EVALUATE);
+worker.on("completed", ...)
+worker.on("failed", ...)
+```
+
+- API server: accepts HTTP, writes to DB, adds to queue. **Never does heavy
+  processing.**
+- Worker: runs as a **separate Deno process**, consumes queue, calls internal
+  services, writes results back to DB.
+- Separate Redis clients: `createWorkerRedisClient()` for the worker,
+  `getRedisClient()` for the API server.
+
+---
+
+## 3. Module Layer (HTTP-exposed)
+
+Modules follow **vertical slice architecture**. Every HTTP feature is a module.
+
+### Required File Structure
+
+```
+modules/<name>/
+├── <name>.router.ts       # Route definitions + middleware chain
+├── <name>.controller.ts   # HTTP handlers only
+├── <name>.service.ts      # Thin orchestration layer
+├── <name>.repo.ts         # Database operations
+├── <name>.schema.ts       # Drizzle table schema
+├── <name>.dto.ts          # Zod schemas + TypeScript types
+└── tests/
+    ├── <name>.api.test.ts
+    ├── <name>.db.test.ts
+    └── <name>.unit.test.ts
+```
+
+### Module Service Pattern
+
+Module services are thin — they **orchestrate, not compute**. Heavy logic is
+delegated to internal services:
+
+```typescript
+// modules/evaluation/evaluation.service.ts
+import { createQueue } from "@src/libs/queue/bullmq.ts";
+import { evaluationRepo } from "./evaluation.repo.ts";
+import { coreService } from "@src/intenals/core/core.service.ts";
+
+export const evaluationService = {
+  async create(data: CreateEvaluationBody): Promise<EvaluationDTO> {
+    // 1. Create DB record with pending status
+    const record = await evaluationRepo.create({
+      ...data,
+      status: EvaluationStatus.PENDING,
+    });
+
+    // 2. Queue background job — do NOT do heavy work here
+    await createQueue().add(QUEUE_NAMES.WORKER_EVALUATE, {
+      evaluationId: record.id,
+      url: data.url,
+      query: data.query,
+    });
+
+    return record;
+  },
+};
+```
+
+**Rule**: If a module service method does more than one of: DB write, queue add,
+internal service call — it should likely be in `intenals/` instead.
+
+### When to Create a Module (vs Internal Service)
+
+| Module (`modules/`)             | Internal (`intenals/`)                       |
+| ------------------------------- | -------------------------------------------- |
+| Feature has HTTP endpoints      | Feature has no HTTP endpoints                |
+| Exposes CRUD or webhook         | Pure business logic                          |
+| Example: `evaluation`, `health` | Example: `core`, `web`, `embedding`, `chunk` |
+
+---
+
+## 4. Internal Service Layer (Business Logic)
+
+Internal services live in `src/intenals/` (note: typo "intenals" is
+intentional). No router, no controller, no dto file.
+
+### Factory Pattern (Mandatory)
+
+Every internal service uses a **factory function** that returns a service
+object. No classes, no `new`, no `this`. Dependencies are injected via the
+factory:
+
+```typescript
+// intenals/web/web.service.ts
+export const createWebService = (deps?: WebServiceDeps) => {
+  const jina = deps?.jina ?? createJinaClient();
+  const firecrawl = deps?.firecrawl ?? createFirecrawlClient();
+  const fetcher = deps?.fetcher ?? globalThis.fetch;
+
+  return {
+    async getContent(url: string): Promise<WebContent> {
+      // Multi-layer fallback: Jina → Firecrawl → Local
+      try {
+        return await jina.extract(url);
+      } catch {
+        try {
+          return await firecrawl.scrape(url);
+        } catch {
+          return await localFetch(url, fetcher);
+        }
+      }
+    },
+  };
+};
+
+export type WebService = ReturnType<typeof createWebService>;
+export type WebServiceDeps = {
+  jina?: ReturnType<typeof createJinaClient>;
+  firecrawl?: ReturnType<typeof createFirecrawlClient>;
+  fetcher?: typeof fetch;
+};
+```
+
+### Module-Level Singleton vs Per-Call Factory
+
+- **Module-level**: `export const webService = createWebService();` — use when
+  the service is stateless and has no per-call dependencies
+- **Per-call factory**: `const service = createWebService(deps)` — use in tests
+  or when the service needs custom configuration per call
+
+### Internal Service Directory Structure
+
+```
+intenals/<name>/
+├── <name>.service.ts      # Factory + business logic
+├── <name>.repo.ts         # DB operations (only if needed)
+├── <name>.engine.ts       # External API client (only if needed)
+└── tests/
+    ├── <name>.unit.test.ts
+    └── <name>.repo.test.ts  # Only if repo exists
+```
+
+---
+
+## 5. Processor Composition Pattern
+
+The **processor pattern** is used when a complex pipeline has multiple,
+independent stages that run in parallel or sequence. Each processor is a
+function returned by a factory.
+
+```typescript
+// intenals/core/core.service.ts
+export const createCoreService = () => {
+  const queryProcessor = createQueryProcessor();
+  const urlProcessor = createUrlProcessor();
+  const semanticProcessor = createSemanticScoreProcessor();
+  const articleProcessor = createArticleScoreProcessor();
+
+  return {
+    async processEval(url: string, query: string) {
+      // Run independent stages in parallel
+      const [queryResult, urlResult] = await Promise.all([
+        queryProcessor.process(query),
+        urlProcessor.process(url),
+      ]);
+
+      // Sequential post-processing
+      const semanticScore = await semanticProcessor.process(
+        queryResult.hyposEmbeddings,
+        urlResult.chunkEmbeddings,
+      );
+
+      const articleScore = await articleProcessor.process(urlResult.content);
+
+      return computeOverallScore(semanticScore, articleScore);
+    },
+  };
+};
+
+// intenals/core/processor/query.processor.ts
+export const createQueryProcessor = () => {
+  const llmService = createLLMService();
+  const embeddingService = createEmbeddingService();
+
+  return {
+    async process(query: string): Promise<QueryProcessResult> {
+      const expandedQueries = await llmService.expandQuery(query);
+      const hypotheses = await llmService.generateHypo(expandedQueries);
+      const embeddings = await embeddingService.calcEmbedding(hypotheses);
+      return { expandedQueries, hypotheses, embeddings };
+    },
+  };
+};
+```
+
+**Rule**: Each processor file should be **self-contained** — import its own
+dependencies. Do not pass service instances between processors; each processor
+creates its own.
+
+---
+
+## 6. Data Layer — Schema & Repo
+
+### Hybrid Schema Design (Hard Columns + jsonb)
+
+For performance-critical tables, use **hard columns** for frequently filtered
+fields and **jsonb** for flexible/polymorphic data:
+
+```typescript
+// modules/evaluation/evaluation.schema.ts
+export const evaluationTable = pgTable("evaluations", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  url: text("url").notNull(),
+  query: text("query").notNull(),
+  status: text("status").notNull().default("pending"),
+
+  // Hard columns for scores (indexable, frequently queried)
+  semanticScore: numeric("semantic_score", { precision: 5, scale: 4 })
+    .nullable(),
+  articleScore: numeric("article_score", { precision: 5, scale: 4 }).nullable(),
+  overallScore: numeric("overall_score", { precision: 5, scale: 4 }).nullable(),
+
+  // jsonb for structured but non-indexed data
+  semanticAllChunks: jsonb("semantic_all_chunks").$type<ChunkScore[]>(),
+  semanticQueryMatrix: jsonb("semantic_query_matrix").$type<MatrixData>(),
+  articleBreakdown: jsonb("article_breakdown").$type<ArticleBreakdown>(),
+
+  // Metadata
+  contentHash: text("content_hash").nullable(),
+  contentWordCount: integer("content_word_count").nullable(),
+  hyposEmbeddings: vector("hypos_embeddings", { dimensions: 4096 }).nullable(),
+
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  statusIdx: index("status_idx").on(table.status),
+  scoreIdx: index("score_idx").on(table.overallScore),
+  userStatusIdx: index("user_status_idx").on(table.userId, table.status),
+}));
+```
+
+**Rule**: Add an **index** on every column you filter by. Composite indexes for
+common query patterns.
+
+### jsonb Override in DTO (CRITICAL)
+
+When generating Zod schemas from Drizzle tables with jsonb columns:
+
+```typescript
+// ✅ CORRECT
+const BaseInsertSchema = createInsertSchema(evaluationTable, {
+  semanticAllChunks: z.record(z.string(), z.any()),
+  semanticQueryMatrix: z.record(z.string(), z.any()),
+});
+export const CreateEvaluationBodySchema = BaseInsertSchema.omit({ id: true, ... });
+
+// ❌ WRONG — auto-inference fails for jsonb
+export const CreateEvaluationBodySchema = createInsertSchema(evaluationTable).omit({ id: true });
+```
+
+### Repo Pattern
+
+```typescript
+export const evaluationRepo = {
+  db: getDbPool(),
+
+  async create(data: CreateEvaluationBody): Promise<EvaluationDTO> {
+    const [result] = await this.db.insert(evaluationTable)
+      .values(data)
+      .returning();
+    return result;
+  },
+
+  async updateStatus(id: number, status: EvaluationStatus): Promise<void> {
+    await this.db.update(evaluationTable)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(evaluationTable.id, id));
+  },
+
+  async updateScores(id: number, scores: ScoreFields): Promise<void> {
+    await this.db.update(evaluationTable)
+      .set({ ...scores, updatedAt: new Date() })
+      .where(eq(evaluationTable.id, id))
+      .returning();
+  },
+};
+```
+
+**Rules**:
+
+- Always `.returning()` on mutations
+- Always set `updatedAt: new Date()` on updates
+- Named export only (`export const`), no default export
+
+---
+
+## 7. Database Migration Workflow
+
+Drizzle migrations use a **code-first** approach. The rule is always: **modify
+code first → generate migration → apply migration**.
+
+```bash
+# Step 1: Write / modify the schema file
+# Edit: modules/<name>/<name>.schema.ts  or  intenals/<name>/<name>.repo.ts
+
+# Step 2: Generate the migration file
+deno run db generate
+
+# Step 3: Review the generated .sql file in drizzle/ before applying
+# ⚠️ ALWAYS review the SQL before running migrate
+
+# Step 4: Apply the migration to the database
+deno run db migrate
+```
+
+**Rules**:
+
+- **Never** run `drizzle-kit generate` after manually editing SQL files — this
+  will overwrite your changes
+- Generated SQL files go into `drizzle/` and are auto-numbered
+- Snapshot JSON files go into `drizzle/meta/` — these track schema state for
+  future comparisons
+- The journal file `drizzle/meta/_journal.json` tracks which migrations have
+  been applied — never edit it manually
+- If a migration needs to be reverted, create a new migration file that undoes
+  the change (Drizzle does not support auto-generated rollbacks)
+
+---
+
+## 8. Queue-Based Async Processing
+
+BullMQ is used for all **long-running background jobs**.
+
+### Queue Definition
+
+```typescript
+// libs/queue/bullmq.ts
+export const createQueue = () => {
+  const redis = getRedisClient();
+  return new Queue<EvaluateJobData>(QUEUE_NAMES.WORKER_EVALUATE, {
+    connection: redis,
+  });
+};
+
+// libs/queue/redis.ts
+let _redis: Redis | undefined;
+export const getRedisClient = () => {
+  if (!_redis) {
+    _redis = new Redis(env.REDIS_URL);
+  }
+  return _redis;
+};
+
+let _workerRedis: Redis | undefined;
+export const createWorkerRedisClient = () => {
+  if (!_workerRedis) {
+    _workerRedis = new Redis(env.REDIS_URL);
+  }
+  return _workerRedis;
+};
+```
+
+### Worker Configuration
+
+```typescript
+// Worker settings tuned for Jina API rate limits (~20 req/min)
+export const WORKER_CONFIG = {
+  concurrency: 8,
+  limiter: { max: 20, duration: 60_000 }, // 20 jobs/minute
+  lockDuration: 120_000, // 2-minute lock (covers ~90s max processing)
+  maxStalledCount: 2,
+};
+```
+
+### Job Processing Pattern
+
+```typescript
+// src/main-worker.ts
+export const processEvaluateJob = async (job: Job<EvaluateJobData>) => {
+  const { evaluationId, url, query } = job.data;
+  const core = createCoreService();
+
+  try {
+    // Mark as in-progress
+    await evaluationRepo.updateStatus(
+      evaluationId,
+      EvaluationStatus.PROCESSING,
+    );
+
+    // Run the full evaluation pipeline
+    const result = await core.processEval(url, query);
+
+    // Write results back
+    await evaluationRepo.updateScores(evaluationId, {
+      semanticScore: result.semanticScore,
+      articleScore: result.articleScore,
+      overallScore: result.overallScore,
+      semanticAllChunks: result.chunkScores,
+      semanticQueryMatrix: result.matrix,
+      contentHash: result.hash,
+      contentWordCount: result.wordCount,
+      hyposEmbeddings: result.hyposEmbeddings,
+    });
+
+    await evaluationRepo.updateStatus(evaluationId, EvaluationStatus.COMPLETED);
+  } catch (err) {
+    await evaluationRepo.updateStatus(evaluationId, EvaluationStatus.FAILED);
+    throw err; // Re-throw so BullMQ marks the job as failed
+  }
+};
+```
+
+---
+
+## 9. Cross-Module & Cross-Layer Communication
+
+### Rules
+
+1. **Modules can call internal services** — this is normal and expected
+2. **Modules can call other module services** — only for read operations, never
+   for mutations that bypass the calling module's controller
+3. **Internal services can call other internal services** — composition is
+   encouraged
+4. **Internal services should NOT call module services** — this creates circular
+   dependencies
+
+### Calling Internal Services from Module Service
+
+```typescript
+// modules/evaluation/evaluation.service.ts
+import { coreService } from "@src/intenals/core/core.service.ts";
+import { createWebService } from "@src/intenals/web/web.service.ts";
+
+export const evaluationService = {
+  // Module service is thin — just coordinates
+  async preview(data: PreviewBody) {
+    const webService = createWebService();
+    const content = await webService.getContent(data.url);
+    // ...
+  },
+};
+```
+
+### Calling Internal Services from Worker
+
+```typescript
+// src/main-worker.ts
+import { coreService } from "@src/intenals/core/core.service.ts";
+import { evaluationRepo } from "@src/modules/evaluation/evaluation.repo.ts";
+
+const core = createCoreService();
+const result = await core.processEval(url, query);
+```
+
+---
+
+## 10. AI / Embedding Services
+
+### LLM Service
+
+```typescript
+// intenals/llm/llm.service.ts
+export const createLLMService = (deps?: LLMDeps) => {
+  const client = deps?.client ?? createOpenRouterClient();
+
+  return {
+    async expandQuery(query: string): Promise<string[]> {
+      // Expands "best laptop" → ["best laptop 2024 for students",
+      //  "best laptop for gaming", ...]
+    },
+    async generateHypo(queries: string[]): Promise<Hypothesis[]> {
+      // Generates hypothetical user questions/responses for each query
+    },
+  };
+};
+```
+
+### Embedding Service
+
+```typescript
+// intenals/embedding/embedding.service.ts
+export const createEmbeddingService = (deps?: EmbeddingDeps) => {
+  const client = deps?.client ?? createOpenRouterEmbeddingClient();
+
+  return {
+    async calcEmbedding(text: string | string[]): Promise<number[][]> {
+      // Calls OpenRouter embeddings API
+    },
+    async calculateSimilarity(a: number[], b: number[]): Promise<number> {
+      // Cosine similarity between two vectors
+    },
+    async evaluateModelThreshold(): Promise<void> {
+      // Self-calibration using predefined signal/noise text pairs
+    },
+  };
+};
+```
+
+### Signal Extraction Service
+
+```typescript
+// intenals/web/signal.service.ts
+export const createSignalsService = () => ({
+  extractSignals(html: string, metadata: PageMetadata): SeoSignals {
+    // Extracts 25 SEO signals grouped into:
+    // - Metadata (11): og tags, published date, author, canonical, locale
+    // - Content (9): FAQ, TOC, video, code, table, list, JSON-LD, breadcrumb
+    // - Derived (5): publisher match, language/country correctness, title dup
+  },
+  buildSignalComparison(mySignals: SeoSignals, competitor: SeoSignals) {},
+  buildSummary(signals: SeoSignals[]) {},
+});
+```
+
+---
+
+## 11. Naming, DTO, and Conventions
+
+### File Naming
+
+| Kind             | Convention              | Example                                  |
+| ---------------- | ----------------------- | ---------------------------------------- |
+| Module files     | kebab-case              | `evaluation.dto.ts`, `health.schema.ts`  |
+| Internal service | kebab-case              | `web.service.ts`, `embedding.service.ts` |
+| Processor files  | kebab-case              | `query.processor.ts`, `url.processor.ts` |
+| Test files       | `<name>.<type>.test.ts` | `evaluation.api.test.ts`                 |
+| Engine files     | kebab-case              | `jina.engine.ts`                         |
+| Utils            | kebab-case              | `error-factory.ts`, `test-setup.ts`      |
+
+### DTO Pattern
+
+```typescript
+// 1. Base schema from Drizzle, override jsonb columns
+const BaseInsertSchema = createInsertSchema(table, {
+  [jsonColumn]: z.record(z.string(), z.any()),
+});
+
+// 2. Create: omit id + timestamps
+export const CreateXxxBodySchema = BaseInsertSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// 3. Update: partial of create
+export const UpdateXxxBodySchema = CreateXxxBodySchema.partial();
+
+// 4. Query: z.coerce for URL params
+export const FindXxxQuerySchema = z.object({
+  id: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  latestAt: z.coerce.date().optional(),
+});
+
+// 5. Params: z.coerce
+export const XxxIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+});
+
+// 6. Always export types via z.infer
+export type CreateXxxBody = z.infer<typeof CreateXxxBodySchema>;
+```
+
+### Service Naming
+
+| Pattern                   | Convention             | Example                                           |
+| ------------------------- | ---------------------- | ------------------------------------------------- |
+| Module service            | camelCase named export | `export const evaluationService = {...}`          |
+| Internal service factory  | `createXxxService`     | `export const createWebService = (...) => {...}`  |
+| Internal service instance | camelCase              | `webService`, `embeddingService`                  |
+| Processor factory         | `createXxxProcessor`   | `export const createQueryProcessor = () => {...}` |
+| Processor instance        | camelCase              | `queryProcessor`, `urlProcessor`                  |
+
+### Response Formatting
+
+```typescript
+// Single record
+ctx.response.body = { ok: true, data };
+
+// Paginated list
+ctx.response.body = { ok: true, data: items, hasMore, nextCursor };
+
+// Do NOT set body on 204
+ctx.response.status = 204;
+```
+
+### Error Handling
+
+```typescript
+import { ERROR_CODE, throwError } from "@src/shared/errors/error-factory.ts";
+
+// In service: throw NOT_FOUND for missing records
+const record = await repo.findOne(id);
+if (!record) {
+  throwError(ERROR_CODE.NOT_FOUND, { message: `Evaluation ${id} not found` });
+}
+
+// In worker: catch, update status, re-throw
+} catch (err) {
+  await repo.updateStatus(id, EvaluationStatus.FAILED);
+  throw err;
+}
+```
+
+---
+
+## 12. Pre-Commit Verification
+
+All tests for the commit feature must passed
+
+```bash
+deno test --allow-all --env=.env.local .\src\<path>\<to>\<testfile>
+```
+
+Run all three in the `backend/` directory before committing:
+
+```bash
+deno check src/
+deno lint src/
+deno fmt src/
+```
+
+All three must pass with zero errors. No `@ts-ignore` or `@ts-expect-error`
+suppressions. Use `// deno-lint-ignore` only with a specific comment explaining
+why.
+
+---
+
+## Quick Reference: When to Use What
+
+| Scenario                        | Solution                                                       |
+| ------------------------------- | -------------------------------------------------------------- |
+| New feature with HTTP endpoints | Create a `modules/<name>/` with all fié                        |
+| New business logic, no HTTP     | Create `intenals/<name>/<name>.service.ts`                     |
+| Complex multi-stage pipeline    | Create `intenals/core/processor/` with processor factories     |
+| Long-running computation        | Queue job via BullMQ, worker calls internal services           |
+| Complex DB queries              | Add hard columns + indexes to schema, avoid deep jsonb nesting |
+| Calling external AI/APIs        | Create `engine.ts` in `libs/` or `intenals/<name>/`            |
+| Module needs AI/embedding logic | Module service calls internal service                          |
+| Worker needs to update DB       | Call repo directly, no service layer needed                    |

@@ -1,0 +1,37 @@
+info:
+  name: "[Local] Get Access Token Local"
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:54321/auth/v1/token?grant_type=password
+  headers:
+    - name: apikey
+      value: sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
+    - name: Content-Type
+      value: application/json
+  params:
+    - name: grant_type
+      value: password
+      type: query
+  body:
+    type: json
+    data: '{ "email": "admin-test@example.com", "password": "123456"}'
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const responseData = res.getBody();
+        const accessToken = responseData.access_token;
+        const userId = responseData.user.id;
+        bru.setEnvVar('access_token', accessToken);
+        bru.setEnvVar('user_id', userId);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

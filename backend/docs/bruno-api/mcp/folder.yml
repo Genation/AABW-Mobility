@@ -1,0 +1,10 @@
+info:
+  name: mcp
+  type: folder
+  seq: 2
+
+request:
+  auth: inherit
+
+bruno:
+  ordered: true

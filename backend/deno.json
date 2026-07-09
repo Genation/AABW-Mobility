@@ -1,0 +1,89 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "lib": [
+      "deno.window",
+      "deno.unstable"
+    ],
+    "jsx": "react-jsx"
+  },
+  "imports": {
+    "@hono/zod-validator": "npm:@hono/zod-validator@^0.7.6",
+    "@std/assert": "jsr:@std/assert@^1.0.19",
+    "@hono/hono": "jsr:@hono/hono@^4.6.0",
+    "@hono/hono/cors": "jsr:@hono/hono@^4.6.0/cors",
+    "@hono/node-server": "npm:@hono/node-server@^1.19.9",
+    "@/": "./src/",
+    "logger": "https://deno.land/x/logger@v1.1.6/logger.ts",
+    "drizzle-kit": "npm:drizzle-kit@^0.31.9",
+    "@supabase/supabase-js": "jsr:@supabase/supabase-js@^2.89.0",
+    "drizzle-orm": "npm:drizzle-orm@^0.44.7",
+    "pg": "npm:pg@^8.16.3",
+    "jose": "npm:jose@^5.10.0",
+    "postgres": "npm:postgres@^3.4.7",
+    "openai": "npm:openai@5.11.0",
+    "zod": "npm:zod@^4.3.6",
+    "drizzle-zod": "npm:drizzle-zod@^0.8.1",
+    "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.0.0",
+    "@asteasolutions/zod-to-openapi": "npm:@asteasolutions/zod-to-openapi@^7.3.4",
+    "bcryptjs": "npm:bcryptjs@^2.4.3"
+  },
+  "tasks": {
+    "dev": {
+      "description": "Run API server in development mode with hot reload",
+      "command": "deno run --env-file=.env.local --watch --allow-ffi --allow-net --allow-read --allow-write --allow-env --allow-sys src/main.ts",
+      "watch": true,
+      "unstable": true
+    },
+    "test": {
+      "description": "Run all tests",
+      "command": "TEST_MODE=1 deno test --env-file=.env.local -A src/modules/health/tests/",
+      "watch": false,
+      "unstable": true
+    },
+    "db": {
+      "description": "Run Database Migration for Local Env",
+      "command": "deno run --env-file=.env.local -A --node-modules-dir npm:drizzle-kit",
+      "watch": false,
+      "unstable": true
+    },
+    "mcp": {
+      "description": "Run MCP Server for Model Context Protocol (debug: auth disabled, port 8908)",
+      "command": "PORT=8908 deno run --env-file=.env.local -A src/app.mcp.ts",
+      "watch": false,
+      "unstable": true
+    },
+    "mcp:test": {
+      "description": "Run MCP Server tests",
+      "command": "deno test --env-file=.env.local -A src/modules/health/tests/health.mcp.test.ts",
+      "watch": false,
+      "unstable": true
+    }
+  },
+  "test": {
+    "include": [
+      "src/**/*.test.ts"
+    ]
+  },
+  "lint": {
+    "rules": {
+      "tags": [
+        "recommended"
+      ]
+    },
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/**/*.test.ts"
+    ]
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 80,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "preserve"
+  }
+}

@@ -1,0 +1,57 @@
+info:
+  name: "09 - resources/list"
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{mcp_host}}/mcp"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json, text/event-stream
+    - name: Authorization
+      value: Bearer {{access_token}}
+    - name: mcp-session-id
+      value: "{{mcp_session_id}}"
+    - name: MCP-Protocol-Version
+      value: "2025-11-25"
+  body:
+    type: json
+    data: |-
+      {
+        "jsonrpc": "2.0",
+        "id": 21,
+        "method": "resources/list",
+        "params": {}
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const body = res.getBody();
+        console.log('resources/list response:', JSON.stringify(body, null, 2));
+        try {
+          const result = typeof body === 'string' ? JSON.parse(body) : body;
+          if (result.result?.resources) {
+            console.log('Resources count:', result.result.resources.length);
+            result.result.resources.forEach(r => {
+              console.log('  - ' + r.name + ' (URI: ' + r.uri + ')');
+            });
+            bru.setVar('resource_count', String(result.result.resources.length));
+          }
+        } catch (e) {
+          console.log('Could not parse resources:', e.message);
+        }
+
+variables:
+  - name: resource_count
+    value: "0"

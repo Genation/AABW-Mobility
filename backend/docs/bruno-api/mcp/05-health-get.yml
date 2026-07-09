@@ -1,0 +1,44 @@
+info:
+  name: 05 - health_get
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{mcp_host}}/mcp"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json, text/event-stream
+    - name: Authorization
+      value: Bearer {{access_token}}
+    - name: mcp-session-id
+      value: "{{mcp_session_id}}"
+    - name: MCP-Protocol-Version
+      value: 2025-11-25
+  body:
+    type: json
+    data: |-
+      {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "method": "tools/call",
+        "params": {
+          "name": "health_get",
+          "arguments": {
+            "id": {{created_record_id}}
+          }
+        }
+      }
+
+runtime:
+  variables:
+    - name: created_record_id
+      value: "1"
+
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5

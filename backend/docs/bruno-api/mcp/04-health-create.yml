@@ -1,0 +1,63 @@
+info:
+  name: "04 - health_create"
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{mcp_host}}/mcp"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json, text/event-stream
+    - name: Authorization
+      value: Bearer {{access_token}}
+    - name: mcp-session-id
+      value: "{{mcp_session_id}}"
+    - name: MCP-Protocol-Version
+      value: "2025-11-25"
+  body:
+    type: json
+    data: |-
+      {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "method": "tools/call",
+        "params": {
+          "name": "health_create",
+          "arguments": {
+            "data": {
+              "test": "bruno_mcp_test",
+              "timestamp": "{{$timestamp}}",
+              "source": "mcp-bruno-collection"
+            }
+          }
+        }
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5
+
+runtime:
+  scripts:
+    - type: after-response
+      name: Extract created record ID
+      code: |-
+        const body = res.getBody();
+        console.log('health_create response:', JSON.stringify(body, null, 2));
+        try {
+          const result = typeof body === 'string' ? JSON.parse(body) : body;
+          if (result.result?.content?.[0]?.text) {
+            const toolResult = JSON.parse(result.result.content[0].text);
+            if (toolResult.id) {
+              bru.setVar('created_record_id', String(toolResult.id));
+              console.log('Created record ID:', toolResult.id);
+            }
+          }
+        } catch (e) {
+          console.log('Could not extract created ID:', e.message);
+        }

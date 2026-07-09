@@ -1,0 +1,22 @@
+info:
+  name: list
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{host}}/health?limit=1&latest_at=2027-03-21T17:03:34.607Z"
+  params:
+    - name: limit
+      value: "1"
+      type: query
+    - name: latest_at
+      value: 2027-03-21T17:03:34.607Z
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
