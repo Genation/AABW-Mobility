@@ -1,5 +1,7 @@
 .page {
   animation: fadeIn 0.3s ease;
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 .backLink {
@@ -68,4 +70,28 @@
   font-size: var(--text-base);
   color: var(--color-text-secondary);
   max-width: 480px;
+}
+
+/* Add mobile responsive */
+@media (max-width: 768px) {
+  .backLink {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: var(--space-4);
+  }
+
+  .comingSoonIcon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .comingSoonTitle {
+    font-size: var(--text-xl);
+  }
+
+  .comingSoonDesc {
+    font-size: var(--text-sm);
+    max-width: 320px;
+  }
 }

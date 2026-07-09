@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { ROUTES } from "@/lib/constants";
 import styles from "./dashboard.module.css";
 
@@ -41,6 +42,7 @@ export default function DashboardLayout({
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className={styles.main}>{children}</main>
       </div>
+      <BottomNav />
     </div>
   );
 }

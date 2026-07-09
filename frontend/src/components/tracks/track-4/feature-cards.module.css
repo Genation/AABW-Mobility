@@ -53,6 +53,27 @@
   line-height: var(--line-height-relaxed);
 }
 
+@media (max-width: 768px) {
+  .section {
+    margin-top: var(--space-8);
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+
+  .card {
+    padding: var(--space-4);
+  }
+
+  .iconWrap {
+    width: 32px;
+    height: 32px;
+    margin-bottom: var(--space-2);
+  }
+}
+
 @media (max-width: 480px) {
   .grid {
     grid-template-columns: 1fr;

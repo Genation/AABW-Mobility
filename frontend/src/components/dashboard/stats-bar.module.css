@@ -65,6 +65,28 @@
 
 @media (max-width: 640px) {
   .bar {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-2);
+  }
+
+  .stat {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .iconWrap {
+    width: 32px;
+    height: 32px;
+  }
+
+  .statValue {
+    font-size: var(--text-lg);
+  }
+
+  .statLabel {
+    font-size: 10px;
   }
 }

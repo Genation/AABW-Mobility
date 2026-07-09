@@ -15,6 +15,7 @@
   overflow-x: auto;
   padding: var(--space-4) 0;
   gap: 0;
+  max-width: 100%;
 }
 
 .stepGroup {
@@ -86,10 +87,14 @@
   border-left-color: var(--color-primary);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .flow {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .section {
+    margin-top: var(--space-8);
   }
 
   .stepGroup {
@@ -99,6 +104,8 @@
   .step {
     min-width: auto;
     width: 100%;
+    min-height: 44px;
+    justify-content: center;
   }
 
   .arrow {

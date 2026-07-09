@@ -100,11 +100,11 @@ export function SuggestionList({
           <li key={`${s.text}-${i}`} className={styles.row}>
             <div className={styles.rowLeft}>
               <span className={styles.display}>{s.display}</span>
+            </div>
+            <div className={styles.rowRight}>
               <span className={`${styles.typeBadge} ${typeColor(s.type)}`}>
                 {s.type}
               </span>
-            </div>
-            <div className={styles.rowRight}>
               <span className={styles.score}>
                 {Math.round(s.score * 100)}%
               </span>

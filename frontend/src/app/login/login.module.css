@@ -253,11 +253,40 @@
    Responsive
    -------------------------------------------------------------------------- */
 @media (max-width: 480px) {
+  .background {
+    padding: var(--space-4);
+    /* Align card to top on mobile to avoid keyboard covering */
+    align-items: flex-start;
+    padding-top: 15vh;
+  }
+
   .card {
     padding: var(--space-6);
+    border-radius: var(--radius-md);
   }
 
   .logo {
     font-size: var(--text-2xl);
+  }
+
+  .header {
+    margin-bottom: var(--space-6);
+  }
+
+  .submitBtn {
+    padding: var(--space-4) var(--space-6);
+    min-height: 48px;
+  }
+
+  .input {
+    padding: var(--space-3) var(--space-4);
+    min-height: 44px;
+    font-size: var(--text-base); /* Prevent iOS zoom */
+  }
+
+  .eyeToggle {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
   }
 }

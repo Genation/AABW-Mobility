@@ -21,13 +21,6 @@
 
 .menuBtn {
   display: none;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  transition: background-color var(--transition-fast);
 }
 
 .menuBtn:hover {
@@ -84,8 +77,8 @@
 }
 
 @media (max-width: 768px) {
-  .menuBtn {
-    display: flex;
+  .header {
+    padding-inline: var(--space-4);
   }
 
   .logo {

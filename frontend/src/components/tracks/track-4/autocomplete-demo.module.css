@@ -4,6 +4,27 @@
   animation: fadeIn 0.3s ease;
 }
 
+/* Add mobile overrides */
+@media (max-width: 768px) {
+  .container {
+    max-width: 100%;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    margin-bottom: var(--space-6);
+  }
+
+  .title {
+    font-size: var(--text-2xl);
+  }
+
+  .subtitle {
+    font-size: var(--text-sm);
+  }
+}
+
 .hero {
   text-align: center;
   margin-bottom: var(--space-8);
@@ -84,4 +105,25 @@
 .statItem strong {
   font-family: var(--font-mono);
   color: var(--color-text);
+}
+
+/* Make chips horizontally scrollable on mobile */
+@media (max-width: 480px) {
+  .chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: var(--space-2);
+  }
+
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chip {
+    flex-shrink: 0;
+    padding: var(--space-2) var(--space-4);
+    min-height: 36px;
+  }
 }
