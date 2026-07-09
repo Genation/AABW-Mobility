@@ -135,6 +135,27 @@ export class Trie {
     return results.slice(0, 10);
   }
 
+  /** Walk the entire Trie tree and collect all unique suggestions (deduped by display). */
+  getAllSuggestions(): Suggestion[] {
+    const dedup = new Map<string, Suggestion>();
+    const searchStack: TrieNode[] = [this.root];
+
+    while (searchStack.length > 0) {
+      const node = searchStack.pop()!;
+      for (const s of node.topK) {
+        const existing = dedup.get(s.display);
+        if (!existing || s.score > existing.score) {
+          dedup.set(s.display, s);
+        }
+      }
+      for (const child of node.children.values()) {
+        searchStack.push(child);
+      }
+    }
+
+    return Array.from(dedup.values());
+  }
+
   toJSON(): string {
     const serialize = (node: TrieNode): SerializedNode => {
       const result: SerializedNode = {};

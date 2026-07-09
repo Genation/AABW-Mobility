@@ -27,11 +27,18 @@ export interface SuggestResult {
 export interface SuggestResponse {
   suggestions: SuggestResult[];
   latencyMs: number;
-  source: "exact" | "fuzzy" | "popular" | "empty";
+  source: "exact" | "fuzzy" | "embedding" | "popular" | "empty";
 }
 
 const COORD_RE = /^\d{1,2}\.\d{1,6}(,\s*\d{1,3}\.\d{1,6})?$/;
 const ADDR_NUM_RE = /^(\d+)\s+(.+)$/;
+const EMBEDDING_CACHE = new Map<string, number[]>();
+const EMBEDDING_CACHE_MAX = 500;
+
+let embeddingServiceRef: ReturnType<
+  typeof import("@/intenals/embedding/embedding.service.ts")
+    .createEmbeddingService
+> | null = null;
 
 function tryCoordinate(input: string): SuggestResult | null {
   const trimmed = input.trim();
@@ -66,6 +73,7 @@ export const createAutocompleteEngine = () => {
   const popularQueries: Map<string, SuggestResult[]> = new Map();
   let abbreviationMap: Map<string, string> = new Map();
   let loaded = false;
+  let embeddingAvailable = false;
 
   async function load(snapshotOrPath?: string | BuildStats): Promise<void> {
     const abbreviations = await track4Repo.getAllAbbreviations();
@@ -113,10 +121,10 @@ export const createAutocompleteEngine = () => {
     loaded = true;
   }
 
-  function suggest(
+  async function suggest(
     input: string,
     options: SuggestOptions = {},
-  ): SuggestResponse {
+  ): Promise<SuggestResponse> {
     const t0 = performance.now();
 
     if (!trie || !loaded) {
@@ -204,6 +212,57 @@ export const createAutocompleteEngine = () => {
     if (fuzzy.length > 0) {
       const ranked = rank([{ suggestions: fuzzy, source: "fuzzy" }], limit);
       return { suggestions: ranked, latencyMs: performance.now() - t0, source: "fuzzy" };
+    }
+
+    // Embedding fallback — last resort before popular
+    if (!embeddingAvailable && !embeddingServiceRef) {
+      try {
+        const { createEmbeddingService } = await import(
+          "@/intenals/embedding/embedding.service.ts"
+        );
+        embeddingServiceRef = createEmbeddingService();
+        await embeddingServiceRef.load();
+        embeddingAvailable = true;
+      } catch (_e) {
+        embeddingAvailable = false;
+      }
+    }
+
+    if (embeddingAvailable && embeddingServiceRef?.isLoaded()) {
+      try {
+        const normalized = normalize(input);
+        let queryVec = EMBEDDING_CACHE.get(normalized);
+        if (!queryVec) {
+          const emb = await embeddingServiceRef.embed(input);
+          queryVec = emb.vector;
+          if (EMBEDDING_CACHE.size >= EMBEDDING_CACHE_MAX) {
+            const first = EMBEDDING_CACHE.keys().next().value;
+            if (first) EMBEDDING_CACHE.delete(first);
+          }
+          EMBEDDING_CACHE.set(normalized, queryVec);
+        }
+
+        const rows = await track4Repo.searchSimilar(queryVec, 15);
+        if (rows.length > 0) {
+          const embedded = rows.map((r) => ({
+            text: normalize(r.display_text),
+            display: r.display_text,
+            type: r.query_type ?? "Discovery Search",
+            score: (r.similarity ?? 0) * 0.50,
+          }));
+          const ranked = rank(
+            [{ suggestions: embedded, source: "embedding" }],
+            limit,
+          );
+          return {
+            suggestions: ranked,
+            latencyMs: performance.now() - t0,
+            source: "embedding",
+          };
+        }
+      } catch (_e) {
+        // Fall through to popular
+      }
     }
 
     // Popular fallback

@@ -16,7 +16,7 @@ const strs1 = generateStrategies('dh bk', map);
 for(const s of strs1) {
   console.log('Strategy:', s.type, 'forms:', s.forms);
   for(const f of s.forms){
-    const r = autocompleteEngine.suggest(f, {limit:5});
+    const r = await autocompleteEngine.suggest(f, {limit:5});
     console.log('  form "'+f+'" ->', r.suggestions.length, 'results, source:', r.source);
     for(const sr of r.suggestions) console.log('    '+sr.display+' ('+sr.score+')');
   }
@@ -27,7 +27,7 @@ const strs2 = generateStrategies('phuc long', map);
 for(const s of strs2) {
   console.log('Strategy:', s.type, 'forms:', s.forms);
   for(const f of s.forms){
-    const r = autocompleteEngine.suggest(f, {limit:10});
+    const r = await autocompleteEngine.suggest(f, {limit:10});
     console.log('  form "'+f+'" ->', r.suggestions.length, 'results, source:', r.source);
     for(const sr of r.suggestions) console.log('    '+sr.display+' ('+sr.type+', score='+sr.score+')');
   }

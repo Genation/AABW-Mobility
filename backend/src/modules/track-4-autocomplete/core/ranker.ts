@@ -37,6 +37,7 @@ const SOURCE_BOOST: Record<string, number> = {
   "navigation": 0.65,
   "brand_template": 0.80,
   "fuzzy": 0.60,
+  "embedding": 0.50,
   "popular": 0.30,
   "fallback": 0.20,
 };

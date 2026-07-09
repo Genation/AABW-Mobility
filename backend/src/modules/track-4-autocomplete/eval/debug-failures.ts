@@ -3,7 +3,7 @@ import { track4Repo } from "../repo/repo.ts";
 import { normalize } from "../core/nlp.ts";
 
 const FAILING_CASES = [
-  "PUB036", "PUB037",
+  "PUB018", "PUB021",
 ];
 
 async function debug() {
@@ -21,7 +21,7 @@ async function debug() {
   for (const tc of failing) {
     const input = tc.inputPrefix;
     const expected = tc.expectedTopSuggestions ?? [];
-    const result = autocompleteEngine.suggest(input, { limit: 10 });
+    const result = await autocompleteEngine.suggest(input, { limit: 10 });
 
     console.log(`\n=== ${tc.originalId} | "${input}" | ${tc.difficulty} | type: ${tc.expectedSuggestionType} ===`);
     console.log(`Expected: [${expected.join("; ")}]`);
@@ -60,7 +60,7 @@ async function debug() {
           // Check various prefix forms
           for (let i = 2; i <= Math.min(en.length, 10); i++) {
             const p = en.slice(0, i);
-            const r = autocompleteEngine.suggest(p, { limit: 1 });
+            const r = await autocompleteEngine.suggest(p, { limit: 1 });
             if (r.suggestions.length > 0) {
               const foundDisplay = normalize(r.suggestions[0].display);
               if (foundDisplay.includes(en.slice(0, Math.min(en.length, foundDisplay.length)))) {

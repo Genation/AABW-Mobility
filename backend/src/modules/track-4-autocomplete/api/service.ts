@@ -21,6 +21,6 @@ export const track4Service = {
     input: string,
     options?: { lat?: number; lng?: number; limit?: number },
   ) {
-    return autocompleteEngine.suggest(input, options);
+    return await autocompleteEngine.suggest(input, options);
   },
 };

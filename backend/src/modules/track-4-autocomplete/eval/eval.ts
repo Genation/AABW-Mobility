@@ -92,7 +92,7 @@ async function runEval() {
     const expected = tc.expectedTopSuggestions ?? [];
     if (expected.length === 0) continue;
 
-    const response = autocompleteEngine.suggest(tc.inputPrefix, { limit: 10 });
+    const response = await autocompleteEngine.suggest(tc.inputPrefix, { limit: 10 });
     const queryClass = tc.expectedSuggestionType ?? "Unknown";
 
     const matched: string[] = [];

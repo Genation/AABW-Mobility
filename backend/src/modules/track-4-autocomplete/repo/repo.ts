@@ -2,11 +2,12 @@ import { db } from "@/db/pool.ts";
 import {
   track4AbbreviationTable,
   track4AutocompleteTable,
+  track4EmbeddingTable,
   track4EvaluationTable,
   track4PoiTable,
   track4PopularQueryTable,
 } from "../schema/schema.ts";
-import { desc, eq, or } from "drizzle-orm";
+import { desc, eq, or, sql } from "drizzle-orm";
 
 export const track4Repo = {
   getAllAbbreviations() {
@@ -100,5 +101,53 @@ export const track4Repo = {
       })
       .from(track4EvaluationTable)
       .where(eq(track4EvaluationTable.isGenerated, false));
+  },
+
+  // -------------------------------------------------------------------------
+  // Embedding operations (pgvector)
+  // -------------------------------------------------------------------------
+
+  /** Delete all embedding rows (idempotent rebuild). */
+  async clearAllEmbeddings() {
+    await db.delete(track4EmbeddingTable);
+  },
+
+  /** Batch-insert embeddings using Drizzle multi-row insert. */
+  async insertEmbeddingBatch(
+    rows: { displayText: string; queryType: string; embedding: number[] }[],
+  ) {
+    if (rows.length === 0) return;
+    // Use Drizzle's native batch insert — handled per-row for reliability
+    // with the custom vector type.
+    for (const row of rows) {
+      await db.insert(track4EmbeddingTable).values({
+        displayText: row.displayText,
+        queryType: row.queryType,
+        embedding: row.embedding,
+      });
+    }
+  },
+
+  /**
+   * Cosine similarity search via pgvector <=> operator.
+   * Returns results sorted by similarity descending (most similar first).
+   * similarity = 1 - cosine_distance
+   */
+  async searchSimilar(queryVec: number[], limit: number) {
+    const vecLiteral = JSON.stringify(queryVec);
+    const rows = await db.execute(sql`
+      SELECT
+        display_text,
+        query_type,
+        1 - (embedding <=> ${vecLiteral}::vector) AS similarity
+      FROM ${track4EmbeddingTable}
+      ORDER BY embedding <=> ${vecLiteral}::vector
+      LIMIT ${limit}
+    `);
+    return (rows as unknown as Array<{
+      display_text: string;
+      query_type: string;
+      similarity: number;
+    }>);
   },
 };

@@ -1,5 +1,6 @@
 import {
   boolean,
+  customType,
   decimal,
   index,
   integer,
@@ -9,6 +10,13 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+
+// Custom vector type for pgvector
+const vector = customType<{ data: number[]; driverData: string }>({
+  dataType() {
+    return "vector(384)";
+  },
+});
 
 // =============================================================================
 // Track 4: AI-Powered Autocomplete & Query Suggestions
@@ -111,4 +119,17 @@ export const track4EvaluationTable = pgTable(
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => [index("idx_track_4_eval_difficulty").on(table.difficulty)],
+).enableRLS();
+
+export const track4EmbeddingTable = pgTable(
+  "track_4_suggestion_embeddings",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    displayText: text("display_text").notNull(),
+    queryType: varchar("query_type", { length: 100 }).default(
+      "Discovery Search",
+    ),
+    embedding: vector("embedding").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
 ).enableRLS();
