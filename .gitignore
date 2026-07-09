@@ -16,6 +16,10 @@ worktrees/
 # deps
 node_modules/
 
+# dev
+/frontend-docs
+/plans
+
 # env
 .env
 .env*

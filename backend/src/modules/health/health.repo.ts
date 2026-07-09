@@ -17,7 +17,7 @@ export const healthRepo = {
       .insert(healthTable)
       .values(data)
       .returning();
-    return result;
+    return result as z.infer<typeof HealthSelectSchema>;
   },
 
   findMany: async (query: z.infer<typeof HealthQuerySchema>) => {
@@ -63,7 +63,7 @@ export const healthRepo = {
       })
       .from(healthTable)
       .where(eq(healthTable.id, id));
-    return result ?? null;
+    return (result as z.infer<typeof HealthSelectSchema>) ?? null;
   },
 
   update: async (
@@ -75,7 +75,7 @@ export const healthRepo = {
       .set({ ...data, updatedAt: new Date() })
       .where(eq(healthTable.id, id))
       .returning();
-    return result ?? null;
+    return (result as z.infer<typeof HealthSelectSchema>) ?? null;
   },
 
   delete: async (id: number): Promise<void> => {
