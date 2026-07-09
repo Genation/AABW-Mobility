@@ -27,6 +27,23 @@
   background: var(--color-surface-hover);
 }
 
+.logoLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+.logoLink:hover {
+  opacity: 0.9;
+}
+
+.logoImg {
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+}
+
 .logo {
   font-family: var(--font-heading);
   font-size: var(--text-lg);

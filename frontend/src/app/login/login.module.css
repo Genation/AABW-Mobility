@@ -75,6 +75,23 @@
 .header {
   text-align: center;
   margin-bottom: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.logoImg {
+  border-radius: var(--radius-md);
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.3));
 }
 
 .logo {
@@ -86,7 +103,7 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.02em;
-  margin-bottom: var(--space-2);
+  margin-bottom: 0;
 }
 
 .subtitle {

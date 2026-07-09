@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { AlertCircle, Eye, EyeOff, Loader2, LogIn } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -48,7 +49,17 @@ export default function LoginPage() {
       <div className={styles.card}>
         {/* Header */}
         <div className={styles.header}>
-          <h1 className={styles.logo}>AABW Mobility</h1>
+          <div className={styles.logoContainer}>
+            <Image
+              src="/logo.webp"
+              alt="Tasco Logo"
+              width={48}
+              height={48}
+              className={styles.logoImg}
+              priority
+            />
+            <h1 className={styles.logo}>Tasco</h1>
+          </div>
           <p className={styles.subtitle}>AI Hackathon Dashboard</p>
         </div>
 

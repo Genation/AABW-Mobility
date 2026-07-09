@@ -17,10 +17,10 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AABW Mobility — AI-Powered Urban Intelligence",
+  title: "Tasco — AI-Powered Urban Intelligence",
   description:
-    "AABW Mobility hackathon dashboard featuring 12 AI-powered urban mobility tracks. Real-time traffic, route optimization, fleet management, and more.",
-  keywords: ["AABW", "Mobility", "AI", "Hackathon", "Dashboard", "Autocomplete"],
+    "Tasco hackathon dashboard featuring 12 AI-powered urban mobility tracks. Real-time traffic, route optimization, fleet management, and more.",
+  keywords: ["Tasco", "Mobility", "AI", "Hackathon", "Dashboard", "Autocomplete"],
 };
 
 /**

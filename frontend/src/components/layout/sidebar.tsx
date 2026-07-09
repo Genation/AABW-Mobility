@@ -69,7 +69,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </nav>
 
         <div className={styles.footer}>
-          <span className={styles.footerText}>AABW Hackathon 2026</span>
+          <span className={styles.footerText}>Tasco Hackathon 2026</span>
         </div>
       </aside>
     </>

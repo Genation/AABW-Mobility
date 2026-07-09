@@ -5,7 +5,7 @@ import { TRACKS } from "@/lib/constants";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Dashboard — AABW Mobility",
+  title: "Dashboard — Tasco",
   description: "Explore 12 AI-powered urban mobility tracks. View active projects and upcoming innovations.",
 };
 

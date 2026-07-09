@@ -25,6 +25,8 @@
   border-bottom: 1px solid var(--color-border-subtle);
   transition: background-color var(--transition-fast);
   gap: var(--space-4);
+  cursor: pointer;
+  user-select: none;
 }
 
 .row:last-child {
@@ -32,7 +34,22 @@
 }
 
 .row:hover {
-  background: var(--color-surface-hover);
+  background: rgba(139, 92, 246, 0.12);
+}
+
+/* Active row (keyboard navigation) */
+.row.active {
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.row.active .display {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* History-highlighted rows (previously selected) */
+.row.historyHighlight .display {
+  color: var(--color-accent);
 }
 
 .rowLeft {
@@ -43,15 +60,103 @@
   min-width: 0;
 }
 
+/* Row icons (search / map pin) */
+.rowIcon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+/* History icon (clock) */
+.historyIcon {
+  flex-shrink: 0;
+  color: var(--color-accent);
+  opacity: 0.7;
+}
+
 .display {
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* Bold match highlighting — non-matching parts are bold (Google style) */
+.matchBold {
+  font-weight: 600;
+}
+
+/* History row specific styling */
+.historyRow {
+  background: transparent;
+}
+
+.historyRow:hover {
+  background: var(--color-surface-hover);
+}
+
+/* History header */
+.historyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-5) var(--space-1);
+}
+
+.historyTitle {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.clearHistoryBtn {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.clearHistoryBtn:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* Remove button (per history item) */
+.removeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  opacity: 0;
+  transition: all var(--transition-fast);
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.row:hover .removeBtn {
+  opacity: 1;
+}
+
+.removeBtn:hover {
+  background: var(--color-error);
+  color: #fff;
+  opacity: 1;
+}
+
+/* Type badges */
 .typeBadge {
   font-size: 10px;
   font-weight: 600;
@@ -168,9 +273,19 @@
 .skeleton {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--space-3);
   padding: var(--space-3) var(--space-5);
   border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.skeletonIcon {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-surface-hover) 50%, var(--color-bg-secondary) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease infinite;
+  flex-shrink: 0;
 }
 
 .skeletonText {
@@ -180,6 +295,7 @@
   background: linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-surface-hover) 50%, var(--color-bg-secondary) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease infinite;
+  flex: 1;
 }
 
 .skeletonBadge {
@@ -206,11 +322,20 @@
   }
 
   .rowLeft {
-    display: contents;
+    grid-area: display;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  /* Show row icons on mobile matching web */
+  .rowIcon,
+  .historyIcon {
+    display: inline-block;
   }
 
   .display {
-    grid-area: display;
     font-size: var(--text-sm);
     min-width: 0;
   }
@@ -250,5 +375,14 @@
   .skeleton {
     padding: var(--space-4);
     min-height: 52px;
+  }
+
+  /* Remove button always visible on mobile (no hover) */
+  .removeBtn {
+    opacity: 0.5;
+  }
+
+  .historyHeader {
+    padding: var(--space-2) var(--space-3) 0;
   }
 }

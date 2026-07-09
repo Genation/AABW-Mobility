@@ -3,6 +3,9 @@
 import { LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import Image from "next/image";
+import Link from "next/link";
+import { ROUTES } from "@/lib/constants";
 import styles from "./header.module.css";
 
 interface HeaderProps {
@@ -27,7 +30,17 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         >
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <span className={styles.logo}>AABW Mobility</span>
+        <Link href={ROUTES.DASHBOARD} className={styles.logoLink}>
+          <Image
+            src="/logo.webp"
+            alt="Tasco Logo"
+            width={28}
+            height={28}
+            className={styles.logoImg}
+            priority
+          />
+          <span className={styles.logo}>Tasco</span>
+        </Link>
       </div>
 
       <div className={styles.right}>
