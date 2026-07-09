@@ -22,6 +22,34 @@
       "when": 1775200749380,
       "tag": "0002_common_callisto",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775345580000,
+      "tag": "0003_majestic_madame_hydra",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1775345600000,
+      "tag": "0004_seed-track-4",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783572153436,
+      "tag": "0005_sticky_carnage",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783573841789,
+      "tag": "0006_seed-llm",
+      "breakpoints": true
     }
   ]
 }
