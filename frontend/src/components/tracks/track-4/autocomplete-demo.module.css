@@ -1,0 +1,87 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.title {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: var(--line-height-tight);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  margin-top: var(--space-3);
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  max-width: 520px;
+  margin-inline: auto;
+  line-height: var(--line-height-relaxed);
+}
+
+.searchSection {
+  margin-bottom: var(--space-6);
+}
+
+/* Example query chips */
+.chips {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+.chipsLabel {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.chip {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+/* Stats */
+.stats {
+  display: flex;
+  gap: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.statItem {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.statItem strong {
+  font-family: var(--font-mono);
+  color: var(--color-text);
+}

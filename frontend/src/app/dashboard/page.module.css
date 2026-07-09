@@ -1,0 +1,39 @@
+.page {
+  max-width: var(--container-max);
+  animation: fadeIn 0.3s ease;
+}
+
+.heading {
+  margin-bottom: var(--space-8);
+}
+
+.title {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: var(--line-height-tight);
+}
+
+.subtitle {
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  max-width: 560px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-6);
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .title {
+    font-size: var(--text-2xl);
+  }
+}
