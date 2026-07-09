@@ -131,7 +131,11 @@ export async function setupTestApp(): Promise<
         headers: { Authorization: `Bearer ${token}` },
       });
       if (r.ok) {
-        logger.info(`[Test] Server ready on port ${port} (polled ${Date.now() - startMs}ms)`);
+        logger.info(
+          `[Test] Server ready on port ${port} (polled ${
+            Date.now() - startMs
+          }ms)`,
+        );
         break;
       }
     } catch {

@@ -18,16 +18,26 @@ const TEST_MODE = Deno.env.get("TEST_MODE") === "1";
 async function hashKey(rawKey: string): Promise<string> {
   if (TEST_MODE) {
     // SHA-256 is ~30,000x faster than bcrypt — negligible overhead in tests
-    const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rawKey));
+    const bytes = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(rawKey),
+    );
     return "test_sha256:" + btoa(String.fromCharCode(...new Uint8Array(bytes)));
   }
   return await bcrypt.hash(rawKey, 12);
 }
 
-async function verifyHash(rawKey: string, storedHash: string): Promise<boolean> {
+async function verifyHash(
+  rawKey: string,
+  storedHash: string,
+): Promise<boolean> {
   if (TEST_MODE && storedHash.startsWith("test_sha256:")) {
-    const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rawKey));
-    const candidate = "test_sha256:" + btoa(String.fromCharCode(...new Uint8Array(bytes)));
+    const bytes = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(rawKey),
+    );
+    const candidate = "test_sha256:" +
+      btoa(String.fromCharCode(...new Uint8Array(bytes)));
     return candidate === storedHash;
   }
   return await bcrypt.compare(rawKey, storedHash);

@@ -1,7 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: Template
+  name: AABW
 config:
   proxy:
     inherit: true
@@ -20,7 +20,7 @@ request:
     token: "{{access_token}}"
   variables:
     - name: host
-      value: http://localhost:8907/api/v1
+      value: http://localhost:8000/api/v1
     - name: mcp_host
       value: http://localhost:8909
     - name: access_token

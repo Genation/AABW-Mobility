@@ -40,19 +40,22 @@ Deno.test({
     }
 
     // ── Step 1: List keys — key present, full key and hash are hidden ───────
-    await t.step("GET /api-keys returns key without exposing full key or hash", async () => {
-      const res = await testApp.fetchClient("/api-keys", {
-        headers: { Authorization: `Bearer ${testApp.token}` },
-      });
-      assertEquals(res.status, 200);
-      const json = res.data as any;
-      const found = json.data.find((k: any) => k.id === createdKey.id);
-      assertEquals(found !== undefined, true);
-      assertEquals("key" in found, false);
-      assertEquals("keyHash" in found, false);
-      assertEquals(found.keyPrefix, createdKey.keyPrefix);
-      assertEquals(found.revokedAt, null);
-    });
+    await t.step(
+      "GET /api-keys returns key without exposing full key or hash",
+      async () => {
+        const res = await testApp.fetchClient("/api-keys", {
+          headers: { Authorization: `Bearer ${testApp.token}` },
+        });
+        assertEquals(res.status, 200);
+        const json = res.data as any;
+        const found = json.data.find((k: any) => k.id === createdKey.id);
+        assertEquals(found !== undefined, true);
+        assertEquals("key" in found, false);
+        assertEquals("keyHash" in found, false);
+        assertEquals(found.keyPrefix, createdKey.keyPrefix);
+        assertEquals(found.revokedAt, null);
+      },
+    );
 
     // ── Step 2: Delete key ───────────────────────────────────────────────────
     await t.step("DELETE /api-keys/:id soft-revokes the key", async () => {
@@ -71,7 +74,11 @@ Deno.test({
       assertEquals(res.status, 200);
       const json = res.data as any;
       const found = json.data.find((k: any) => k.id === createdKey.id);
-      assertEquals(found !== undefined, true, "Key should still be in list (including revokedAt)");
+      assertEquals(
+        found !== undefined,
+        true,
+        "Key should still be in list (including revokedAt)",
+      );
       assertEquals(found.revokedAt !== null, true);
     });
 

@@ -9,7 +9,9 @@ function extractToken(req: Request): string | null {
   return header?.startsWith("Bearer ") ? header.slice(7) : null;
 }
 
-export const authMiddleware = createMiddleware<{ Variables: { user: UserContext } }>(
+export const authMiddleware = createMiddleware<
+  { Variables: { user: UserContext } }
+>(
   async (c: Context, next) => {
     const token = extractToken(c.req.raw);
     const jwt = await verifySupabaseJwt(token);

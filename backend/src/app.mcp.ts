@@ -18,12 +18,12 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { registerHealthTools } from "./modules/health/health.mcp.tool.ts";
 import { registerHealthResources } from "./modules/health/health.mcp.resource.ts";
 import { logger } from "@/configs/logger.ts";
-import { createMcpApp, ALLOWED_ORIGINS } from "@/shared/utils/mcp-hono.ts";
+import { ALLOWED_ORIGINS, createMcpApp } from "@/shared/utils/mcp-hono.ts";
 import {
-  requestIdMiddleware,
+  mcpAuthMiddleware,
   mcpRequestLogMiddleware,
   originValidationMiddleware,
-  mcpAuthMiddleware,
+  requestIdMiddleware,
 } from "@/middlewares/mcp.middleware.ts";
 
 // =============================================================================
@@ -44,17 +44,17 @@ const MCP_PORT = Number(Deno.env.get("MCP_PORT")) || 8909;
 interface SessionEntry {
   transport: WebStandardStreamableHTTPServerTransport;
   server: McpServer;
-  createdAt: number;      // Date.now() when session was created
-  lastActivity: number;   // Date.now() of last handled request
-  initialized: boolean;   // true once server reaches initialized state
+  createdAt: number; // Date.now() when session was created
+  lastActivity: number; // Date.now() of last handled request
+  initialized: boolean; // true once server reaches initialized state
 }
 
 // ---------------------------------------------------------------------------
 // Session cleanup config
 // ---------------------------------------------------------------------------
-const SESSION_INIT_TIMEOUT_MS = 30_000;   // uninitialized sessions die after 30s
+const SESSION_INIT_TIMEOUT_MS = 30_000; // uninitialized sessions die after 30s
 const SESSION_IDLE_TIMEOUT_MS = 5 * 60_000; // idle sessions die after 5 minutes
-const SESSION_MAX_COUNT = 100;             // hard cap on concurrent sessions
+const SESSION_MAX_COUNT = 100; // hard cap on concurrent sessions
 
 let sessionSweeperStarted = false;
 
@@ -76,8 +76,7 @@ function createMcpServer(): McpServer {
         resources: {},
         logging: {},
       },
-      instructions:
-        "This MCP server provides health data management tools: " +
+      instructions: "This MCP server provides health data management tools: " +
         "List, create, get, update, and delete health records. " +
         "All timestamps are ISO 8601 format.",
     },
@@ -142,7 +141,11 @@ async function getOrCreateSession(
       try {
         await oldest[1].transport.close();
       } catch (e) {
-        logger.error({ evictedSessionId: oldest[0] }, "Failed to close evicted transport", e);
+        logger.error(
+          { evictedSessionId: oldest[0] },
+          "Failed to close evicted transport",
+          e,
+        );
         sessionRegistry.delete(oldest[0]);
       }
       logger.warn(
@@ -246,7 +249,10 @@ async function handleMcpRequest(c: {
 
   // Protocol version validation (required after initialization)
   if (protoVersion && !SUPPORTED_PROTOCOL_VERSIONS.includes(protoVersion)) {
-    logger.warn({ requestId, protoVersion }, "Unsupported MCP protocol version");
+    logger.warn(
+      { requestId, protoVersion },
+      "Unsupported MCP protocol version",
+    );
     return c.json(
       {
         jsonrpc: "2.0",
@@ -334,25 +340,30 @@ function buildApp() {
   // ---------------------------------------------------------------------------
   // CORS
   // ---------------------------------------------------------------------------
-  const corsOrigin = ALLOWED_ORIGINS.length > 1 ? ALLOWED_ORIGINS : ALLOWED_ORIGINS[0];
+  const corsOrigin = ALLOWED_ORIGINS.length > 1
+    ? ALLOWED_ORIGINS
+    : ALLOWED_ORIGINS[0];
 
-  app.use("*", cors({
-    origin: corsOrigin,
-    allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
-    allowHeaders: [
-      "Content-Type",
-      "mcp-session-id",
-      "Last-Event-ID",
-      "mcp-protocol-version",
-      "Authorization",
-    ],
-    exposeHeaders: [
-      "mcp-session-id",
-      "mcp-protocol-version",
-      "x-request-id",
-    ],
-    credentials: true,
-  }));
+  app.use(
+    "*",
+    cors({
+      origin: corsOrigin,
+      allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
+      allowHeaders: [
+        "Content-Type",
+        "mcp-session-id",
+        "Last-Event-ID",
+        "mcp-protocol-version",
+        "Authorization",
+      ],
+      exposeHeaders: [
+        "mcp-session-id",
+        "mcp-protocol-version",
+        "x-request-id",
+      ],
+      credentials: true,
+    }),
+  );
 
   // ---------------------------------------------------------------------------
   // Typed middlewares
@@ -378,7 +389,10 @@ function buildApp() {
 
     if (!sessionId) {
       return c.json(
-        { jsonrpc: "2.0", error: { code: -32000, message: "Session ID required for GET" } },
+        {
+          jsonrpc: "2.0",
+          error: { code: -32000, message: "Session ID required for GET" },
+        },
         400,
       );
     }
@@ -386,7 +400,10 @@ function buildApp() {
     const entry = sessionRegistry.get(sessionId);
     if (!entry) {
       return c.json(
-        { jsonrpc: "2.0", error: { code: -32000, message: "Session not found" } },
+        {
+          jsonrpc: "2.0",
+          error: { code: -32000, message: "Session not found" },
+        },
         404,
       );
     }
@@ -401,7 +418,10 @@ function buildApp() {
 
     if (!sessionId) {
       return c.json(
-        { jsonrpc: "2.0", error: { code: -32000, message: "Session ID required" } },
+        {
+          jsonrpc: "2.0",
+          error: { code: -32000, message: "Session ID required" },
+        },
         400,
       );
     }
@@ -428,16 +448,14 @@ function buildApp() {
         ready: "/ready",
       },
       protocolVersion: "2025-11-25",
-    })
-  );
+    }));
 
   app.get("/ready", (c) =>
     c.json({
       ready: true,
       server: MCP_SERVER_NAME,
       version: MCP_SERVER_VERSION,
-    })
-  );
+    }));
 
   return app;
 }

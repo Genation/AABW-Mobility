@@ -40,129 +40,141 @@ Deno.test({
     }
 
     // ── Step 1: MCP initialize with valid API key → returns 200 + session ID
-    await t.step("API key authenticates MCP endpoint — initialize returns 200", async () => {
-      const initRequest = createMcpRequest("initialize", {
-        protocolVersion: "2025-11-25",
-        capabilities: {},
-        clientInfo: { name: "test", version: "1.0.0" },
-      }, 1);
+    await t.step(
+      "API key authenticates MCP endpoint — initialize returns 200",
+      async () => {
+        const initRequest = createMcpRequest("initialize", {
+          protocolVersion: "2025-11-25",
+          capabilities: {},
+          clientInfo: { name: "test", version: "1.0.0" },
+        }, 1);
 
-      const initRes = await mcpApp.fetchClient("/mcp", {
-        method: "POST",
-        body: JSON.stringify(initRequest),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json, text/event-stream",
-          "X-GEO-API-KEY": `${apiKey}`,
-        },
-      });
+        const initRes = await mcpApp.fetchClient("/mcp", {
+          method: "POST",
+          body: JSON.stringify(initRequest),
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+            "X-GEO-API-KEY": `${apiKey}`,
+          },
+        });
 
-      assertEquals(initRes.status, 200);
-      const sessionId = initRes.response.headers.get("mcp-session-id");
-      assertEquals(sessionId !== null, true);
+        assertEquals(initRes.status, 200);
+        const sessionId = initRes.response.headers.get("mcp-session-id");
+        assertEquals(sessionId !== null, true);
 
-      // Complete handshake
-      const notifReq = createMcpRequest("notifications/initialized", {});
-      await mcpApp.fetchClient("/mcp", {
-        method: "POST",
-        body: JSON.stringify(notifReq),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json, text/event-stream",
-          "mcp-session-id": sessionId!,
-          "X-GEO-API-KEY": `${apiKey}`,
-        },
-      });
+        // Complete handshake
+        const notifReq = createMcpRequest("notifications/initialized", {});
+        await mcpApp.fetchClient("/mcp", {
+          method: "POST",
+          body: JSON.stringify(notifReq),
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+            "mcp-session-id": sessionId!,
+            "X-GEO-API-KEY": `${apiKey}`,
+          },
+        });
 
-      // ── Step 2: tools/call with valid key → returns 200 ──────────────────
-      const toolRequest = createMcpRequest("tools/call", {
-        name: "health_list",
-        arguments: { limit: 5 },
-      }, 2);
+        // ── Step 2: tools/call with valid key → returns 200 ──────────────────
+        const toolRequest = createMcpRequest("tools/call", {
+          name: "health_list",
+          arguments: { limit: 5 },
+        }, 2);
 
-      const toolRes = await mcpApp.fetchClient("/mcp", {
-        method: "POST",
-        body: JSON.stringify(toolRequest),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json, text/event-stream",
-          "mcp-session-id": sessionId!,
-          "X-GEO-API-KEY": `${apiKey}`,
-        },
-      });
+        const toolRes = await mcpApp.fetchClient("/mcp", {
+          method: "POST",
+          body: JSON.stringify(toolRequest),
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+            "mcp-session-id": sessionId!,
+            "X-GEO-API-KEY": `${apiKey}`,
+          },
+        });
 
-      assertEquals(toolRes.status, 200);
-      const toolJson = toolRes.data as any;
-      assertEquals(toolJson.jsonrpc, "2.0");
-      assertEquals(toolJson.result !== undefined, true);
-    });
+        assertEquals(toolRes.status, 200);
+        const toolJson = toolRes.data as any;
+        assertEquals(toolJson.jsonrpc, "2.0");
+        assertEquals(toolJson.result !== undefined, true);
+      },
+    );
 
     // ── Step 3: Revoke the key via REST, then MCP should return 401 ───────────
-    await t.step("Revoked API key does not authenticate MCP — returns 401", async () => {
-      await restApp.fetchClient(`/api-keys/${keyId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${restApp.token}` },
-      });
+    await t.step(
+      "Revoked API key does not authenticate MCP — returns 401",
+      async () => {
+        await restApp.fetchClient(`/api-keys/${keyId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${restApp.token}` },
+        });
 
-      const initRequest = createMcpRequest("initialize", {
-        protocolVersion: "2025-11-25",
-        capabilities: {},
-        clientInfo: { name: "test", version: "1.0.0" },
-      }, 1);
+        const initRequest = createMcpRequest("initialize", {
+          protocolVersion: "2025-11-25",
+          capabilities: {},
+          clientInfo: { name: "test", version: "1.0.0" },
+        }, 1);
 
-      const initRes = await mcpApp.fetchClient("/mcp", {
-        method: "POST",
-        body: JSON.stringify(initRequest),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json, text/event-stream",
-          "X-GEO-API-KEY": `${apiKey}`,
-        },
-      });
+        const initRes = await mcpApp.fetchClient("/mcp", {
+          method: "POST",
+          body: JSON.stringify(initRequest),
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+            "X-GEO-API-KEY": `${apiKey}`,
+          },
+        });
 
-      assertEquals(initRes.status, 401);
-    });
+        assertEquals(initRes.status, 401);
+      },
+    );
 
     // ── Step 4: Missing Authorization header returns 401 ─────────────────────
-    await t.step("Missing Authorization header returns 401 on MCP", async () => {
-      const initRequest = createMcpRequest("initialize", {
-        protocolVersion: "2025-11-25",
-        capabilities: {},
-        clientInfo: { name: "test", version: "1.0.0" },
-      }, 1);
+    await t.step(
+      "Missing Authorization header returns 401 on MCP",
+      async () => {
+        const initRequest = createMcpRequest("initialize", {
+          protocolVersion: "2025-11-25",
+          capabilities: {},
+          clientInfo: { name: "test", version: "1.0.0" },
+        }, 1);
 
-      const initRes = await mcpApp.fetchClient("/mcp", {
-        method: "POST",
-        body: JSON.stringify(initRequest),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json, text/event-stream",
-        },
-      });
+        const initRes = await mcpApp.fetchClient("/mcp", {
+          method: "POST",
+          body: JSON.stringify(initRequest),
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+          },
+        });
 
-      assertEquals(initRes.status, 401);
-    });
+        assertEquals(initRes.status, 401);
+      },
+    );
 
     // ── Step 5: Wrong prefix returns 401 ─────────────────────────────────────
-    await t.step("Wrong prefix (not gtool_sk_) returns 401 on MCP", async () => {
-      const initRequest = createMcpRequest("initialize", {
-        protocolVersion: "2025-11-25",
-        capabilities: {},
-        clientInfo: { name: "test", version: "1.0.0" },
-      }, 1);
+    await t.step(
+      "Wrong prefix (not gtool_sk_) returns 401 on MCP",
+      async () => {
+        const initRequest = createMcpRequest("initialize", {
+          protocolVersion: "2025-11-25",
+          capabilities: {},
+          clientInfo: { name: "test", version: "1.0.0" },
+        }, 1);
 
-      const initRes = await mcpApp.fetchClient("/mcp", {
-        method: "POST",
-        body: JSON.stringify(initRequest),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json, text/event-stream",
-          "X-GEO-API-KEY": "not_a_gtool_key_xxx",
-        },
-      });
+        const initRes = await mcpApp.fetchClient("/mcp", {
+          method: "POST",
+          body: JSON.stringify(initRequest),
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+            "X-GEO-API-KEY": "not_a_gtool_key_xxx",
+          },
+        });
 
-      assertEquals(initRes.status, 401);
-    });
+        assertEquals(initRes.status, 401);
+      },
+    );
   },
 });
 

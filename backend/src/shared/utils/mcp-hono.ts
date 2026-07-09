@@ -162,8 +162,7 @@ function createMcpServer(): McpServer {
         resources: {},
         logging: {},
       },
-      instructions:
-        "This MCP server provides health data management tools: " +
+      instructions: "This MCP server provides health data management tools: " +
         "List, create, get, update, and delete health records. " +
         "All timestamps are ISO 8601 format.",
     },

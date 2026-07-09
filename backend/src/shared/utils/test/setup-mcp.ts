@@ -99,7 +99,9 @@ export async function initializeSession(
 
   if (initResponse.status !== 200 && initResponse.status !== 202) {
     throw new Error(
-      `Initialize failed: ${initResponse.status} ${JSON.stringify(initResponse.data)}`,
+      `Initialize failed: ${initResponse.status} ${
+        JSON.stringify(initResponse.data)
+      }`,
     );
   }
 
@@ -189,7 +191,9 @@ export async function callToolOk(
   const ok = response.status === 200 || response.status === 202;
   if (!ok) {
     throw new Error(
-      `Expected 200/202, got ${response.status}: ${JSON.stringify(response.data)}`,
+      `Expected 200/202, got ${response.status}: ${
+        JSON.stringify(response.data)
+      }`,
     );
   }
   if (!response.data || response.data.jsonrpc !== "2.0") {
@@ -240,7 +244,8 @@ async function fetchJson<T>(
   }
 
   // Merge any user-provided headers, but ensure X-GEO-API-KEY is present if token supplied
-  const userHeaders = (options.headers as Record<string, string> | undefined) || {};
+  const userHeaders = (options.headers as Record<string, string> | undefined) ||
+    {};
   const mergedHeaders = { ...headers, ...userHeaders };
 
   if (token && !("X-GEO-API-KEY" in mergedHeaders)) {
@@ -412,8 +417,13 @@ export async function setupMcpTestApp(): Promise<McpTestAppInstance> {
   const token = await ensureTestUser();
 
   // ── Create one test API key at startup — reused across all test steps ──────
-  const { apiKeyService } = await import("@/modules/api-key/api-key.service.ts");
-  const { key: testApiKey } = await apiKeyService.create("mcp-test-key", TEST_USER.id);
+  const { apiKeyService } = await import(
+    "@/modules/api-key/api-key.service.ts"
+  );
+  const { key: testApiKey } = await apiKeyService.create(
+    "mcp-test-key",
+    TEST_USER.id,
+  );
   _cachedTestApiKey = testApiKey;
   logger.info(`[MCP Test] Pre-created API key: ${testApiKey.slice(0, 12)}...`);
 
@@ -433,7 +443,11 @@ export async function setupMcpTestApp(): Promise<McpTestAppInstance> {
     try {
       const r = await fetch(`http://localhost:${port}/ready`);
       if (r.ok) {
-        logger.info(`[MCP Test] Server ready on port ${port} (polled ${Date.now() - startMs}ms)`);
+        logger.info(
+          `[MCP Test] Server ready on port ${port} (polled ${
+            Date.now() - startMs
+          }ms)`,
+        );
         break;
       }
     } catch {

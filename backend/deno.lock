@@ -3,6 +3,7 @@
   "specifiers": {
     "jsr:@hono/hono@^4.6.0": "4.12.9",
     "jsr:@oak/commons@1": "1.0.0",
+    "jsr:@std/assert@*": "1.0.19",
     "jsr:@std/assert@1": "1.0.19",
     "jsr:@std/assert@^1.0.19": "1.0.19",
     "jsr:@std/bytes@1": "1.0.4",

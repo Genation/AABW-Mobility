@@ -31,12 +31,15 @@ Deno.test({
     }
 
     // ── Step 1: findByUser returns all keys including revoked ─────────────────
-    await t.step("findByUser returns all keys (including revoked) for audit", async () => {
-      const result = await apiKeyRepo.findByUser(userId);
-      assertEquals(result.length >= 1, true);
-      const found = result.find((k) => k.id === recordId);
-      assertEquals(found !== undefined, true);
-    });
+    await t.step(
+      "findByUser returns all keys (including revoked) for audit",
+      async () => {
+        const result = await apiKeyRepo.findByUser(userId);
+        assertEquals(result.length >= 1, true);
+        const found = result.find((k) => k.id === recordId);
+        assertEquals(found !== undefined, true);
+      },
+    );
 
     // ── Step 2: findByPrefixAndHash returns record when active ────────────────
     await t.step("findByPrefixAndHash returns record when active", async () => {

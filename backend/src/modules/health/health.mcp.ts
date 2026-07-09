@@ -9,14 +9,14 @@
  *   import { registerHealthResources } from "./health.mcp.resource.ts";
  */
 export {
-  registerHealthTools,
   type HealthCreateInput,
   type HealthDeleteInput,
-  type HealthGetInput,
   type HealthGapTestInput,
+  type HealthGetInput,
   type HealthListInput,
   type HealthSelect,
   type HealthUpdateInput,
+  registerHealthTools,
 } from "./health.mcp.tool.ts";
 
 export { registerHealthResources } from "./health.mcp.resource.ts";

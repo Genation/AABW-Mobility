@@ -15,11 +15,11 @@ import { z } from "zod/v4";
 import { AppError, getJsonRpcCode } from "@/shared/errors/error-factory.ts";
 import { healthService } from "./health.service.ts";
 import {
-  HealthParamSchema,
   HealthCreateSchema,
-  HealthUpdateSchema,
+  HealthParamSchema,
   HealthQuerySchema,
   HealthSelectSchema,
+  HealthUpdateSchema,
 } from "./health.dto.ts";
 
 const HealthListInputSchema = HealthQuerySchema.pick({
@@ -61,7 +61,9 @@ export function registerHealthTools(server: McpServer): void {
         args: { limit: args.limit, query: args.query },
       }, "Starting health_list");
       try {
-        const latestAtDate = args.latestAt ? new Date(args.latestAt) : undefined;
+        const latestAtDate = args.latestAt
+          ? new Date(args.latestAt)
+          : undefined;
         const result = await healthService.findMany({
           query: args.query,
           limit: args.limit,

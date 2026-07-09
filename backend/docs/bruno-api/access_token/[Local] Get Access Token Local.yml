@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://localhost:54321/auth/v1/token?grant_type=password
+  url: https://nafhicdllmpgohtclyfd.supabase.co/auth/v1/token?grant_type=password
   headers:
     - name: apikey
       value: sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
@@ -17,7 +17,7 @@ http:
       type: query
   body:
     type: json
-    data: '{ "email": "admin-test@example.com", "password": "123456"}'
+    data: '{ "email": "tester@genation.ai", "password": "aabw123123"}'
   auth: inherit
 
 runtime:
