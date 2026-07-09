@@ -19,12 +19,14 @@ const getEnv = (): ENV => {
     SUPABASE_URL: Deno.env.get("SUPABASE_URL")!,
     SUPABASE_SECRET_KEY: Deno.env.get("SUPABASE_SECRET_KEY")!,
     SUPABASE_ANON_KEY: Deno.env.get("SUPABASE_ANON_KEY")!,
-    PORT: Number(Deno.env.get("PORT")) || 8906,
+    PORT: Number(Deno.env.get("PORT")) || 8000,
     ALLOWED_ORIGINS: Deno.env.get("ALLOWED_ORIGINS") || "*",
   };
 
   if (
-    !_env.DATABASE_URL || !_env.SUPABASE_URL || !_env.SUPABASE_SECRET_KEY ||
+    !_env.DATABASE_URL ||
+    !_env.SUPABASE_URL ||
+    !_env.SUPABASE_SECRET_KEY ||
     !_env.SUPABASE_ANON_KEY
   ) {
     const missing: Record<string, string> = {};

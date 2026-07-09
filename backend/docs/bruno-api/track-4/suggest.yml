@@ -26,3 +26,105 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+
+examples:
+  - name: example
+    request:
+      url: "{{host}}/track-4/suggest?q=cafe&lat=10.7759&lng=106.7031&limit=10"
+      method: GET
+      params:
+        - name: q
+          value: cafe
+          type: query
+        - name: lat
+          value: "10.7759"
+          type: query
+        - name: lng
+          value: "106.7031"
+          type: query
+        - name: limit
+          value: "10"
+          type: query
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: access-control-allow-origin
+          value: "*"
+        - name: content-type
+          value: application/json
+        - name: vary
+          value: Accept-Encoding
+        - name: transfer-encoding
+          value: chunked
+        - name: date
+          value: Thu, 09 Jul 2026 05:55:19 GMT
+      body:
+        type: json
+        data: |-
+          {
+            "suggestions": [
+              {
+                "text": "ca phê mo cua 24 7",
+                "display": "Cà phê mở cửa 24/7",
+                "type": "Discovery Search",
+                "score": 0.792
+              },
+              {
+                "text": "ca phê do uong gan day",
+                "display": "Cà phê/Đồ uống gần đây",
+                "type": "Category Search",
+                "score": 0.5
+              },
+              {
+                "text": "ca phê gan dây",
+                "display": "Cà phê gần đây",
+                "type": "Category Search",
+                "score": 0.165
+              },
+              {
+                "text": "ca phê tp hcm",
+                "display": "Cà phê TP.HCM",
+                "type": "Category Search",
+                "score": 0.165
+              },
+              {
+                "text": "ca phê ha noi",
+                "display": "Cà phê Hà Nội",
+                "type": "Category Search",
+                "score": 0.165
+              },
+              {
+                "text": "ca phê da nang",
+                "display": "Cà phê Đà Nẵng",
+                "type": "Category Search",
+                "score": 0.165
+              },
+              {
+                "text": "ca phê hai phong",
+                "display": "Cà phê Hải Phòng",
+                "type": "Category Search",
+                "score": 0.165
+              },
+              {
+                "text": "ca phê can thơ",
+                "display": "Cà phê Cần Thơ",
+                "type": "Category Search",
+                "score": 0.165
+              },
+              {
+                "text": "ca phê nha trang",
+                "display": "Cà phê Nha Trang",
+                "type": "Category Search",
+                "score": 0.165
+              },
+              {
+                "text": "ca phê da lat",
+                "display": "Cà phê Đà Lạt",
+                "type": "Category Search",
+                "score": 0.165
+              }
+            ],
+            "latencyMs": 0.033000000010360964,
+            "source": "exact"
+          }
