@@ -14,7 +14,8 @@ from unittest.mock import patch
 
 import numpy as np
 
-from tascomaps.constants import ATTRIBUTE_TERMS, LANDMARK_CATEGORIES  # noqa: E402
+from tascomaps.constants import (  # noqa: E402
+    ATTRIBUTE_TERMS, CITY_CANON, LANDMARK_CATEGORIES, canon_city)
 from tascomaps.core.text import fold, normalize  # noqa: E402
 from tascomaps.core.understand import understand  # noqa: E402
 from tascomaps.data import loader  # noqa: E402
@@ -341,6 +342,50 @@ class GeneralizationInvariantTests(unittest.TestCase):
             with self.subTest(poi_id=poi.poi_id):
                 results = self.search.search(poi.name, top_k=5)["results"]
                 self.assertIn(fold(poi.name), {fold(row["name"]) for row in results})
+
+    def test_city_aliases_share_one_p6_p7_identity(self):
+        # P6 must emit whichever city spelling the loaded POIs use, otherwise the
+        # P7 hard location constraint compares unequal strings and drops every
+        # candidate.  Every recognized alias of a corpus city must canonicalize
+        # to that same identity through both the dictionary and the understander.
+        corpus_cities = {canon_city(p.city) for p in self.kb.pois if p.city}
+        checked = 0
+        for alias, canonical in CITY_CANON.items():
+            identity = canon_city(canonical)
+            if identity not in corpus_cities:
+                continue
+            with self.subTest(alias=alias):
+                self.assertEqual(
+                    canon_city(alias), identity,
+                    f"alias {alias!r} does not share {canonical!r} identity")
+                detected = understand(f"cafe ở {alias}", self.kb).entities.get("city")
+                if detected:
+                    self.assertEqual(
+                        canon_city(detected), identity,
+                        f"understand({alias!r}) city {detected!r} != {identity!r}")
+                    checked += 1
+        self.assertTrue(checked, "no corpus city alias was exercised")
+
+    def test_p7_city_abbreviation_recall_matches_full_name(self):
+        # The most populous corpus city drives a deterministic sample.  A query
+        # phrased with any of its abbreviations must recall results and never be
+        # rejected as a location non-match — matching the full-name behaviour.
+        counts = Counter(canon_city(p.city) for p in self.kb.pois if p.city)
+        identity, _ = counts.most_common(1)[0]
+        aliases = sorted({alias for alias, canonical in CITY_CANON.items()
+                          if canon_city(canonical) == identity}, key=len)
+        full = self.search.search(f"cafe ở {identity}", top_k=5)
+        self.assertTrue(full["results"], f"full-name query for {identity!r} empty")
+        for alias in aliases:
+            with self.subTest(alias=alias):
+                output = self.search.search(f"cafe ở {alias}", top_k=5)
+                self.assertNotEqual(
+                    output["diagnostics"].get("reason"),
+                    "no_strict_location_candidates",
+                    f"alias {alias!r} rejected on canonicalization mismatch")
+                self.assertTrue(
+                    output["results"],
+                    f"alias {alias!r} recalled no results for {identity!r}")
 
     def test_p7_unique_addresses_hit_top_five(self):
         counts = Counter(fold(p.address) for p in self.unique_t2_pois if p.address)

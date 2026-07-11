@@ -9,7 +9,7 @@ import pandas as pd
 
 from .. import config
 from ..constants import (ADJECTIVE_STOP, ATTRIBUTE_TERMS, CATEGORY_CANON,
-                         CATEGORY_QUERY_TERMS, canon_category, CITY_CANON)
+                         CATEGORY_QUERY_TERMS, canon_category, canon_city)
 from ..core.text import fold, nfc, normalize
 from .kb import AbbrevEntry, KnowledgeBase, POI
 
@@ -49,9 +49,9 @@ def _s(val) -> str:
 
 
 def _canon_city(raw: str) -> str:
-    if not raw:
-        return ""
-    return CITY_CANON.get(fold(raw), nfc(raw))
+    # Delegate to the shared identity so loaded POIs, the abbreviation
+    # dictionary, and the query understander all agree on one spelling.
+    return canon_city(raw)
 
 
 def _extract_street(address: str) -> str:
@@ -272,6 +272,11 @@ def _add_abbrev(kb: KnowledgeBase, term: str, expansion: str, type_: str) -> Non
     # canonical values such as 24/7.
     primary = re.split(r"\s+/\s+", expansion, maxsplit=1)[0].strip()
     kind, lex_type = _ABBR_TYPE_MAP.get(type_, ("synonym", None))
+    # A dictionary may spell a city expansion freely ("Thành phố Hồ Chí Minh"),
+    # but P6/P7 share one canonical spelling ("TP Hồ Chí Minh"). Canonicalize
+    # the stored expansion so the abbreviation path agrees with loaded POIs.
+    if kind == "city":
+        primary = canon_city(primary) or primary
     entry = AbbrevEntry(abbr=term, expansion=primary, full=expansion, type=kind)
     key = fold(term)
     if key not in kb.abbrev:            # first (T1) definition wins on conflict

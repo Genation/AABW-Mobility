@@ -6,6 +6,8 @@ across Vietnamese/English, so we canonicalize to a single Vietnamese label.
 """
 from __future__ import annotations
 
+from .core.text import fold, nfc
+
 # --- Canonical category map ------------------------------------------------
 # Maps every raw category label (any track, any language) to one canonical form.
 CATEGORY_CANON = {
@@ -152,6 +154,39 @@ CITY_CANON = {
     "hn": "Hà Nội", "đà nẵng": "Đà Nẵng", "da nang": "Đà Nẵng", "dn": "Đà Nẵng",
     "đà lạt": "Đà Lạt", "da lat": "Đà Lạt", "hạ long": "Hạ Long",
 }
+
+# Accent-insensitive lookup for the map above so callers can canonicalize from
+# any surface spelling with a single fold key.
+_CITY_CANON_FOLDED = {fold(key): value for key, value in CITY_CANON.items()}
+
+# Administrative prefixes (folded) that may precede a city proper noun. Stripping
+# one lets "Thành phố Hồ Chí Minh", "TP. Hồ Chí Minh", and "TP HCM" resolve to
+# the same identity as the bare "Hồ Chí Minh" / "HCM" keys above.
+_CITY_ADMIN_PREFIXES = ("thanh pho", "tp", "tinh", "thi xa", "thi tran")
+
+
+def canon_city(raw: str) -> str:
+    """Canonicalize any city surface form to one shared identity.
+
+    P6 (understanding) and P7 (search) must agree on a single spelling for each
+    city; otherwise a hard location constraint compares unequal strings and
+    silently drops every candidate. This resolves abbreviations, accentless
+    input, and an optional administrative prefix ("Thành phố" / "TP" / "Tỉnh"…).
+    Unknown cities are returned unchanged (NFC-normalized) so out-of-vocabulary
+    places such as "Nha Trang" keep a stable identity.
+    """
+    if not raw:
+        return ""
+    key = fold(raw)
+    if key in _CITY_CANON_FOLDED:
+        return _CITY_CANON_FOLDED[key]
+    for prefix in _CITY_ADMIN_PREFIXES:
+        if key.startswith(prefix + " "):
+            stripped = key[len(prefix):].strip()
+            if stripped in _CITY_CANON_FOLDED:
+                return _CITY_CANON_FOLDED[stripped]
+            break
+    return nfc(str(raw).strip())
 
 # "Singleton facility" categories: category-word + a proper noun names a
 # specific place (e.g. 'ga hà nội' -> Ga Hà Nội), so treat as a POI, not a

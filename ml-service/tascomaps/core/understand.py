@@ -18,8 +18,8 @@ from typing import Dict, List, Optional, Tuple
 from rapidfuzz import fuzz
 
 from ..constants import (ADJECTIVE_STOP, ATTRIBUTE_TERMS, CATEGORY_QUERY_TERMS,
-                         CITY_CANON, FACILITY_CATEGORIES, LANDMARK_CATEGORIES,
-                         STOPWORDS)
+                         canon_city, CITY_CANON, FACILITY_CATEGORIES,
+                         LANDMARK_CATEGORIES, STOPWORDS)
 from ..data.kb import KnowledgeBase
 from .text import (accent_prefix_compatible, fold, has_accents, normalize,
                    parse_coordinates, title_vi, tokenize)
@@ -1336,6 +1336,10 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
     ]
     city = (explicit_city_spans[-1].canonical if explicit_city_spans
             else abbr_ent.get("city") or _first("city") or _detect_city(qfold))
+    # Emit one canonical city identity no matter which path produced it, so the
+    # downstream hard location constraint in P7 compares like against like.
+    if city:
+        city = canon_city(city)
     if street and city and fold(street) == fold(city):
         street = None
 

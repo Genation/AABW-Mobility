@@ -24,6 +24,7 @@ from typing import Dict, Iterable, List, Optional, Sequence
 import numpy as np
 from rapidfuzz import fuzz
 
+from ..constants import canon_city
 from ..core.text import fold, has_accents, normalize, tokenize
 from ..core.understand import QueryUnderstanding, understand
 from ..data.kb import KnowledgeBase, POI
@@ -796,7 +797,7 @@ class SemanticSearchEngine:
         if use_admin and e.get("city"):
             if not p.city:
                 scores.append(0.5); states.append(None)
-            elif fold(e["city"]) == fold(p.city):
+            elif fold(canon_city(e["city"])) == fold(canon_city(p.city)):
                 scores.append(1.0); states.append(True); reasons.append(f"tại {p.city}")
             else:
                 scores.append(0.0); states.append(False)
@@ -890,7 +891,7 @@ class SemanticSearchEngine:
                 elif p.category:
                     conflict = True
             if entities.get("city") and not entities.get("route_destination"):
-                if p.city and fold(p.city) == fold(entities["city"]):
+                if p.city and fold(canon_city(p.city)) == fold(canon_city(entities["city"])):
                     evidence += 2.0
                 elif p.city:
                     conflict = True
