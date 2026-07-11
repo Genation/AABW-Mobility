@@ -1,0 +1,54 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>P9 · Trie Autocomplete — Tasco Maps AI</title><link rel="stylesheet" href="/assets/style.css"/></head>
+<body>
+<header><div class="brand"><div class="logo">T</div>
+  <div><h1>Trie Autocomplete <span class="pill">P9</span></h1>
+  <div class="sub">Character-level trie · precomputed top-K · edit-distance-1 fuzzy · pattern & popular layers</div></div></div>
+  <div class="nav"><a href="/">← Demos</a><a href="/demo/lab">Unified Lab</a><a href="/demo/understand">P6 Understanding</a>
+    <a href="/demo/search">P7 Ranking</a><a class="on" href="/demo/autocomplete">P9 Autocomplete</a></div>
+</header>
+<div class="wrap">
+  <div class="searchbar">
+    <input id="q" autocomplete="off" placeholder="Gõ để thử: vin q1 · highl wifi · trun tâm thương mại gần tôi · cafe · ks d"/>
+  </div>
+  <div class="examples" id="ex"></div>
+  <div class="readout" id="readout"></div>
+  <div class="card"><h2>Gợi ý (real-time)</h2><div id="out"><span class="muted">Bắt đầu gõ…</span></div></div>
+  <div class="foot">GET <code>/autocomplete?q=&amp;k=</code> · served by the in-memory trie</div>
+</div>
+<script>
+const EX=["vin q1","highl wifi","trun tâm thương mại gần tôi","phuc l q1","cafe","ks d","bv bach","nguyen h","12 ngu","tra sua ng","rooftop q1"];
+const $=s=>document.querySelector(s);
+const esc=s=>(s==null?"":String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+EX.forEach(e=>{const s=document.createElement("span");s.textContent=e;s.onclick=()=>{$("#q").value=e;go();};$("#ex").appendChild(s);});
+let t=null, controller=null, sequence=0;
+$("#q").addEventListener("input",()=>{clearTimeout(t);if(!$("#q").value.trim()&&controller)controller.abort();t=setTimeout(go,90);});
+async function go(){
+  const q=$("#q").value.trim();
+  if(!q){$("#out").innerHTML='<span class="muted">Bắt đầu gõ…</span>';$("#readout").innerHTML="";return;}
+  const current=++sequence;
+  if(controller)controller.abort();
+  controller=new AbortController();
+  const t0=performance.now();
+  let d;
+  try{
+    const r=await fetch(`/autocomplete?q=${encodeURIComponent(q)}&k=8`,{signal:controller.signal});
+    if(!r.ok)throw new Error(`Request failed (${r.status})`);
+    d=await r.json();
+  }catch(error){
+    if(error.name!=="AbortError"&&current===sequence)$("#out").innerHTML='<span class="muted">Không thể tải gợi ý. Hãy thử lại.</span>';
+    return;
+  }
+  if(current!==sequence||$("#q").value.trim()!==q)return;
+  const rtt=(performance.now()-t0).toFixed(1);
+  const eng=d.latencyMs!=null?`engine <b>${d.latencyMs.toFixed(3)} ms</b>`:"";
+  $("#readout").innerHTML=`source: <b>${esc(d.source||"—")}</b>  ·  type: <b>${esc(d.suggestion_type||"—")}</b>  ·  ${eng}  ·  round-trip ${rtt} ms`;
+  if(!d.suggestions||!d.suggestions.length){$("#out").innerHTML='<span class="muted">— không có gợi ý —</span>';return;}
+  $("#out").innerHTML=d.suggestions.map((s,i)=>`
+    <div class="sug"><span class="rank">${i+1}</span>
+      <span class="txt">${esc(s.display||s.text)}</span>
+      <span class="ty">${esc(s.type)}</span>
+      <span class="sc">${Number(s.score).toFixed(2)}</span></div>`).join("");
+}
+</script></body></html>

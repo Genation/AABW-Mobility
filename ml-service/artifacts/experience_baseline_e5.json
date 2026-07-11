@@ -1,0 +1,148 @@
+{
+  "schema_version": 2,
+  "mode": "corpus-derived-semantic-experience",
+  "uses_public_evaluation": false,
+  "judge": "independent-accent-safe-metadata-lexicon-v1",
+  "evaluator_config": {
+    "per_family": 20,
+    "vietnamese_cases": 40,
+    "repeat": 2,
+    "sample": "sha256-mod-5-bucket-4",
+    "prefix_fractions": [
+      0.25,
+      0.5,
+      0.75
+    ]
+  },
+  "embedder": "sentence-transformer",
+  "embed_model": "intfloat/multilingual-e5-small",
+  "corpus_fingerprint": "dcfd5a931a12bfe9560ada15bf8901dd1ad3200655b27e67fa60fbc9b2fc5561",
+  "suggestion_relevance": {
+    "cases": 147,
+    "graded_utility@6": 0.7010744311574787,
+    "semantic_success@1": 0.8299319727891157,
+    "semantic_success@3": 0.9115646258503401,
+    "semantic_success@6": 0.9455782312925171,
+    "relevant_suggestion_rate": 0.9292307692307692,
+    "strong_suggestion_rate": 0.6507692307692308,
+    "unrelated_suggestion_rate": 0.07076923076923076,
+    "grounded_suggestion_rate": 0.9969230769230769,
+    "top1_slot_retention": 0.8489304933749379
+  },
+  "intent_prediction": {
+    "cases": 84,
+    "families": 8,
+    "strict_accuracy": 0.9642857142857143,
+    "macro_f1": 0.9157196969696969,
+    "compatible_accuracy": 0.9880952380952381,
+    "accentless_intent_accuracy": 0.9880952380952381,
+    "typed_slot_fidelity": 0.9970238095238095,
+    "confidence_brier": 0.07859523809523813,
+    "confidence_ece": 0.17452380952380958
+  },
+  "query_completion": {
+    "targets": 49,
+    "prefix_cases": 147,
+    "list_coverage": 0.9931972789115646,
+    "semantic_success_auc": 0.9455782312925171,
+    "median_fraction_typed_for_success": 0.25,
+    "median_keystroke_savings": 0.75,
+    "success_persistence": 0.9574468085106383,
+    "unique_list_rate": 1.0,
+    "finite_bounded_score_rate": 1.0,
+    "monotonic_score_rate": 1.0,
+    "exact_target_mrr_diagnostic": 0.28106575963718833
+  },
+  "vietnamese_handling": {
+    "accentless": {
+      "cases": 40,
+      "semantic_retention": 0.996875,
+      "search_rank_retention": 1.0
+    },
+    "unicode_nfd": {
+      "cases": 40,
+      "semantic_retention": 0.996875,
+      "search_rank_retention": 1.0
+    },
+    "format_noise": {
+      "cases": 40,
+      "semantic_retention": 0.996875,
+      "search_rank_retention": 1.0
+    },
+    "single_edit": {
+      "cases": 40,
+      "semantic_retention": 0.686875,
+      "search_rank_retention": 0.9459459459459459
+    },
+    "colloquial": {
+      "cases": 4,
+      "semantic_fidelity": 1.0
+    }
+  },
+  "production_readiness": {
+    "runtime_cases": 24,
+    "p6_latency": {
+      "n": 48,
+      "p50_ms": 3.4614,
+      "p95_ms": 12.0385,
+      "p99_ms": 12.2,
+      "max_ms": 12.2,
+      "errors": 0,
+      "error_rate": 0.0
+    },
+    "p7_latency": {
+      "n": 48,
+      "p50_ms": 13.9022,
+      "p95_ms": 23.0145,
+      "p99_ms": 23.2935,
+      "max_ms": 23.2935,
+      "errors": 0,
+      "error_rate": 0.0
+    },
+    "autocomplete_latency": {
+      "n": 48,
+      "p50_ms": 3.2378,
+      "p95_ms": 17.8603,
+      "p99_ms": 20.4713,
+      "max_ms": 20.4713,
+      "errors": 0,
+      "error_rate": 0.0
+    },
+    "deterministic_search_rate": 1.0,
+    "bounded_score_rate": 1.0,
+    "unique_result_list_rate": 1.0,
+    "explained_result_rate": 0.9380530973451328,
+    "autocomplete_blank_ood_abstention": 1.0,
+    "search_blank_ood_abstention": 1.0,
+    "concurrency": {
+      "requests": 24,
+      "workers": 4,
+      "elapsed_ms": 220.203,
+      "error_rate": 0.0
+    },
+    "startup": {
+      "kb_ms": 204.023,
+      "search_ms": 5328.525,
+      "autocomplete_ms": 230.615
+    }
+  },
+  "sample_failures": {
+    "intent": [
+      {
+        "query": "quán cafe học bài",
+        "expected": "Discovery Search",
+        "predicted": "Category Search"
+      },
+      {
+        "query": "ăn đêm gần đây",
+        "expected": "Discovery Search",
+        "predicted": "Nearby Search"
+      },
+      {
+        "query": "khách sạn đà nẵng gần biển",
+        "expected": "Discovery Search",
+        "predicted": "Category Search"
+      }
+    ]
+  }
+}

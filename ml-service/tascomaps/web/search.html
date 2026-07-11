@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>P7 · Semantic Search & Ranking — Tasco Maps AI</title><link rel="stylesheet" href="/assets/style.css"/></head>
+<body>
+<header><div class="brand"><div class="logo">T</div>
+  <div><h1>Semantic Search &amp; Ranking <span class="pill">P7</span></h1>
+  <div class="sub">Search by needs/attributes → ranked places with reasons (embeddings + BM25 + multi-signal)</div></div></div>
+  <div class="nav"><a href="/">← Demos</a><a href="/demo/lab">Unified Lab</a><a href="/demo/understand">P6 Understanding</a>
+    <a class="on" href="/demo/search">P7 Ranking</a><a href="/demo/autocomplete">P9 Autocomplete</a></div>
+</header>
+<div class="wrap">
+  <div class="searchbar">
+    <input id="q" autocomplete="off" placeholder="Thử: quán cà phê yên tĩnh để làm việc · khách sạn gần biển đà nẵng có hồ bơi"/>
+    <button class="go" id="go">Tìm kiếm</button>
+  </div>
+  <div class="examples" id="ex"></div>
+  <div class="card"><h2>Kết quả xếp hạng</h2><div id="out"><span class="muted">Nhập nhu cầu rồi nhấn Tìm kiếm…</span></div></div>
+  <div class="foot">POST <code>/search</code></div>
+</div>
+<script>
+const EX=["quán cà phê yên tĩnh để làm việc","cafe có wifi gần hồ gươm","nơi phù hợp để hẹn hò ở quận 1",
+  "nhà hàng cho gia đình có trẻ nhỏ","khách sạn gần biển đà nẵng có hồ bơi","quán ăn mở cửa sau 11 giờ tối",
+  "trạm sạc xe điện gần trung tâm đà nẵng","địa điểm check-in đẹp ở đà lạt"];
+const $=s=>document.querySelector(s);
+const esc=s=>(s==null?"":String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+EX.forEach(e=>{const s=document.createElement("span");s.textContent=e;s.onclick=()=>{$("#q").value=e;run();};$("#ex").appendChild(s);});
+$("#go").onclick=run; $("#q").addEventListener("keydown",e=>{if(e.key==="Enter")run();});
+let searchController=null, searchSequence=0;
+$("#q").addEventListener("input",()=>{if(searchController)searchController.abort();searchSequence++;});
+async function run(){
+  const q=$("#q").value.trim(); if(!q)return;
+  const sequence=++searchSequence;
+  if(searchController)searchController.abort();
+  searchController=new AbortController();
+  $("#out").innerHTML='<span class="muted">…</span>';
+  let d;
+  try{
+    const r=await fetch("/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:q,top_k:5}),signal:searchController.signal});
+    try{d=await r.json();}catch(_){d={};}
+    if(!r.ok)throw new Error(d.detail||`Request failed (${r.status})`);
+  }catch(error){
+    if(error.name!=="AbortError"&&sequence===searchSequence)
+      $("#out").innerHTML=`<span class="muted">${esc(error.message||"Không thể tải kết quả")}</span>`;
+    return;
+  }
+  if(sequence!==searchSequence||$("#q").value.trim()!==q)return;
+  const u=d.understanding||{};
+  const reqs=(d.required_attributes||[]).map(a=>`<span class="chip k">${esc(a)}</span>`).join("");
+  const excluded=(d.excluded_attributes||[]).map(a=>`<span class="chip">không ${esc(a)}</span>`).join("");
+  const status=esc((d.diagnostics||{}).status||"ok");
+  const head=`<div class="kv"><span class="k">Hiểu truy vấn</span><span class="intent">${esc(u.intent||"")}</span>
+      <span class="muted" style="align-self:center">${esc(JSON.stringify(u.entities||{}))}</span></div>`+
+    `<div class="muted" style="margin-top:8px">status: ${status}</div>`+
+    ((reqs||excluded)?`<div class="chips" style="margin:8px 0 14px">${reqs}${excluded}</div>`:"");
+  if(!d.results||!d.results.length){$("#out").innerHTML=head+'<span class="muted">Không có kết quả.</span>';return;}
+  $("#out").innerHTML=head+d.results.map(r=>`
+    <div class="result">
+      <div class="top"><span class="name">${esc(r.display_name||r.name)}</span><span class="score">utility ${Number(r.score).toFixed(2)}</span></div>
+      <div class="meta">${esc(r.category)} · ${esc(r.district||r.city||"")}${r.address?(" · "+esc(r.address)):""} ${r.rating?("· ★"+r.rating):""} ${r.review_count?("· "+r.review_count+" reviews"):""}</div>
+      <div class="reasons">${(r.reasons||[]).map(x=>`<span class="chip">${esc(x)}</span>`).join("")}</div>
+    </div>`).join("");
+}
+</script></body></html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>P6 · Search Understanding — Tasco Maps AI</title><link rel="stylesheet" href="/assets/style.css"/></head>
+<body>
+<header><div class="brand"><div class="logo">T</div>
+  <div><h1>Search Understanding <span class="pill">P6</span></h1>
+  <div class="sub">Messy Vietnamese query → normalized query, intent, entities, confidence</div></div></div>
+  <div class="nav"><a href="/">← Demos</a><a href="/demo/lab">Unified Lab</a><a class="on" href="/demo/understand">P6 Understanding</a>
+    <a href="/demo/search">P7 Ranking</a><a href="/demo/autocomplete">P9 Autocomplete</a></div>
+</header>
+<div class="wrap">
+  <div class="searchbar">
+    <input id="q" autocomplete="off" placeholder="Thử: bv bach mai · atm vcb q7 · 12 nguyen hue q1 · chi duong den san bay"/>
+    <button class="go" id="go">Phân tích</button>
+  </div>
+  <div class="examples" id="ex"></div>
+  <label class="toggle"><input type="checkbox" id="boost"/> Dùng LLM boost (OpenRouter, nếu có key)</label>
+  <div class="card"><h2>Kết quả</h2><div id="out"><span class="muted">Nhập truy vấn rồi nhấn Phân tích…</span></div></div>
+  <div class="foot">POST <code>/understand</code></div>
+</div>
+<script>
+const EX=["bv bach mai","atm vcb q7","vincom q1","ks da nang gan bien","chi duong den san bay",
+  "12 nguyen hue q1","10.7769,106.7009","galaxy","benh vien bach maj","nt long chau q1"];
+const $=s=>document.querySelector(s);
+const esc=s=>(s==null?"":String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+EX.forEach(e=>{const s=document.createElement("span");s.textContent=e;s.onclick=()=>{$("#q").value=e;run();};$("#ex").appendChild(s);});
+$("#go").onclick=run; $("#q").addEventListener("keydown",e=>{if(e.key==="Enter")run();});
+let understandController=null, understandSequence=0;
+$("#q").addEventListener("input",()=>{if(understandController)understandController.abort();understandSequence++;});
+$("#boost").addEventListener("change",()=>{if(understandController)understandController.abort();understandSequence++;});
+async function run(){
+  const q=$("#q").value.trim(); if(!q)return;
+  const sequence=++understandSequence;
+  if(understandController)understandController.abort();
+  understandController=new AbortController();
+  $("#out").innerHTML='<span class="muted">…</span>';
+  let u;
+  try{
+    const r=await fetch("/understand",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({query:q,boost:$("#boost").checked}),signal:understandController.signal});
+    try{u=await r.json();}catch(_){u={};}
+    if(!r.ok)throw new Error(u.detail||`Request failed (${r.status})`);
+  }catch(error){
+    if(error.name!=="AbortError"&&sequence===understandSequence)
+      $("#out").innerHTML=`<span class="muted">${esc(error.message||"Không thể tải kết quả")}</span>`;
+    return;
+  }
+  if(sequence!==understandSequence||$("#q").value.trim()!==q)return;
+  const ents=Object.entries(u.entities||{}).map(([k,v])=>
+    `<span class="chip"><span class="k">${esc(k)}</span>: ${esc(Array.isArray(v)?v.join(", "):v)}</span>`).join("");
+  $("#out").innerHTML=`
+    <div class="kv"><span class="k">Intent</span><span class="intent">${esc(u.intent)}</span></div>
+    <div class="kv"><span class="k">Normalized</span><b>${esc(u.normalized_query)}</b></div>
+    <div class="kv"><span class="k">Entities</span></div><div class="chips">${ents||'<span class="muted">—</span>'}</div>
+    <div class="kv" style="margin-top:10px"><span class="k">Confidence</span><span>${(u.confidence*100).toFixed(0)}% <span class="pill">${esc(u.source)}</span></span></div>
+    <div class="bar"><i style="width:${(u.confidence*100).toFixed(0)}%"></i></div>
+    <details><summary>JSON</summary><pre>${esc(JSON.stringify(u,null,2))}</pre></details>`;
+}
+</script></body></html>

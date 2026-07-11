@@ -1,0 +1,187 @@
+{
+  "generated_at": "2026-07-11T16:48:04.905556+00:00",
+  "mode": "e5",
+  "actual_embedder": "sentence-transformer",
+  "config": {
+    "repeat": 10,
+    "p9_repeat": 25
+  },
+  "startup": {
+    "kb_ms": 210.9,
+    "p7_engine_ms": 5347.225,
+    "p9_engine_ms": 246.747
+  },
+  "public": {
+    "p6": {
+      "n": 60,
+      "intent_acc": 0.95,
+      "normalized_exact": 0.5,
+      "normalized_tokenF1": 0.9262930332184595,
+      "entity_F1": 0.7737698412698408
+    },
+    "p7": {
+      "n": 60,
+      "recall@3": 0.9083333333333333,
+      "recall@5": 0.95,
+      "MRR": 0.9430555555555554,
+      "nDCG@3": 0.9095680156884626,
+      "hit@1": 0.9333333333333333
+    },
+    "p9": {
+      "n": 60,
+      "type_acc": 0.5833333333333334,
+      "exact_recall": 0.4444444444444444,
+      "exact_MRR": 0.4472222222222222,
+      "exact_full_cases": 23,
+      "fuzzy_recall": 0.7611111111111112,
+      "fuzzy_full_cases": 41
+    }
+  },
+  "difficulty": {
+    "p6": {
+      "Easy": {
+        "n": 9,
+        "intent_acc": 1.0,
+        "normalized_exact": 0.8888888888888888,
+        "normalized_tokenF1": 0.9777777777777779,
+        "entity_F1": 0.8222222222222222
+      },
+      "Hard": {
+        "n": 22,
+        "intent_acc": 1.0,
+        "normalized_exact": 0.2727272727272727,
+        "normalized_tokenF1": 0.9019729572241197,
+        "entity_F1": 0.7020562770562769
+      },
+      "Medium": {
+        "n": 29,
+        "intent_acc": 0.896551724137931,
+        "normalized_exact": 0.5517241379310345,
+        "normalized_tokenF1": 0.9287647218681702,
+        "entity_F1": 0.8131362889983581
+      }
+    },
+    "p7": {
+      "Easy": {
+        "n": 5,
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "MRR": 1.0,
+        "nDCG@3": 1.0,
+        "hit@1": 1.0
+      },
+      "Hard": {
+        "n": 25,
+        "recall@3": 0.84,
+        "recall@5": 0.92,
+        "MRR": 0.9033333333333333,
+        "nDCG@3": 0.8384373499416918,
+        "hit@1": 0.88
+      },
+      "Medium": {
+        "n": 30,
+        "recall@3": 0.95,
+        "recall@5": 0.9666666666666667,
+        "MRR": 0.9666666666666667,
+        "nDCG@3": 0.953771573092182,
+        "hit@1": 0.9666666666666667
+      }
+    }
+  },
+  "robustness": {
+    "p6_accentless": {
+      "n": 60,
+      "intent_acc": 0.9166666666666666,
+      "normalized_exact": 0.5,
+      "normalized_tokenF1": 0.9192337182644076,
+      "entity_F1": 0.7582142857142853
+    },
+    "p7_accentless": {
+      "n": 60,
+      "recall@3": 0.9055555555555554,
+      "recall@5": 0.9333333333333333,
+      "MRR": 0.9166666666666666,
+      "nDCG@3": 0.9001930715210323,
+      "hit@1": 0.9
+    },
+    "p9_without_smart_patterns": {
+      "n": 60,
+      "type_acc": 0.35,
+      "exact_recall": 0.36111111111111105,
+      "exact_MRR": 0.38333333333333336,
+      "exact_full_cases": 18,
+      "fuzzy_recall": 0.46111111111111114,
+      "fuzzy_full_cases": 25
+    },
+    "p9_mutations": {
+      "remove_final_character": {
+        "n": 60,
+        "type_acc": 0.5333333333333333,
+        "exact_recall": 0.3805555555555556,
+        "exact_MRR": 0.3672222222222222,
+        "exact_full_cases": 19,
+        "fuzzy_recall": 0.675,
+        "fuzzy_full_cases": 35
+      },
+      "add_one_wrong_character": {
+        "n": 60,
+        "type_acc": 0.23333333333333334,
+        "exact_recall": 0.23055555555555557,
+        "exact_MRR": 0.1922222222222222,
+        "exact_full_cases": 12,
+        "fuzzy_recall": 0.65,
+        "fuzzy_full_cases": 34
+      },
+      "add_two_wrong_characters": {
+        "n": 60,
+        "type_acc": 0.13333333333333333,
+        "exact_recall": 0.09166666666666666,
+        "exact_MRR": 0.058888888888888886,
+        "exact_full_cases": 4,
+        "fuzzy_recall": 0.49166666666666664,
+        "fuzzy_full_cases": 25
+      },
+      "reverse_token_order": {
+        "n": 60,
+        "type_acc": 0.2,
+        "exact_recall": 0.12777777777777777,
+        "exact_MRR": 0.10055555555555556,
+        "exact_full_cases": 6,
+        "fuzzy_recall": 0.4611111111111111,
+        "fuzzy_full_cases": 22
+      }
+    },
+    "p9_source_audit": {
+      "expected_occurrences": 96,
+      "literal_occurrences": 0,
+      "unique_expected": 89,
+      "unique_literal": 0,
+      "affected_cases": 0,
+      "literal_phrases": []
+    }
+  },
+  "latency": {
+    "p6": {
+      "n": 600,
+      "p50_ms": 9.7327,
+      "mean_ms": 9.352,
+      "p95_ms": 17.34,
+      "max_ms": 18.3459
+    },
+    "p7": {
+      "n": 600,
+      "p50_ms": 28.2329,
+      "mean_ms": 27.9907,
+      "p95_ms": 35.8356,
+      "max_ms": 121.2355
+    },
+    "p9": {
+      "n": 1500,
+      "p50_ms": 17.9731,
+      "mean_ms": 15.7815,
+      "p95_ms": 38.1438,
+      "max_ms": 60.4747
+    }
+  },
+  "elapsed_seconds": 69.697
+}

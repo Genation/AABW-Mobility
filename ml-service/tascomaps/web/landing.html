@@ -1,0 +1,34 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tasco Maps AI — Demos</title><link rel="stylesheet" href="/assets/style.css"/></head>
+<body>
+<header><div class="brand"><div class="logo">T</div>
+  <div><h1>Tasco Maps AI</h1>
+  <div class="sub">Vietnamese map-search intelligence · three independent demos</div></div></div></header>
+<div class="wrap">
+  <a class="lab-cta" href="/demo/lab">
+    <span><b>Open the Model Test Lab</b><small>Test P9 → P6 → P7 in one guided workspace</small></span>
+    <strong>Launch lab →</strong>
+  </a>
+  <div class="hub">
+    <a href="/demo/understand">
+      <div class="t">P6 · SEARCH UNDERSTANDING</div>
+      <div class="n">Query → Structured Intent</div>
+      <div class="d">Messy Vietnamese query (typos, no accents, abbreviations) → normalized query, intent, entities, confidence.</div>
+      <div class="m">sampled intent 96.4% · slot fidelity 99.7%</div>
+    </a>
+    <a href="/demo/search">
+      <div class="t">P7 · SEMANTIC SEARCH & RANKING</div>
+      <div class="n">Needs → Ranked Places</div>
+      <div class="d">Search by attributes/needs (embeddings + BM25) → ranked POIs with multi-signal scores and Vietnamese reasons.</div>
+      <div class="m">E5 clean constraints 97.8% · OOD 100%</div>
+    </a>
+    <a href="/demo/autocomplete">
+      <div class="t">P9 · TRIE AUTOCOMPLETE</div>
+      <div class="n">Prefix → Suggestions</div>
+      <div class="d">Character-level trie, observed prefixes, guarded first-word recovery, semantic KB fusion, typo recovery, and short-prefix fallback. Real-time as you type.</div>
+      <div class="m">semantic success@6 95.9% · coverage 100%</div>
+    </a>
+  </div>
+  <div class="foot">One FastAPI server · <a class="muted" href="/docs" style="text-decoration:underline">/docs</a> for the API · offline-capable</div>
+</div></body></html>

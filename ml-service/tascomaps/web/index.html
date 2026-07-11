@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tasco Maps AI — Vietnamese Search Intelligence</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#181c2e; --panel2:#20263e; --line:#2b3350;
+    --fg:#e8ecf7; --muted:#9aa3c0; --accent:#4f8cff; --accent2:#22d3a6;
+    --warn:#f5a623; --chip:#2a3150; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:radial-gradient(1200px 600px at 20% -10%,#1b2140 0%,var(--bg) 55%);color:var(--fg);min-height:100vh}
+  header{padding:26px 24px 8px;max-width:1100px;margin:0 auto}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:grid;place-items:center;font-weight:800;color:#0b0e1a}
+  h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.2px}
+  .sub{color:var(--muted);font-size:13px;margin-top:2px}
+  .wrap{max-width:1100px;margin:0 auto;padding:8px 24px 60px}
+  .searchbar{position:relative;margin-top:18px}
+  .searchbar input{width:100%;padding:16px 120px 16px 18px;font-size:17px;border-radius:var(--radius);
+    border:1px solid var(--line);background:var(--panel);color:var(--fg);outline:none}
+  .searchbar input:focus{border-color:var(--accent)}
+  .searchbar .go{position:absolute;right:8px;top:8px;bottom:8px;padding:0 18px;border:0;border-radius:10px;
+    background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
+  .drop{position:absolute;left:0;right:0;top:60px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:12px;z-index:20;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  .drop .item{display:flex;justify-content:space-between;gap:10px;padding:11px 16px;cursor:pointer;border-top:1px solid var(--line)}
+  .drop .item:first-child{border-top:0}
+  .drop .item:hover{background:#28304e}
+  .drop .t{font-size:15px}
+  .drop .badge{font-size:11px;color:var(--muted);background:var(--chip);padding:3px 8px;border-radius:20px;white-space:nowrap}
+  .examples{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+  .examples span{font-size:12px;color:var(--muted);padding:6px 11px;background:var(--chip);border-radius:20px;cursor:pointer}
+  .examples span:hover{color:#fff}
+  .toggle{margin-top:12px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin:0 0 12px}
+  .kv{display:flex;gap:8px;margin:6px 0;font-size:14px}
+  .kv .k{color:var(--muted);min-width:120px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .chip{font-size:12px;background:var(--chip);padding:4px 9px;border-radius:20px}
+  .chip.k{color:var(--accent2)}
+  .intent{display:inline-block;font-weight:700;background:linear-gradient(135deg,var(--accent),#7aa7ff);
+    color:#08122b;padding:4px 12px;border-radius:20px;font-size:13px}
+  .bar{height:7px;background:#2a3150;border-radius:20px;overflow:hidden;margin-top:6px}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+  .result{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--panel2)}
+  .result .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .result .name{font-weight:700;font-size:15px}
+  .result .meta{color:var(--muted);font-size:12px;margin-top:2px}
+  .result .score{font-size:12px;color:var(--accent2);font-weight:700}
+  .reasons{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .reasons .chip{background:#173a33;color:#7ff0cf}
+  pre{background:#0c0f1c;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;font-size:12px;color:#c8d2f0}
+  .muted{color:var(--muted)}
+  .foot{margin-top:26px;color:var(--muted);font-size:12px;text-align:center}
+  .pill{font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  details summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">T</div>
+    <div>
+      <h1>Tasco Maps AI <span class="pill" id="mode">deterministic</span> <span class="pill" id="p9src">P9: local</span></h1>
+      <div class="sub">Integrated team pipeline · Autocomplete (Track 4 service) → Search Understanding (P6) → Semantic Ranking (P7)</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="searchbar">
+    <input id="q" autocomplete="off" placeholder="Thử: bv bach mai · ks da nang gan bien · quán cà phê yên tĩnh để làm việc" />
+    <button class="go" id="go">Phân tích</button>
+    <div id="drop" class="drop" style="display:none"></div>
+  </div>
+  <div class="examples" id="examples"></div>
+  <label class="toggle"><input type="checkbox" id="boost" /> Dùng LLM boost (OpenRouter) — cần API key</label>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Query Understanding — P6</h2>
+      <div id="understand"><span class="muted">Nhập truy vấn rồi nhấn Phân tích…</span></div>
+    </div>
+    <div class="card">
+      <h2>Semantic Search &amp; Ranking — P7</h2>
+      <div id="search"><span class="muted">Kết quả xếp hạng sẽ hiển thị ở đây…</span></div>
+    </div>
+  </div>
+  <div class="foot">Tasco Maps AI · integration-ready API at <code>/docs</code> · offline-capable hybrid engine</div>
+</div>
+
+<script>
+const EXAMPLES = ["bv bach mai","atm vcb q7","ks da nang gan bien","vincom q1",
+  "chi duong den san bay","quán cà phê yên tĩnh để làm việc","nơi phù hợp để hẹn hò ở quận 1",
+  "khách sạn gần biển đà nẵng có hồ bơi","galaxy","10.7769,106.7009"];
+const $ = s => document.querySelector(s);
+const esc = s => (s==null?"":String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const exWrap = $("#examples");
+EXAMPLES.forEach(e=>{const s=document.createElement("span");s.textContent=e;
+  s.onclick=()=>{$("#q").value=e;analyze();};exWrap.appendChild(s);});
+
+let acTimer=null, acController=null, acSequence=0;
+let analysisController=null, analysisSequence=0;
+$("#q").addEventListener("input",()=>{
+  clearTimeout(acTimer);
+  if(analysisController)analysisController.abort();
+  analysisSequence++;
+  const v=$("#q").value.trim();
+  if(!v){if(acController)acController.abort();acSequence++;$("#drop").style.display="none";return;}
+  acTimer=setTimeout(()=>autocomplete(v),110);
+});
+$("#q").addEventListener("keydown",e=>{if(e.key==="Enter"){$("#drop").style.display="none";analyze();}});
+$("#go").onclick=analyze;
+document.addEventListener("click",e=>{if(!e.target.closest(".searchbar"))$("#drop").style.display="none";});
+$("#boost").onchange=()=>{
+  $("#mode").textContent=$("#boost").checked?"hybrid + LLM":"deterministic";
+  if(analysisController)analysisController.abort();
+  analysisSequence++;
+};
+
+async function autocomplete(v){
+  const sequence=++acSequence;
+  if(acController)acController.abort();
+  acController=new AbortController();
+  try{
+    const smart=$("#boost").checked?"&smart=true":"";
+    const r=await fetch(`/autocomplete?q=${encodeURIComponent(v)}&k=7${smart}`,{signal:acController.signal});
+    if(!r.ok)throw new Error(`Autocomplete failed (${r.status})`);
+    const d=await r.json();
+    if(sequence!==acSequence||$("#q").value.trim()!==v)return;
+    $("#p9src").textContent="P9: "+(d.source||"local");
+    if(!d.suggestions||!d.suggestions.length){$("#drop").style.display="none";return;}
+    $("#drop").innerHTML=d.suggestions.map(s=>{
+      const label=s.display||s.text;
+      return `<div class="item" data-t="${esc(label)}"><span class="t">${esc(label)}</span><span class="badge">${esc(s.type)}</span></div>`;}).join("");
+    $("#drop").style.display="block";
+    $("#drop").querySelectorAll(".item").forEach(it=>it.onclick=()=>{
+      $("#q").value=it.getAttribute("data-t");$("#drop").style.display="none";analyze();});
+  }catch(e){if(e.name!=="AbortError"&&sequence===acSequence)$("#drop").style.display="none";}
+}
+
+async function analyze(){
+  const q=$("#q").value.trim(); if(!q)return;
+  const boost=$("#boost").checked;
+  const sequence=++analysisSequence;
+  if(analysisController)analysisController.abort();
+  analysisController=new AbortController();
+  try{
+    const [understanding,search]=await Promise.all([
+      postJSON("/understand",{query:q,boost},analysisController.signal),
+      postJSON("/search",{query:q,top_k:5},analysisController.signal),
+    ]);
+    if(sequence!==analysisSequence||$("#q").value.trim()!==q)return;
+    renderUnderstand(understanding);
+    renderSearch(search);
+  }catch(error){
+    if(error.name==="AbortError"||sequence!==analysisSequence)return;
+    const message=esc(error.message||"Không thể tải kết quả");
+    $("#understand").innerHTML=`<span class="muted">${message}</span>`;
+    $("#search").innerHTML=`<span class="muted">${message}</span>`;
+  }
+}
+async function postJSON(url,body,signal){
+  const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal});
+  let data; try{data=await r.json();}catch(_){data={};}
+  if(!r.ok)throw new Error(data.detail||`Request failed (${r.status})`);
+  return data;
+}
+
+function renderUnderstand(u){
+  const ents=Object.entries(u.entities||{}).map(([k,v])=>
+    `<span class="chip"><span class="k">${esc(k)}</span>: ${esc(Array.isArray(v)?v.join(", "):v)}</span>`).join("");
+  $("#understand").innerHTML=`
+    <div class="kv"><span class="k">Intent</span><span class="intent">${esc(u.intent)}</span></div>
+    <div class="kv"><span class="k">Normalized</span><b>${esc(u.normalized_query)}</b></div>
+    <div class="kv"><span class="k">Entities</span></div><div class="chips">${ents||'<span class="muted">—</span>'}</div>
+    <div class="kv" style="margin-top:10px"><span class="k">Confidence</span><span>${(u.confidence*100).toFixed(0)}% <span class="pill">${esc(u.source)}</span></span></div>
+    <div class="bar"><i style="width:${(u.confidence*100).toFixed(0)}%"></i></div>
+    <details><summary>JSON</summary><pre>${esc(JSON.stringify(u,null,2))}</pre></details>`;
+}
+function renderSearch(d){
+  const status=esc((d.diagnostics||{}).status||"ok");
+  if(!d.results||!d.results.length){$("#search").innerHTML=`<span class="muted">Không có kết quả · ${status}</span>`;return;}
+  const reqs=(d.required_attributes||[]).map(a=>`<span class="chip k">${esc(a)}</span>`).join("");
+  const excluded=(d.excluded_attributes||[]).map(a=>`<span class="chip">không ${esc(a)}</span>`).join("");
+  $("#search").innerHTML=`<div class="muted" style="margin-bottom:8px">status: ${status}</div>`+
+    ((reqs||excluded)?`<div class="chips" style="margin-bottom:10px">${reqs}${excluded}</div>`:"")+
+    d.results.map(r=>`
+      <div class="result">
+        <div class="top"><span class="name">${esc(r.display_name||r.name)}</span><span class="score">utility ${Number(r.score).toFixed(2)}</span></div>
+        <div class="meta">${esc(r.category)} · ${esc(r.district||r.city||"")}${r.address?(" · "+esc(r.address)):""} · ${r.rating?("★"+r.rating):""} ${r.review_count?("· "+r.review_count+" reviews"):""}</div>
+        <div class="reasons">${(r.reasons||[]).map(x=>`<span class="chip">${esc(x)}</span>`).join("")}</div>
+      </div>`).join("");
+}
+</script>
+</body>
+</html>
