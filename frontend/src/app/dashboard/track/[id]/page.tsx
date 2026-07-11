@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft, Clock } from "lucide-react";
 import { ACTIVE_TRACKS, ROUTES } from "@/lib/constants";
-import { AutocompleteDemo } from "@/components/tracks/track-4/autocomplete-demo";
-import { CompareDemo } from "@/components/tracks/track-4/compare-demo";
-import { UnderstandDemo } from "@/components/tracks/track-4/understand-demo";
-import { SearchDemo } from "@/components/tracks/track-4/search-demo";
+import { UnifiedLab } from "@/components/tracks/track-4/unified-lab";
 import { RouteMateDemo } from "@/components/tracks/routemate/routemate-demo";
 import { Badge } from "@/components/ui/badge";
 import { use } from "react";
@@ -14,7 +11,7 @@ import styles from "./track-detail.module.css";
 
 /**
  * Dynamic track detail page. Only live services resolve here:
- * - track-4 → full AutocompleteDemo suite (AI Search)
+ * - track-4 → UnifiedLab (AI Search: P9 autocomplete + P6 understand + P7 rank)
  * - routemate → RouteMateDemo
  * Hidden/coming-soon tracks are not found.
  */
@@ -49,12 +46,7 @@ export default function TrackDetailPage({
 
       {/* Render track content */}
       {isActive && track.id === "track-4" ? (
-        <>
-          <AutocompleteDemo />
-          <CompareDemo />
-          <UnderstandDemo />
-          <SearchDemo />
-        </>
+        <UnifiedLab />
       ) : isActive && track.id === "routemate" ? (
         <RouteMateDemo />
       ) : (

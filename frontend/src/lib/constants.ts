@@ -45,9 +45,10 @@ export const TRACKS: TrackDefinition[] = [
   {
     id: "track-4",
     number: 4,
-    title: "AI Autocomplete",
-    description: "Smart search suggestions with Vietnamese NLP, typo correction, and intent detection.",
-    icon: "Sparkles",
+    title: "AI Search",
+    description:
+      "Three-model Vietnamese search workspace: autocomplete (P9), query understanding (P6), and semantic ranking (P7) — run each on its own or all at once.",
+    icon: "Search",
     status: "active",
     gradient: "linear-gradient(135deg, #8B5CF6, #A78BFA)",
   },

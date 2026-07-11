@@ -19,8 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Tasco — AI-Powered Urban Intelligence",
   description:
-    "Tasco hackathon dashboard featuring live AI-powered urban mobility services: RouteMate route-aware discovery and AI Search autocomplete.",
-  keywords: ["Tasco", "Mobility", "AI", "Hackathon", "Dashboard", "Autocomplete"],
+    "Tasco hackathon dashboard featuring live AI-powered urban mobility services: RouteMate route-aware discovery and AI Search — a three-model Vietnamese search workspace.",
+  keywords: ["Tasco", "Mobility", "AI", "Hackathon", "Dashboard", "AI Search"],
 };
 
 /**
