@@ -38,6 +38,22 @@ lerna-debug.log*
 _scripts/*
 ref/*
 
+# python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# local agent tooling
+.omc/
+
+# next.js build output
+.next/
+
 # misc
 .DS_Store
 ``

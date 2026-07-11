@@ -2,16 +2,21 @@
 
 import Link from "next/link";
 import { ArrowLeft, Clock } from "lucide-react";
-import { TRACKS, ROUTES } from "@/lib/constants";
+import { ACTIVE_TRACKS, ROUTES } from "@/lib/constants";
 import { AutocompleteDemo } from "@/components/tracks/track-4/autocomplete-demo";
+import { CompareDemo } from "@/components/tracks/track-4/compare-demo";
+import { UnderstandDemo } from "@/components/tracks/track-4/understand-demo";
+import { SearchDemo } from "@/components/tracks/track-4/search-demo";
+import { RouteMateDemo } from "@/components/tracks/routemate/routemate-demo";
 import { Badge } from "@/components/ui/badge";
 import { use } from "react";
 import styles from "./track-detail.module.css";
 
 /**
- * Dynamic track detail page.
- * - track-4 → full AutocompleteDemo
- * - other tracks → coming-soon placeholder
+ * Dynamic track detail page. Only live services resolve here:
+ * - track-4 → full AutocompleteDemo suite (AI Search)
+ * - routemate → RouteMateDemo
+ * Hidden/coming-soon tracks are not found.
  */
 export default function TrackDetailPage({
   params,
@@ -19,7 +24,7 @@ export default function TrackDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const track = TRACKS.find((t) => t.id === id);
+  const track = ACTIVE_TRACKS.find((t) => t.id === id);
 
   if (!track) {
     return (
@@ -44,7 +49,14 @@ export default function TrackDetailPage({
 
       {/* Render track content */}
       {isActive && track.id === "track-4" ? (
-        <AutocompleteDemo />
+        <>
+          <AutocompleteDemo />
+          <CompareDemo />
+          <UnderstandDemo />
+          <SearchDemo />
+        </>
+      ) : isActive && track.id === "routemate" ? (
+        <RouteMateDemo />
       ) : (
         <div className={styles.comingSoon}>
           <div

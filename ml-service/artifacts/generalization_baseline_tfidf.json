@@ -1,0 +1,221 @@
+{
+  "gate_schema_version": 2,
+  "mode": "corpus-derived-generalization",
+  "embedder": "tfidf",
+  "embed_model": "tfidf-char-2-4+bm25",
+  "corpus_fingerprint": "406565414314412e1aa7b20f102429df8dde0bc617b73cc172459f4682469336",
+  "uses_public_evaluation": false,
+  "p6": {
+    "cases": 313,
+    "exact_poi_accuracy": 1.0,
+    "long_poi_accuracy": 1.0,
+    "punctuation_stability": 1.0,
+    "single_edit_accuracy": 0.9808306709265175,
+    "blank_abstains": true,
+    "ood_cases": 10,
+    "ood_abstention": 1.0
+  },
+  "p7": {
+    "direct_cases": 107,
+    "direct_name_hit@5": 1.0,
+    "address_cases": 111,
+    "address_hit@5": 0.990990990990991,
+    "reference_address_cases": 106,
+    "reference_address_satisfaction@1": 1.0,
+    "partial_name_cases": 11,
+    "partial_name_hit@5": 1.0,
+    "bounded_finite_scores": 1.0,
+    "structured_cases": 91,
+    "constraint_satisfaction@1": 0.967032967032967,
+    "perturbed_constraint_satisfaction@1": 0.8681318681318682,
+    "negation_cases": 68,
+    "negation_parse_accuracy": 1.0,
+    "negation_constraint_satisfaction@1": 0.9705882352941176,
+    "blank_abstains": true,
+    "ood_cases": 10,
+    "ood_abstention": 1.0
+  },
+  "sample_failures": {
+    "p6": [
+      {
+        "source": "T2",
+        "poi_id": "A001",
+        "name": "Thảo Cầm Viên Sài Gòn",
+        "exact": true,
+        "punctuation": true,
+        "single_edit": false
+      },
+      {
+        "source": "T4",
+        "poi_id": "POI034",
+        "name": "BIDV Cây xăng Trần Duy Hưng TP.HCM",
+        "exact": true,
+        "punctuation": true,
+        "single_edit": false
+      },
+      {
+        "source": "T2",
+        "poi_id": "S002",
+        "name": "ATM Techcombank Hồ Gươm",
+        "exact": true,
+        "punctuation": true,
+        "single_edit": false
+      },
+      {
+        "source": "T2",
+        "poi_id": "M002",
+        "name": "Vincom Nguyễn Chí Thanh",
+        "exact": true,
+        "punctuation": true,
+        "single_edit": false
+      },
+      {
+        "source": "T2",
+        "poi_id": "G068",
+        "name": "Trạm xăng PVOIL Phường 3",
+        "exact": true,
+        "punctuation": true,
+        "single_edit": false
+      },
+      {
+        "source": "T4",
+        "poi_id": "POI062",
+        "name": "BIDV Cây xăng Pasteur Đà Lạt",
+        "exact": true,
+        "punctuation": true,
+        "single_edit": false
+      }
+    ],
+    "p7": [
+      {
+        "query": "94 Đường Trung Tâm, Bình Thạnh",
+        "address_hit@5": false,
+        "expected": "Phúc Long Bình Thạnh"
+      },
+      {
+        "query": "tìm Quán cà phê có phù hợp làm việc tại Đà Lạt",
+        "perturbed_query": "tim Quan ca phe co phu hop lam vieec tai Da Lat",
+        "constraint_satisfied@1": true,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "Phúc Long Phường 8",
+        "perturbed_top": "Dalat View Coffee"
+      },
+      {
+        "query": "tìm Nhà hàng có món chay tại TP Hồ Chí Minh",
+        "perturbed_query": "tim Nha hang co mon chaay tai TP Ho Chi Minh",
+        "constraint_satisfied@1": true,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "Chay An Lạc",
+        "perturbed_top": "Pizza 4P's Lê Thánh Tôn"
+      },
+      {
+        "query": "tìm Nhà hàng có lãng mạn tại Hà Nội",
+        "perturbed_query": "tim Nha hang co lanng man tai Ha Noi",
+        "constraint_satisfied@1": true,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "Lẩu Phố Hoàn Kiếm",
+        "perturbed_top": "Phở Thìn Lò Đúc"
+      },
+      {
+        "query": "tìm Quán cà phê có wifi mạnh tại Hà Nội",
+        "perturbed_query": "tim Quan ca phe co wiffi manh tai Ha Noi",
+        "constraint_satisfied@1": false,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "Cộng Cà Phê Tây Hồ",
+        "perturbed_top": "Cộng Cà Phê Tây Hồ"
+      },
+      {
+        "query": "tìm Quán cà phê có view đẹp tại Hà Nội",
+        "perturbed_query": "tim Quan ca phe co vieew dep tai Ha Noi",
+        "constraint_satisfied@1": false,
+        "perturbed_constraint_satisfied@1": true,
+        "top": "Tranquil Books & Coffee",
+        "perturbed_top": "Cộng Cà Phê Tây Hồ"
+      },
+      {
+        "query": "tìm Quán cà phê có sân vườn tại TP Hồ Chí Minh",
+        "perturbed_query": "tim Quan ca phe co san vuoon tai TP Ho Chi Minh",
+        "constraint_satisfied@1": true,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "Mộc Cafe Thủ Đức",
+        "perturbed_top": "The Workshop Coffee"
+      },
+      {
+        "query": "tìm Trung tâm thương mại có gia đình tại Hà Nội",
+        "perturbed_query": "tim Trung tam thuong mai co gia dinnh tai Ha Noi",
+        "constraint_satisfied@1": true,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "Vincom Tây Hồ",
+        "perturbed_top": "Vincom Nguyễn Chí Thanh"
+      },
+      {
+        "query": "tìm Nhà hàng có món Việt tại Đà Lạt",
+        "perturbed_query": "tim Nha hang co mon Vieet tai Da Lat",
+        "constraint_satisfied@1": true,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "BBQ Garden Phường 3",
+        "perturbed_top": "Nhà hàng Biển Xanh Phường 3"
+      },
+      {
+        "query": "tìm Nhà hàng có rooftop tại TP Hồ Chí Minh",
+        "perturbed_query": "tim Nha hang co roofftop tai TP Ho Chi Minh",
+        "constraint_satisfied@1": true,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "Rooftop Sky Garden",
+        "perturbed_top": "Pizza 4P's Lê Thánh Tôn"
+      },
+      {
+        "query": "tìm Trung tâm thương mại có rạp phim tại TP Hồ Chí Minh",
+        "perturbed_query": "tim Trung tam thuong mai co rap phiim tai TP Ho Chi Minh",
+        "constraint_satisfied@1": true,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "Aeon Mall Quận 7",
+        "perturbed_top": "Vincom Center Đồng Khởi"
+      },
+      {
+        "query": "tìm Quán cà phê có phòng họp tại Đà Nẵng",
+        "perturbed_query": "tim Quan ca phe co phoong hop tai Da Nang",
+        "constraint_satisfied@1": true,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "Starbucks Sơn Trà",
+        "perturbed_top": "Cộng Cà Phê Thanh Khê"
+      },
+      {
+        "query": "tìm Khách sạn có giá dưới 2 triệu tại Đà Lạt",
+        "perturbed_query": "tim Khach san co gia duoi 2 triieu tai Da Lat",
+        "constraint_satisfied@1": true,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "Mường Thanh Phường 1",
+        "perturbed_top": "Dalat Garden Homestay"
+      },
+      {
+        "query": "tìm Khách sạn có view đẹp tại Đà Lạt",
+        "perturbed_query": "tim Khach san co vieew dep tai Da Lat",
+        "constraint_satisfied@1": false,
+        "perturbed_constraint_satisfied@1": true,
+        "top": "Dalat Garden Homestay",
+        "perturbed_top": "Golden Lotus Phường 4"
+      },
+      {
+        "query": "tìm Nhà hàng có lãng mạn tại Đà Nẵng",
+        "perturbed_query": "tim Nha hang co lanng man tai Da Nang",
+        "constraint_satisfied@1": true,
+        "perturbed_constraint_satisfied@1": false,
+        "top": "Quán Ngon Sơn Trà",
+        "perturbed_top": "Bếp Nhà Đà Nẵng"
+      },
+      {
+        "query": "Quán cà phê không có view đẹp nhưng có wifi mạnh tại Hà Nội",
+        "negation_parse": true,
+        "negation_constraint_satisfied@1": false,
+        "top": "Starbucks Cầu Giấy"
+      },
+      {
+        "query": "Khách sạn không có sân vườn nhưng có view đẹp tại Đà Lạt",
+        "negation_parse": true,
+        "negation_constraint_satisfied@1": false,
+        "top": "Dalat Garden Homestay"
+      }
+    ]
+  }
+}
