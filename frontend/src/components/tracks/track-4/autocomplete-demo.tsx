@@ -1,13 +1,16 @@
 "use client";
 
-import { useRef, useCallback, type KeyboardEvent } from "react";
+import { useRef, useCallback, useState, useEffect, type KeyboardEvent } from "react";
 import { useAutocomplete } from "@/hooks/use-autocomplete";
+import { useRouteMap } from "@/hooks/use-route-map";
+import { getMockCoordinates } from "@/lib/mock-coordinates";
 import type { HistoryEntry } from "@/hooks/use-search-history";
 import type { Suggestion } from "@/lib/api";
 import { SearchBar } from "./search-bar";
 import { SuggestionList } from "./suggestion-list";
 import { FeatureCards } from "./feature-cards";
 import { ArchitectureFlow } from "./architecture-flow";
+import { RouteMapPanel, RouteMapEmpty } from "./route-map-panel";
 import styles from "./autocomplete-demo.module.css";
 
 const EXAMPLE_QUERIES = [
@@ -21,9 +24,16 @@ const EXAMPLE_QUERIES = [
   "coffee near",
 ];
 
+interface SelectedDestination {
+  lat: number;
+  lng: number;
+  name: string;
+}
+
 /**
  * Main Track 4 autocomplete demo panel.
- * Full Google-style UX: search → suggestions → history → keyboard nav.
+ * Split layout: search panel (left) + map panel (right) on desktop.
+ * Stacked on mobile: search on top, map below.
  */
 export function AutocompleteDemo() {
   const {
@@ -46,20 +56,51 @@ export function AutocompleteDemo() {
     setActiveIndex,
   } = useAutocomplete();
 
+  const {
+    userLocation,
+    geoPermission,
+    route,
+    isLoadingRoute,
+    routeError,
+    fetchRoute,
+    clearRoute,
+  } = useRouteMap();
+
+  const [selectedDestination, setSelectedDestination] =
+    useState<SelectedDestination | null>(null);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /** Compute total items for keyboard navigation */
-  const getVisibleItems = useCallback((): { type: "suggestion"; data: Suggestion }[] | { type: "history"; data: HistoryEntry }[] => {
-    if (!query.trim() && recentHistory.length > 0) {
-      return recentHistory.map((h) => ({ type: "history" as const, data: h }));
+  /** Fetch route when destination changes */
+  useEffect(() => {
+    if (selectedDestination) {
+      fetchRoute({
+        lat: selectedDestination.lat,
+        lng: selectedDestination.lng,
+      });
     }
-    return suggestions.map((s) => ({ type: "suggestion" as const, data: s }));
-  }, [query, recentHistory, suggestions]);
+  }, [selectedDestination, fetchRoute]);
 
   const totalItems = !query.trim()
     ? recentHistory.length
     : suggestions.length;
+
+  /** Handle selecting a suggestion — triggers map */
+  const handleSelectSuggestion = useCallback(
+    (suggestion: Suggestion) => {
+      selectSuggestion(suggestion);
+
+      // Generate mock coordinates for the selected suggestion
+      const coords = getMockCoordinates(suggestion.text);
+      setSelectedDestination({
+        lat: coords.lat,
+        lng: coords.lng,
+        name: suggestion.display,
+      });
+    },
+    [selectSuggestion],
+  );
 
   /** Handle keyboard navigation */
   const handleKeyDown = useCallback(
@@ -96,10 +137,10 @@ export function AutocompleteDemo() {
               const entry = recentHistory[activeIndex];
               if (entry) handleSelectHistory(entry);
             } else if (suggestions[activeIndex]) {
-              selectSuggestion(suggestions[activeIndex]);
+              handleSelectSuggestion(suggestions[activeIndex]);
             }
           } else if (query.trim()) {
-            selectSuggestion({
+            handleSelectSuggestion({
               text: query.trim().toLowerCase(),
               display: query.trim(),
               type: "Search",
@@ -127,7 +168,7 @@ export function AutocompleteDemo() {
       query,
       recentHistory,
       suggestions,
-      selectSuggestion,
+      handleSelectSuggestion,
       setShowDropdown,
       setActiveIndex,
     ],
@@ -149,18 +190,25 @@ export function AutocompleteDemo() {
     }, 200);
   }, [setShowDropdown, setActiveIndex]);
 
-  /** Select from history */
+  /** Select from history — also triggers map */
   const handleSelectHistory = useCallback(
     (entry: HistoryEntry) => {
-      selectSuggestion({
+      const suggestion: Suggestion = {
         text: entry.text,
         display: entry.display,
         type: entry.type,
         score: 1.0,
-      });
+      };
+      handleSelectSuggestion(suggestion);
     },
-    [selectSuggestion],
+    [handleSelectSuggestion],
   );
+
+  /** Close map panel */
+  const handleCloseMap = useCallback(() => {
+    setSelectedDestination(null);
+    clearRoute();
+  }, [clearRoute]);
 
   return (
     <div className={styles.container}>
@@ -173,65 +221,92 @@ export function AutocompleteDemo() {
         </p>
       </div>
 
-      {/* Search + Results */}
-      <div className={styles.searchSection}>
-        <SearchBar
-          value={query}
-          onChange={(v) => {
-            setQuery(v);
-            setShowDropdown(true);
-          }}
-          isLoading={isLoading}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          inputRef={inputRef}
-        />
-        <SuggestionList
-          suggestions={suggestions}
-          latencyMs={latencyMs}
-          source={source}
-          isLoading={isLoading}
-          error={error}
-          query={query}
-          onSelect={selectSuggestion}
-          isInHistory={isInHistory}
-          activeIndex={activeIndex}
-          recentHistory={recentHistory}
-          onRemoveHistory={removeFromHistory}
-          onClearHistory={clearHistory}
-          onSelectHistory={handleSelectHistory}
-          visible={showDropdown}
-        />
-      </div>
+      {/* Split layout: Search + Map */}
+      <div className={styles.splitLayout}>
+        {/* Left: Search Panel */}
+        <div className={styles.searchPanel}>
+          {/* Search + Results */}
+          <div className={styles.searchSection}>
+            <SearchBar
+              value={query}
+              onChange={(v) => {
+                setQuery(v);
+                setShowDropdown(true);
+              }}
+              isLoading={isLoading}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              inputRef={inputRef}
+            />
+            <SuggestionList
+              suggestions={suggestions}
+              latencyMs={latencyMs}
+              source={source}
+              isLoading={isLoading}
+              error={error}
+              query={query}
+              onSelect={handleSelectSuggestion}
+              isInHistory={isInHistory}
+              activeIndex={activeIndex}
+              recentHistory={recentHistory}
+              onRemoveHistory={removeFromHistory}
+              onClearHistory={clearHistory}
+              onSelectHistory={handleSelectHistory}
+              visible={showDropdown}
+            />
+          </div>
 
-      {/* Example query chips */}
-      <div className={styles.chips}>
-        <span className={styles.chipsLabel}>Try:</span>
-        {EXAMPLE_QUERIES.map((q) => (
-          <button
-            key={q}
-            className={styles.chip}
-            onClick={() => {
-              setQuery(q);
-              setShowDropdown(true);
-              inputRef.current?.focus();
-            }}
-            type="button"
-          >
-            {q}
-          </button>
-        ))}
-      </div>
+          {/* Example query chips */}
+          <div className={styles.chips}>
+            <span className={styles.chipsLabel}>Try:</span>
+            {EXAMPLE_QUERIES.map((q) => (
+              <button
+                key={q}
+                className={styles.chip}
+                onClick={() => {
+                  setQuery(q);
+                  setShowDropdown(true);
+                  inputRef.current?.focus();
+                }}
+                type="button"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
 
-      {/* Stats */}
-      {queryCount > 0 && (
-        <div className={styles.stats}>
-          <span className={styles.statItem}>
-            Queries: <strong>{queryCount}</strong>
-          </span>
+          {/* Stats */}
+          {queryCount > 0 && (
+            <div className={styles.stats}>
+              <span className={styles.statItem}>
+                Queries: <strong>{queryCount}</strong>
+              </span>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Right: Map Panel */}
+        <div className={styles.mapPanel}>
+          {selectedDestination ? (
+            <RouteMapPanel
+              userLocation={userLocation}
+              destination={{
+                lat: selectedDestination.lat,
+                lng: selectedDestination.lng,
+              }}
+              destinationName={selectedDestination.name}
+              route={route}
+              isLoadingRoute={isLoadingRoute}
+              routeError={routeError}
+              geoPermission={geoPermission}
+              onClose={handleCloseMap}
+            />
+          ) : (
+            <RouteMapEmpty />
+          )}
+        </div>
+      </div>
 
       {/* Architecture flow — shows matching pipeline step */}
       <ArchitectureFlow source={source} />

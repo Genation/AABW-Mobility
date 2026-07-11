@@ -17,7 +17,7 @@ export const track4Service = {
     }
   },
 
-  suggest(
+  async suggest(
     input: string,
     options?: { lat?: number; lng?: number; limit?: number },
   ) {

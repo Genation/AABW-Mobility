@@ -15,7 +15,7 @@ export interface Suggestion {
 export interface AutocompleteResponse {
   suggestions: Suggestion[];
   latencyMs: number;
-  source: "exact" | "fuzzy" | "popular" | "empty";
+  source: "exact" | "fuzzy" | "embedding" | "popular" | "empty";
 }
 
 interface FetchSuggestionsOptions {

@@ -28,6 +28,7 @@ function sourceBadgeVariant(source: AutocompleteResponse["source"]): "success" |
   switch (source) {
     case "exact": return "success";
     case "fuzzy": return "warning";
+    case "embedding": return "info";
     case "popular": return "info";
     default: return "default";
   }

@@ -7,6 +7,7 @@ const STEPS = [
   { id: "expand", label: "Expand", desc: "Abbreviation lookup" },
   { id: "exact", label: "Trie Exact", desc: "Prefix match" },
   { id: "fuzzy", label: "Trie Fuzzy", desc: "Edit distance ≤ 2" },
+  { id: "embedding", label: "Embedding", desc: "Semantic vector search" },
   { id: "popular", label: "Popular", desc: "Trending fallback" },
 ];
 
@@ -15,7 +16,8 @@ function activeStepIndex(source: AutocompleteResponse["source"] | null): number 
   switch (source) {
     case "exact": return 3;
     case "fuzzy": return 4;
-    case "popular": return 5;
+    case "embedding": return 5;
+    case "popular": return 6;
     default: return -1;
   }
 }
