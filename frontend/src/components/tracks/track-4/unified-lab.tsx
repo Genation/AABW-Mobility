@@ -85,11 +85,10 @@ function errMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Request failed";
 }
 
-async function timedFetch<T>(
+async function fetchJson<T>(
   url: string,
   options?: RequestInit,
-): Promise<{ data: T; elapsed: number }> {
-  const started = performance.now();
+): Promise<T> {
   const res = await fetch(url, options);
   let data: unknown = {};
   try {
@@ -101,7 +100,7 @@ async function timedFetch<T>(
     const detail = (data as { detail?: string })?.detail;
     throw new Error(detail || `Request failed (${res.status})`);
   }
-  return { data: data as T, elapsed: performance.now() - started };
+  return data as T;
 }
 
 function formatEntity(value: unknown): string {
@@ -165,7 +164,7 @@ export function UnifiedLab() {
     p9Ctrl.current = ctrl;
     setP9State("running");
     try {
-      const { data, elapsed } = await timedFetch<{
+      const data = await fetchJson<{
         suggestions?: Sug[];
         source?: string;
       }>(`${API.TRACK4_HAI_SUGGEST}?q=${encodeURIComponent(value)}&limit=6`, {
@@ -176,7 +175,7 @@ export function UnifiedLab() {
       setP9Sug(suggestions);
       setP9State("done");
       setP9Meta(
-        `${data.source ?? "local"} · ${elapsed.toFixed(1)} ms · ${suggestions.length} suggestions`,
+        `${data.source ?? "local"} · ${suggestions.length} suggestions`,
       );
     } catch (err) {
       if (isAbort(err) || seq !== p9Seq.current) return;
@@ -202,7 +201,7 @@ export function UnifiedLab() {
     p6Ctrl.current = ctrl;
     setP6State("running");
     try {
-      const { data, elapsed } = await timedFetch<UnderstandResult>(
+      const data = await fetchJson<UnderstandResult>(
         API.TRACK1_HAI_UNDERSTAND,
         {
           method: "POST",
@@ -214,7 +213,7 @@ export function UnifiedLab() {
       if (seq !== p6Seq.current) return;
       setP6Res(data);
       setP6State("done");
-      setP6Meta(`${elapsed.toFixed(1)} ms · ${data.source ?? "deterministic"}`);
+      setP6Meta(`${data.source ?? "deterministic"}`);
     } catch (err) {
       if (isAbort(err) || seq !== p6Seq.current) return;
       setP6State("error");
@@ -239,7 +238,7 @@ export function UnifiedLab() {
     p7Ctrl.current = ctrl;
     setP7State("running");
     try {
-      const { data, elapsed } = await timedFetch<SearchResult>(
+      const data = await fetchJson<SearchResult>(
         API.TRACK2_HAI_SEARCH,
         {
           method: "POST",
@@ -253,7 +252,7 @@ export function UnifiedLab() {
       setP7State("done");
       const status = data.diagnostics?.status ?? "ok";
       setP7Meta(
-        `${elapsed.toFixed(1)} ms · ${data.results?.length ?? 0} ranked · status ${status}`,
+        `${data.results?.length ?? 0} ranked · status ${status}`,
       );
     } catch (err) {
       if (isAbort(err) || seq !== p7Seq.current) return;
