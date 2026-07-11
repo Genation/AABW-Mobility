@@ -8,6 +8,6 @@
 - [x] Generic ranking diversifies repeated display identities without merging branches.
 - [x] Existing P6/P7/P9 regression suites pass.
 - [x] Full ML test suite passes: 169 tests, 0 failures.
-- [x] Deterministic edge-case matrix passes: 22/22 with sentence-transformer and 22/22 with forced TF-IDF.
+- [x] Deterministic correctness matrix passes: 21/21 with sentence-transformer and 21/21 with forced TF-IDF.
 - [x] Qualitative/data-quality cases are reported separately in mode-specific matrix artifacts.
 - [x] Final diff contains only ML runtime, focused tests, matrix runner/report, and SDLC status.

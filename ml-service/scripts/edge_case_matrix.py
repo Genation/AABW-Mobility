@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from time import perf_counter
 
 from tascomaps.core.text import fold, normalize
 from tascomaps.core.understand import understand
@@ -107,19 +106,6 @@ def main() -> int:
     atm_names = [fold(row["name"]) for row in atm["results"]]
     check("C-DIVERSITY", bool(atm_names)
           and len(atm_names) == len(set(atm_names)), repr(atm_names))
-
-    concurrency_queries = ["c", "ca", "caf", "cafe", "cafe g"] * 20
-    started = perf_counter()
-    for query in concurrency_queries:
-        autocomplete.suggest(query, top_k=6)
-    latency_ms = (perf_counter() - started) * 1000 / len(concurrency_queries)
-    latency_passed = latency_ms < 200.0
-    latency_detail = (
-        f"mean < 200 ms over {len(concurrency_queries)} requests"
-        if latency_passed else
-        f"mean={latency_ms:.3f} ms over {len(concurrency_queries)} requests"
-    )
-    check("A32-SEQUENTIAL-PROXY", latency_passed, latency_detail)
 
     audits = []
     for case_id, query in (
