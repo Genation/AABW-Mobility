@@ -15,6 +15,9 @@ export interface RankedSuggestion {
   display: string;
   type: string;
   score: number;
+  lat?: number;
+  lng?: number;
+  category?: string;
 }
 
 export interface CandidateEntry {
@@ -65,6 +68,9 @@ export function rank(
         display: s.display,
         type: s.type,
         score: s.score * boost,
+        lat: s.lat,
+        lng: s.lng,
+        category: s.category,
         source: entry.source,
       });
     }
@@ -82,6 +88,9 @@ export function rank(
         display: item.display,
         type: item.type,
         score: Math.round(item.score * 10000) / 10000,
+        lat: item.lat,
+        lng: item.lng,
+        category: item.category,
       });
     }
   }

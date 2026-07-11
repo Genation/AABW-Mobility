@@ -34,4 +34,8 @@ export const ERROR_MESSAGES: Record<ErrorCode, {
     message: "Invalid API key.",
     status: 401,
   },
+  [ERROR_CODE.AI_SERVICE_UNAVAILABLE]: {
+    message: "Hai AI service is unavailable",
+    status: 503,
+  },
 };

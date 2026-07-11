@@ -6,4 +6,5 @@ export const NOT_FOUND = "NOT_FOUND";
 export const INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
 export const API_KEY_NOT_FOUND = "API_KEY_NOT_FOUND";
 export const API_KEY_INVALID = "API_KEY_INVALID";
+export const AI_SERVICE_UNAVAILABLE = "AI_SERVICE_UNAVAILABLE";
 export type ErrorCode = string;

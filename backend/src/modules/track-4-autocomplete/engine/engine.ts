@@ -22,6 +22,9 @@ export interface SuggestResult {
   display: string;
   type: string;
   score: number;
+  lat?: number;
+  lng?: number;
+  category?: string;
 }
 
 export interface SuggestResponse {

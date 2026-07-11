@@ -52,6 +52,16 @@ export const TRACKS: TrackDefinition[] = [
     gradient: "linear-gradient(135deg, #8B5CF6, #A78BFA)",
   },
   {
+    id: "routemate",
+    number: 13,
+    title: "RouteMate",
+    description:
+      "Route-aware discovery: pick a destination and get en-route fuel, charging, food, and rest stops ranked by detour — unifying intent (P6), ranking (P7), and autocomplete (P9).",
+    icon: "Route",
+    status: "active",
+    gradient: "linear-gradient(135deg, #0EA5E9, #22C55E)",
+  },
+  {
     id: "track-5",
     number: 5,
     title: "Gamification",
@@ -125,6 +135,13 @@ export const TRACKS: TrackDefinition[] = [
   },
 ];
 
+/**
+ * Tracks that are live and surfaced in the UI (RouteMate + AI Search).
+ * Coming-soon tracks stay defined above but are hidden from the dashboard,
+ * stats, and routing.
+ */
+export const ACTIVE_TRACKS = TRACKS.filter((t) => t.status === "active");
+
 /** Route paths */
 export const ROUTES = {
   LOGIN: "/login",
@@ -142,6 +159,11 @@ export const AUTH = {
 /** API endpoints */
 export const API = {
   TRACK4_SUGGEST: "/api/v1/track-4/suggest",
+  TRACK4_PHONG_SUGGEST: "/api/v1/track-4-phong/suggest",
+  TRACK4_HAI_SUGGEST: "/api/v1/track-4-hai/suggest",
+  TRACK1_HAI_UNDERSTAND: "/api/v1/track-1-hai/understand",
+  TRACK2_HAI_SEARCH: "/api/v1/track-2-hai/search",
+  ROUTEMATE_PLAN: "/api/v1/routemate/plan",
 } as const;
 
 /** Theme storage key */

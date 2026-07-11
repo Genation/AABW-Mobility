@@ -91,8 +91,13 @@ export function AutocompleteDemo() {
     (suggestion: Suggestion) => {
       selectSuggestion(suggestion);
 
-      // Generate mock coordinates for the selected suggestion
-      const coords = getMockCoordinates(suggestion.text);
+      // Prefer the suggestion's real POI coordinates; only synthesize a mock
+      // point when the engine couldn't resolve one (template/brand/popular
+      // suggestions that aren't tied to a single POI row).
+      const coords =
+        suggestion.lat != null && suggestion.lng != null
+          ? { lat: suggestion.lat, lng: suggestion.lng }
+          : getMockCoordinates(suggestion.text);
       setSelectedDestination({
         lat: coords.lat,
         lng: coords.lng,

@@ -3,6 +3,9 @@ export interface Suggestion {
   display: string;
   type: string;
   score: number;
+  lat?: number;
+  lng?: number;
+  category?: string;
 }
 
 interface SerializedNode {
