@@ -12,8 +12,11 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { LatLng, RouteInfo } from "@/lib/osrm";
+import type { PlaceCandidate } from "@/lib/api";
 import { needStyle } from "./needs-style";
 import type { FlatRecommendation } from "./types";
+
+const CANDIDATE_COLOR = "#7C3AED"; // violet — P7 discovery pins
 
 function letterIcon(letter: string, color: string) {
   return L.divIcon({
@@ -42,6 +45,21 @@ function recIcon(color: string, emoji: string, selected: boolean) {
   });
 }
 
+/** Numbered teardrop pin for a ranked P7 candidate. */
+function candidateIcon(rank: number, active: boolean) {
+  const size = active ? 34 : 28;
+  const ring = active
+    ? `0 0 0 4px ${CANDIDATE_COLOR}55, 0 3px 8px rgba(0,0,0,0.4)`
+    : "0 2px 6px rgba(0,0,0,0.35)";
+  return L.divIcon({
+    className: "",
+    html: `<div style="width:${size}px;height:${size}px;background:${CANDIDATE_COLOR};border:2px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:${ring};display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);color:#fff;font-weight:800;font-size:${active ? 14 : 12}px;font-family:system-ui,sans-serif;">${rank}</span></div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size],
+    popupAnchor: [0, -size],
+  });
+}
+
 const originIcon = letterIcon("A", "#3B82F6");
 const destIcon = letterIcon("B", "#EF4444");
 
@@ -54,6 +72,21 @@ interface Props {
   markers: FlatRecommendation[];
   selectedIds: Set<string>;
   onToggle: (rec: FlatRecommendation) => void;
+  /** Ranked P7 discovery candidates (violet numbered pins). */
+  candidates: PlaceCandidate[];
+  onPickCandidate: (c: PlaceCandidate) => void;
+}
+
+/** Keep only candidates with usable coordinates, preserving rank order. */
+function withCoords(candidates: PlaceCandidate[]): (PlaceCandidate & { lat: number; lng: number })[] {
+  const out: (PlaceCandidate & { lat: number; lng: number })[] = [];
+  for (const c of candidates) {
+    if (typeof c.lat === "number" && typeof c.lng === "number" &&
+        Number.isFinite(c.lat) && Number.isFinite(c.lng)) {
+      out.push(c as PlaceCandidate & { lat: number; lng: number });
+    }
+  }
+  return out;
 }
 
 function toPositions(route: RouteInfo | null): [number, number][] {
@@ -66,23 +99,26 @@ function MapAutoFit({
   origin,
   destination,
   markers,
+  candidates,
 }: {
   origin: LatLng;
   destination: LatLng | null;
   markers: FlatRecommendation[];
+  candidates: (PlaceCandidate & { lat: number; lng: number })[];
 }) {
   const map = useMap();
   const key = useMemo(
     () =>
       `${origin.lat},${origin.lng}|${destination?.lat},${destination?.lng}|${markers
         .map((m) => m.poi_id)
-        .join(",")}`,
-    [origin, destination, markers],
+        .join(",")}|${candidates.map((c) => c.poi_id).join(",")}`,
+    [origin, destination, markers, candidates],
   );
   useEffect(() => {
     const points: [number, number][] = [[origin.lat, origin.lng]];
     if (destination) points.push([destination.lat, destination.lng]);
     for (const m of markers) points.push([m.lat, m.lng]);
+    for (const c of candidates) points.push([c.lat, c.lng]);
     if (points.length === 1) {
       map.setView(points[0], 13);
       return;
@@ -102,6 +138,8 @@ export function RouteMateMapInner({
   markers,
   selectedIds,
   onToggle,
+  candidates,
+  onPickCandidate,
 }: Props) {
   const basePositions = useMemo(() => toPositions(baseRoute), [baseRoute]);
   const displayPositions = useMemo(
@@ -109,6 +147,7 @@ export function RouteMateMapInner({
     [displayRoute],
   );
   const hasRedraw = displayPositions.length > 0;
+  const mappableCandidates = useMemo(() => withCoords(candidates), [candidates]);
 
   return (
     <MapContainer
@@ -123,7 +162,12 @@ export function RouteMateMapInner({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      <MapAutoFit origin={origin} destination={destination} markers={markers} />
+      <MapAutoFit
+        origin={origin}
+        destination={destination}
+        markers={markers}
+        candidates={mappableCandidates}
+      />
 
       {/* Base route (blue) — dimmed once a re-routed path is shown */}
       {basePositions.length > 0 && (
@@ -196,6 +240,50 @@ export function RouteMateMapInner({
           </Marker>
         );
       })}
+
+      {/* P7 discovery candidates — numbered violet pins; click sets destination */}
+      {mappableCandidates.map((c, i) => (
+        <Marker
+          key={`cand-${c.poi_id}-${i}`}
+          position={[c.lat, c.lng]}
+          icon={candidateIcon(i + 1, false)}
+          eventHandlers={{ click: () => onPickCandidate(c) }}
+        >
+          <Popup>
+            <div style={{ minWidth: 170 }}>
+              <div style={{ fontWeight: 700, fontSize: 13 }}>
+                {i + 1}. {c.display_name || c.name}
+              </div>
+              <div style={{ fontSize: 11, color: "#666", marginTop: 2 }}>
+                {c.category}
+                {c.district || c.city ? ` · ${c.district || c.city}` : ""}
+                {c.rating != null ? ` · ★${c.rating}` : ""}
+              </div>
+              {c.reasons?.length > 0 && (
+                <div style={{ fontSize: 11, marginTop: 4, color: CANDIDATE_COLOR }}>
+                  {c.reasons.slice(0, 2).join(" · ")}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => onPickCandidate(c)}
+                style={{
+                  marginTop: 6,
+                  fontSize: 11,
+                  padding: "4px 8px",
+                  borderRadius: 6,
+                  border: `1px solid ${CANDIDATE_COLOR}`,
+                  background: CANDIDATE_COLOR,
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                Đặt làm điểm đến →
+              </button>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
     </MapContainer>
   );
 }

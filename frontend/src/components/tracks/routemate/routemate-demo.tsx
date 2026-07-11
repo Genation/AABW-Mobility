@@ -2,16 +2,20 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { Loader2, MapPin, Navigation, Route, Search } from "lucide-react";
+import { Loader2, MapPin, Route, Search, Sparkles } from "lucide-react";
 import { API } from "@/lib/constants";
 import { useRouteMap } from "@/hooks/use-route-map";
-import { fetchOsrmRoute } from "@/lib/osrm";
+import { fetchOsrmRoute, haversineMeters } from "@/lib/osrm";
 import type { LatLng, RouteInfo } from "@/lib/osrm";
 import {
   fetchSuggestions,
   planRoute,
+  searchPlaces,
+  understandQuery,
+  type PlaceCandidate,
   type RouteMatePlanResponse,
   type Suggestion,
+  type UnderstandResult,
   type VehicleType,
 } from "@/lib/api";
 import { VehicleToggle } from "./vehicle-toggle";
@@ -51,6 +55,85 @@ const glass = {
   backdropFilter: "blur(10px)",
 };
 
+const modelBadge = (bg: string): React.CSSProperties => ({
+  fontSize: 10,
+  fontWeight: 800,
+  padding: "2px 7px",
+  borderRadius: 20,
+  background: bg,
+  color: "#fff",
+  flexShrink: 0,
+});
+const entityChip: React.CSSProperties = {
+  fontSize: 11,
+  padding: "2px 8px",
+  borderRadius: 20,
+  background: "rgba(255,255,255,0.1)",
+  border: "1px solid rgba(255,255,255,0.15)",
+};
+
+/* Surface the entities P6 extracted (plus the attributes P7 required) as chips. */
+const ENTITY_KEYS = [
+  "category", "brand", "dish", "attribute", "city", "district",
+  "reference_area", "reference_poi", "poi_name",
+] as const;
+function understandingChips(
+  entities: Record<string, unknown> | undefined,
+  reqAttrs: string[],
+): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const push = (v: unknown) => {
+    if (v == null) return;
+    const s = String(v).trim();
+    const key = s.toLowerCase();
+    if (s && !seen.has(key)) {
+      seen.add(key);
+      out.push(s);
+    }
+  };
+  for (const k of ENTITY_KEYS) {
+    const v = entities?.[k];
+    if (Array.isArray(v)) v.forEach(push);
+    else push(v);
+  }
+  const attrs = entities?.["attributes"];
+  if (Array.isArray(attrs)) attrs.forEach(push);
+  reqAttrs.forEach(push);
+  return out.slice(0, 6);
+}
+
+/** A candidate is routable (and mappable) only if it has real coordinates. */
+const hasMapCoords = (c: PlaceCandidate): boolean =>
+  typeof c.lat === "number" && typeof c.lng === "number" &&
+  Number.isFinite(c.lat) && Number.isFinite(c.lng);
+
+/* "gần đây" / "near me" means places within this radius of the user. */
+const NEARBY_RADIUS_M = 5000;
+
+/* A bare "near me" (no category) can't be ranked, so we offer routable category
+   suggestions; picking one re-runs as a nearby category search. */
+const NEARBY_CATEGORIES = [
+  "Quán cà phê", "Nhà hàng", "Khách sạn",
+  "Trung tâm thương mại", "Trạm xăng", "Trạm sạc xe điện",
+];
+function nearbyCategoryChips(entities: Record<string, unknown> | undefined): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const push = (v: unknown) => {
+    if (v == null) return;
+    const s = String(v).trim();
+    const key = s.toLowerCase();
+    if (s && !seen.has(key)) {
+      seen.add(key);
+      out.push(s);
+    }
+  };
+  push(entities?.["category"]); // P6's detected category leads, if any
+  NEARBY_CATEGORIES.forEach(push);
+  return out.slice(0, 6);
+}
+
 export function RouteMateDemo() {
   const { userLocation, geoPermission } = useRouteMap();
 
@@ -73,10 +156,17 @@ export function RouteMateDemo() {
   const [attrsByNeed, setAttrsByNeed] = useState<Record<string, string[]>>({});
   const [plannedDest, setPlannedDest] = useState<{ name: string; coords: LatLng } | null>(null);
 
+  /* Unified discovery search (P6 understanding + P7 ranked candidates). */
+  const [candidates, setCandidates] = useState<PlaceCandidate[]>([]);
+  const [understanding, setUnderstanding] = useState<UnderstandResult | null>(null);
+  const [reqAttrs, setReqAttrs] = useState<string[]>([]);
+  const [searching, setSearching] = useState(false);
+
   const planAbort = useRef<AbortController | null>(null);
   const replanTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suggestAbort = useRef<AbortController | null>(null);
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchAbort = useRef<AbortController | null>(null);
 
   /* Backend already spreads stops evenly along the route; show them ordered by
      distance from the origin so the list covers the whole trip. */
@@ -150,6 +240,11 @@ export function RouteMateDemo() {
     setDisplayRoute(null);
     setShowSuggestions(false);
     setCollapsed(false);
+    // Leaving discovery mode: the corridor view replaces the candidate pins.
+    searchAbort.current?.abort();
+    setSearching(false);
+    setCandidates([]);
+    setUnderstanding(null);
 
     try {
       let coords: LatLng | null =
@@ -314,11 +409,109 @@ export function RouteMateDemo() {
     }
   }
 
+  /* Unified discovery: P6 explains the query, then P7 ranks candidate places.
+     A "Nearby Search" with a category (e.g. "cà phê gần đây") is searched
+     straight away but clamped to a 5 km radius around the user; a bare "gần
+     tôi" (no category) instead offers category chips to pick from. */
+  async function runSearch(query: string) {
+    const q = query.trim();
+    if (!q) return;
+    searchAbort.current?.abort();
+    const ac = new AbortController();
+    searchAbort.current = ac;
+
+    // A new search resets the map to discovery mode (no active route).
+    setShowSuggestions(false);
+    setSearching(true);
+    setError(null);
+    setResult(null);
+    setBaseRoute(null);
+    setDisplayRoute(null);
+    setDestCoords(null);
+    setPlannedDest(null);
+    setSelected([]);
+
+    try {
+      // P6 first — its intent decides how we run (and scope) the P7 search.
+      let u: UnderstandResult | null = null;
+      try {
+        u = await understandQuery(q, ac.signal);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      }
+      if (ac.signal.aborted) return;
+      setUnderstanding(u);
+
+      const nearby = u?.intent === "Nearby Search";
+      const category =
+        u && typeof u.entities?.["category"] === "string"
+          ? (u.entities["category"] as string)
+          : null;
+
+      // Bare "near me" without a category: nothing to rank — offer chips.
+      if (nearby && !category) {
+        setCandidates([]);
+        setReqAttrs([]);
+        return;
+      }
+
+      // Nearby + category: search the category and overfetch so the 5 km
+      // radius filter still leaves a useful list.
+      const effectiveQuery = nearby && category ? category : q;
+      const sr = await searchPlaces(effectiveQuery, nearby ? 40 : 10, ac.signal);
+      if (ac.signal.aborted) return;
+
+      if (!u) setUnderstanding(sr.understanding ?? null); // P7 embeds P6 too
+      setReqAttrs(sr.required_attributes ?? []);
+
+      const results = sr.results ?? [];
+      if (nearby) {
+        // Keep only places within 5 km of the user, closest first.
+        const near = results
+          .filter(hasMapCoords)
+          .map((r) => ({
+            r,
+            d: haversineMeters(userLocation.lat, userLocation.lng, r.lat!, r.lng!),
+          }))
+          .filter((x) => x.d <= NEARBY_RADIUS_M)
+          .sort((a, b) => a.d - b.d)
+          .map((x) => x.r);
+        setCandidates(near);
+      } else {
+        // Routable places (with lat/lng) first; the rest keep P7's ranking.
+        // Array sort is stable, so ties hold their order.
+        setCandidates(
+          [...results].sort(
+            (a, b) => Number(hasMapCoords(b)) - Number(hasMapCoords(a)),
+          ),
+        );
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      setError(err instanceof Error ? err.message : "Không thể tìm kiếm địa điểm");
+      setCandidates([]);
+      setReqAttrs([]);
+    } finally {
+      if (!ac.signal.aborted) setSearching(false);
+    }
+  }
+
   const pickSuggestion = (s: Suggestion) => {
     const name = s.display || s.text;
     setDestText(name);
     setShowSuggestions(false);
-    runPlan({ name, lat: s.lat, lng: s.lng });
+    runSearch(name);
+  };
+
+  /* Clicking a P7 candidate promotes it to the destination and plans a route. */
+  const pickCandidate = (c: PlaceCandidate) => {
+    const name = c.display_name || c.name;
+    setDestText(name);
+    runPlan({
+      name,
+      lat: typeof c.lat === "number" ? c.lat : undefined,
+      lng: typeof c.lng === "number" ? c.lng : undefined,
+    });
   };
 
   const addedMin =
@@ -333,6 +526,17 @@ export function RouteMateDemo() {
   const originLabel =
     geoPermission === "granted" ? "Vị trí hiện tại" : "TP.HCM (mặc định)";
 
+  // The search box is busy while discovering (P6/P7) or planning a route.
+  const busy = searching || loading;
+  // Nearby searches are clamped to a 5 km radius around the user.
+  const isNearby = understanding?.intent === "Nearby Search";
+  const nearbyCategory =
+    isNearby && typeof understanding?.entities?.["category"] === "string"
+      ? (understanding.entities["category"] as string)
+      : null;
+  // A bare "near me" (no category) offers chips; a nearby category is listed.
+  const showCategoryChips = isNearby && !nearbyCategory;
+
   return (
     <div style={{ maxWidth: 1180, margin: "0 auto", padding: "8px 4px 24px" }}>
       <h1 style={{ fontSize: 22, margin: "0 0 4px", display: "flex", alignItems: "center", gap: 8 }}>
@@ -342,8 +546,9 @@ export function RouteMateDemo() {
         </span>
       </h1>
       <p style={{ opacity: 0.6, fontSize: 13, margin: "0 0 12px" }}>
-        Chọn điểm đến — RouteMate vẽ tuyến đường và gợi ý điểm dừng dọc đường; kéo thanh
-        khoảng cách để chọn nơi tiếp nhiên liệu / nghỉ đêm, rồi tạo lại lộ trình.
+        Tìm địa điểm bằng ngôn ngữ tự nhiên — P9 gợi ý khi gõ, P6 hiểu truy vấn, P7 xếp
+        hạng các địa điểm và ghim thẳng lên bản đồ. Chạm một địa điểm để đặt làm điểm đến,
+        RouteMate vẽ tuyến đường và gợi ý điểm dừng dọc đường.
       </p>
 
       {/* Map-centric canvas */}
@@ -367,6 +572,8 @@ export function RouteMateDemo() {
             markers={markers}
             selectedIds={selectedIds}
             onToggle={onToggle}
+            candidates={candidates}
+            onPickCandidate={pickCandidate}
           />
         </div>
 
@@ -399,8 +606,8 @@ export function RouteMateDemo() {
                 value={destText}
                 onChange={(e) => onDestChange(e.target.value)}
                 onFocus={() => destText && setShowSuggestions(true)}
-                onKeyDown={(e) => e.key === "Enter" && runPlan({ name: destText })}
-                placeholder="Nhập điểm đến…"
+                onKeyDown={(e) => e.key === "Enter" && runSearch(destText)}
+                placeholder="Tìm địa điểm hoặc điểm đến…"
                 autoComplete="off"
                 style={{
                   width: "100%",
@@ -415,8 +622,8 @@ export function RouteMateDemo() {
               />
               <button
                 type="button"
-                onClick={() => runPlan({ name: destText })}
-                disabled={loading || !destText.trim()}
+                onClick={() => runSearch(destText)}
+                disabled={busy || !destText.trim()}
                 style={{
                   position: "absolute",
                   right: 5,
@@ -429,14 +636,14 @@ export function RouteMateDemo() {
                   fontSize: 13,
                   fontWeight: 600,
                   border: "none",
-                  cursor: loading || !destText.trim() ? "not-allowed" : "pointer",
-                  opacity: loading || !destText.trim() ? 0.6 : 1,
+                  cursor: busy || !destText.trim() ? "not-allowed" : "pointer",
+                  opacity: busy || !destText.trim() ? 0.6 : 1,
                   color: "#fff",
                   background: "linear-gradient(135deg, #0EA5E9, #16A34A)",
                 }}
               >
-                {loading ? <Loader2 size={14} className="animate-spin" /> : <Navigation size={14} />}
-                Đi
+                {busy ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+                Tìm
               </button>
             </div>
 
@@ -508,6 +715,202 @@ export function RouteMateDemo() {
               </button>
             ))}
           </div>
+
+          {/* Discovery — P6 understanding + P7 ranked candidate places */}
+          {(searching || understanding || candidates.length > 0) && (
+            <div
+              style={{
+                marginTop: 12,
+                paddingTop: 10,
+                borderTop: "1px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              {understanding && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    gap: 6,
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={modelBadge("#7C3AED")}>P6</span>
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>{understanding.intent}</span>
+                  {understandingChips(understanding.entities, reqAttrs).map((c) => (
+                    <span key={c} style={entityChip}>{c}</span>
+                  ))}
+                </div>
+              )}
+
+              {showCategoryChips && !searching ? (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                    <span style={modelBadge("#0EA5E9")}>P7</span>
+                    <span style={{ fontSize: 12, opacity: 0.8 }}>
+                      Tìm quanh bạn (trong 5 km) — chọn nhóm địa điểm
+                    </span>
+                    <Sparkles size={12} style={{ opacity: 0.5, marginLeft: "auto" }} />
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {nearbyCategoryChips(understanding?.entities).map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => {
+                          const nq = `${cat} gần đây`;
+                          setDestText(nq);
+                          runSearch(nq);
+                        }}
+                        style={{
+                          fontSize: 12,
+                          padding: "6px 11px",
+                          borderRadius: 20,
+                          cursor: "pointer",
+                          color: "#fff",
+                          background: "rgba(124,58,237,0.18)",
+                          border: "1px solid rgba(124,58,237,0.5)",
+                        }}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 11, opacity: 0.5, marginTop: 8 }}>
+                    Chạm một nhóm để xem địa điểm trong 5 km và chọn điểm đến.
+                  </div>
+                </>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                  <span style={modelBadge("#0EA5E9")}>P7</span>
+                  <span style={{ fontSize: 12, opacity: 0.8 }}>
+                    {searching
+                      ? "Đang xếp hạng địa điểm…"
+                      : isNearby
+                        ? `${candidates.length} địa điểm trong 5 km · chạm để chọn điểm đến`
+                        : `${candidates.length} địa điểm · chạm để chọn điểm đến`}
+                  </span>
+                  <Sparkles size={12} style={{ opacity: 0.5, marginLeft: "auto" }} />
+                </div>
+              )}
+
+              {!showCategoryChips && candidates.length > 0 && (
+                <div
+                  style={{
+                    maxHeight: "34vh",
+                    overflowY: "auto",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                  }}
+                >
+                  {candidates.map((c, i) => {
+                    const mappable = hasMapCoords(c);
+                    return (
+                      <button
+                        key={`${c.poi_id}-${i}`}
+                        type="button"
+                        onClick={() => pickCandidate(c)}
+                        title={mappable ? "Đặt làm điểm đến" : "Không có toạ độ trên bản đồ"}
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          alignItems: "flex-start",
+                          width: "100%",
+                          textAlign: "left",
+                          padding: "8px 9px",
+                          borderRadius: 9,
+                          cursor: "pointer",
+                          color: "#fff",
+                          background: "rgba(255,255,255,0.06)",
+                          border: "1px solid rgba(255,255,255,0.12)",
+                        }}
+                      >
+                        <span
+                          style={{
+                            flexShrink: 0,
+                            width: 20,
+                            height: 20,
+                            borderRadius: "50%",
+                            background: mappable ? "#7C3AED" : "rgba(255,255,255,0.2)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 11,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {i + 1}
+                        </span>
+                        <span style={{ flex: 1, minWidth: 0 }}>
+                          <span
+                            style={{
+                              display: "block",
+                              fontSize: 13,
+                              fontWeight: 600,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {c.display_name || c.name}
+                          </span>
+                          <span
+                            style={{
+                              display: "block",
+                              fontSize: 11,
+                              opacity: 0.6,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {c.category}
+                            {c.district || c.city ? ` · ${c.district || c.city}` : ""}
+                            {c.rating != null ? ` · ★${c.rating}` : ""}
+                          </span>
+                          {c.reasons?.length > 0 && (
+                            <span
+                              style={{
+                                display: "block",
+                                fontSize: 10.5,
+                                opacity: 0.55,
+                                marginTop: 2,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {c.reasons.slice(0, 2).join(" · ")}
+                            </span>
+                          )}
+                        </span>
+                        <span
+                          style={{
+                            flexShrink: 0,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            opacity: 0.7,
+                            fontVariantNumeric: "tabular-nums",
+                          }}
+                        >
+                          {Number(c.score).toFixed(2)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {!showCategoryChips && !searching && candidates.length === 0 && understanding && (
+                <div style={{ fontSize: 12, opacity: 0.6 }}>
+                  {isNearby
+                    ? "Không có địa điểm nào trong 5 km."
+                    : "Không tìm thấy địa điểm phù hợp."}
+                </div>
+              )}
+            </div>
+          )}
 
           {error && <div style={{ fontSize: 12, color: "#ff8a80", marginTop: 8 }}>{error}</div>}
         </div>

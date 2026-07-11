@@ -149,3 +149,80 @@ export async function planRoute(
 
   return res.json();
 }
+
+/* ---------------- P6 understanding + P7 semantic search ------------------ */
+/* Powers the RouteMate map's unified discovery search: P6 explains the query,
+   P7 returns ranked candidate places (with real lat/lng) to plot on the map. */
+
+export interface UnderstandResult {
+  raw: string;
+  normalized_query: string;
+  intent: string;
+  entities: Record<string, unknown>;
+  confidence: number;
+  source: string;
+}
+
+/** A single ranked place from P7. `lat`/`lng` come straight from the dataset
+    row, so candidates can be dropped on the map as markers. */
+export interface PlaceCandidate {
+  poi_id: string;
+  name: string;
+  display_name?: string;
+  address?: string;
+  category: string;
+  district?: string;
+  city?: string;
+  brand?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  rating?: number | null;
+  review_count?: number;
+  score: number;
+  reasons: string[];
+  signals?: Record<string, number>;
+}
+
+export interface SemanticSearchResponse {
+  query: string;
+  understanding: UnderstandResult;
+  required_attributes: string[];
+  excluded_attributes?: string[];
+  results: PlaceCandidate[];
+  diagnostics?: Record<string, unknown>;
+}
+
+/** P6 — turn a noisy query into a normalized query + intent + entities. */
+export async function understandQuery(
+  query: string,
+  signal?: AbortSignal,
+): Promise<UnderstandResult> {
+  const res = await fetch(API.TRACK1_HAI_UNDERSTAND, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ query, boost: false }),
+    signal,
+  });
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status} ${res.statusText}`);
+  }
+  return res.json();
+}
+
+/** P7 — rank candidate places for a need. Each result carries lat/lng. */
+export async function searchPlaces(
+  query: string,
+  topK = 10,
+  signal?: AbortSignal,
+): Promise<SemanticSearchResponse> {
+  const res = await fetch(API.TRACK2_HAI_SEARCH, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ query, top_k: topK }),
+    signal,
+  });
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status} ${res.statusText}`);
+  }
+  return res.json();
+}
