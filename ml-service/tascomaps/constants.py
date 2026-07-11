@@ -8,6 +8,15 @@ from __future__ import annotations
 
 from .core.text import fold, nfc
 
+# Versioned, reviewed query access surfaces. These are input evidence rather
+# than synonyms to display, so provenance and entity type stay explicit.
+APPROVED_QUERY_SURFACES_V1 = (
+    ("hcmc", "TP Hồ Chí Minh", "city", "approved_alias"),
+    ("big c", "GO!", "brand", "historical_brand_alias"),
+    ("pho4p", "Pizza 4P's", "poi_family",
+     "approved_observed_correction"),
+)
+
 # --- Canonical category map ------------------------------------------------
 # Maps every raw category label (any track, any language) to one canonical form.
 CATEGORY_CANON = {

@@ -27,11 +27,14 @@ the diagnostic evaluator and are not runtime rules.
 from __future__ import annotations
 
 import re
+import unicodedata
 from bisect import bisect_left
 from collections import Counter
 from dataclasses import dataclass, field
 from time import perf_counter
 from typing import Dict, List, Optional, Tuple
+
+from rapidfuzz import fuzz
 
 from ..constants import (ATTRIBUTE_TERMS, CATEGORY_CANON, CATEGORY_QUERY_TERMS,
                          LANDMARK_CATEGORIES)
@@ -50,6 +53,9 @@ _BASE = {"curated": 0.90, "popular": 0.82, "poi": 0.70, "brand": 0.74,
          "address": 0.68, "template": 0.60, "combo": 0.58}
 _SUFFIX_PENALTY = 0.06      # token-suffix keys rank just below the full-phrase key
 _FUZZY_PENALTY = 0.15
+_DIACRITIC_MIN_SCORE = 0.70
+_DIACRITIC_WINNER_MARGIN = 0.12
+_TONE_MARKS = {"\u0300", "\u0301", "\u0303", "\u0309", "\u0323"}
 # generic words that must NOT seed a token-suffix key (else common category words
 # like "quán cà phê" inside long POI names flood every "cafe" query)
 _SKIP_SUFFIX_HEADS = (
@@ -141,6 +147,7 @@ class TrieAutocomplete:
         self._category_attributes: Dict[str, Dict[str, str]] = {}
         self._identity_token_entries: Dict[str, List[int]] = {}
         self._identity_tokens: List[str] = []
+        self._access_surface_postings: Dict[str, List[Tuple[str, str, float]]] = {}
         for poi in kb.pois:
             for key, value in (("category", poi.category), ("city", poi.city),
                                ("district", poi.district), ("brand", poi.brand)):
@@ -158,6 +165,7 @@ class TrieAutocomplete:
                     registry.setdefault(normalize(attribute), attribute)
         self._popular = self._popular_pool()
         self._build_corpus()
+        self._build_access_surface_index()
         self._build_identity_token_index()
         self._precompute(self.root)
         self._precompute(self.suffix_root)
@@ -350,6 +358,36 @@ class TrieAutocomplete:
                 -self.entries[value].score, fold(self.entries[value].display)))
         self._identity_tokens = sorted(self._identity_token_entries)
 
+    def _build_access_surface_index(self) -> None:
+        """Link reviewed input surfaces to corpus-backed canonical families."""
+        for surface_key, targets in self.kb.query_surfaces.items():
+            rows = []
+            for target in targets:
+                if not self.kb.supports_query_surface(target):
+                    continue
+                suggestion_type = ("Location Suggestions"
+                                   if target.entity_type == "city"
+                                   else "Brand Suggestions")
+                rows.append((target.canonical, suggestion_type, 0.94))
+                if target.entity_type not in {"brand", "poi_family"}:
+                    continue
+                branches = sorted(
+                    (poi for poi in self.kb.pois
+                     if fold(poi.brand) == fold(target.canonical)
+                     or (target.entity_type == "poi_family"
+                         and fold(target.canonical) in fold(poi.name))),
+                    key=lambda poi: (-(poi.popularity_score or 0), fold(poi.name)),
+                )
+                rows.extend((poi.name, "POI Suggestions", 0.91 - index * 0.01)
+                            for index, poi in enumerate(branches[:6]))
+            deduped = {}
+            for row in rows:
+                key = fold(row[0])
+                if key not in deduped or row[2] > deduped[key][2]:
+                    deduped[key] = row
+            self._access_surface_postings[surface_key] = sorted(
+                deduped.values(), key=lambda row: (-row[2], fold(row[0])))
+
     def _identity_token_candidates(self, prefix: str,
                                    limit: int = 256) -> List[int]:
         """Return bounded identity entries whose token starts with ``prefix``."""
@@ -395,6 +433,67 @@ class TrieAutocomplete:
             if node is None:
                 return None
         return node
+
+    def _access_surface_rows(self, key: str) -> List[Tuple[str, str, float]]:
+        return list(self._access_surface_postings.get(key, ()))
+
+    @staticmethod
+    def _tone_shape(value: str) -> str:
+        decomposed = unicodedata.normalize("NFD", normalize(value))
+        return unicodedata.normalize(
+            "NFC", "".join(char for char in decomposed
+                           if char not in _TONE_MARKS))
+
+    def _diacritic_rows(self, prefix: str,
+                        node: Optional[_Node]) -> List[Tuple[str, str, float]]:
+        """Recover one unique tone/shape correction from folded candidates."""
+        if node is None or not has_accents(prefix):
+            return []
+        typed = tokenize(prefix)
+        if not typed:
+            return []
+
+        grouped: Dict[str, dict] = {}
+        for index in node.top:
+            entry = self.entries[index]
+            display_tokens = tokenize(entry.display)
+            best = None
+            for start in range(0, len(display_tokens) - len(typed) + 1):
+                window_tokens = display_tokens[start:start + len(typed)]
+                if not all(fold(expected).startswith(fold(actual))
+                           for actual, expected in zip(typed, window_tokens)):
+                    continue
+                window = " ".join(window_tokens)
+                shape_score = fuzz.ratio(
+                    self._tone_shape(prefix), self._tone_shape(window)) / 100.0
+                accent_score = fuzz.ratio(
+                    normalize(prefix), normalize(window)) / 100.0
+                score = 0.8 * shape_score + 0.2 * accent_score
+                if best is None or score > best[0]:
+                    best = (score, normalize(window))
+            if best is None:
+                continue
+            score, correction = best
+            group = grouped.setdefault(correction, {"score": score, "rows": []})
+            group["score"] = max(group["score"], score)
+            group["rows"].append((entry.display, entry.type, entry.score))
+
+        ranked = sorted(grouped.values(), key=lambda group: -group["score"])
+        if not ranked or ranked[0]["score"] < _DIACRITIC_MIN_SCORE:
+            return []
+        if len(ranked) > 1 and ranked[0]["score"] - ranked[1]["score"] \
+                < _DIACRITIC_WINNER_MARGIN:
+            return []
+        return ranked[0]["rows"]
+
+    @staticmethod
+    def _rank_exact_rows(key: str, rows: List[Entry]) -> List[Entry]:
+        """Place exact canonical evidence before longer prefix popularity."""
+        return sorted(rows, key=lambda entry: (
+            0 if fold(entry.display) == key else 1,
+            -entry.score,
+            fold(entry.display),
+        ))
 
     def _fuzzy(self, key: str, budget: int = 1) -> Dict[str, float]:
         # A single first word needs a stricter policy than a complete phrase:
@@ -524,6 +623,9 @@ class TrieAutocomplete:
         return pack(length_edits) or {}
 
     def _expand_prefix(self, prefix: str) -> str:
+        complete = fold(prefix)
+        if complete in self.kb.brands or complete in self.kb.query_surfaces:
+            return complete
         toks = tokenize(prefix)
         out = []
         for i, t in enumerate(toks):
@@ -1246,10 +1348,17 @@ class TrieAutocomplete:
         present = {source for source, _ in nonempty}
         if "exact" in present:
             primary = "exact"
-            weights = {"exact": 1.0, "semantic": 0.45,
+            weights = {"exact": 1.0, "access-surface": 0.70,
+                       "semantic": 0.45,
                        "first-token": 0.30, "suffix": 0.20,
                        "suffix-continuation": 0.35,
-                       "fuzzy": 0.35, "popular": 0.20}
+                       "diacritic": 0.38, "fuzzy": 0.35, "popular": 0.20}
+        elif "access-surface" in present:
+            primary = "access-surface"
+            weights = {"access-surface": 1.0, "semantic": 0.55,
+                       "first-token": 0.35, "suffix": 0.25,
+                       "diacritic": 0.30, "fuzzy": 0.25,
+                       "popular": 0.20}
         elif "first-token" in present:
             primary = "first-token"
             weights = {"first-token": 1.0, "semantic": 0.72,
@@ -1274,6 +1383,10 @@ class TrieAutocomplete:
         elif "fuzzy" in present:
             primary = "fuzzy"
             weights = {"fuzzy": 1.0, "popular": 0.20}
+        elif "diacritic" in present:
+            primary = "diacritic"
+            weights = {"diacritic": 1.0, "fuzzy": 0.25,
+                       "popular": 0.20}
         else:
             primary = "popular"
             weights = {"popular": 1.0}
@@ -1281,7 +1394,9 @@ class TrieAutocomplete:
         fused = {}
         for source, rows in nonempty:
             weight = weights.get(source, 0.2)
-            for rank, item in enumerate(rows, 1):
+            producer_seen = set()
+            rank = 0
+            for item in rows:
                 if isinstance(item, dict):
                     display = str(item.get("display") or item.get("text") or "")
                     typ = str(item.get("type") or "Category Suggestions")
@@ -1291,9 +1406,14 @@ class TrieAutocomplete:
                     display, typ = str(display), str(typ)
                     raw_score = float(raw_score)
                 display = self._canonical_display(display)
-                if not display or not self._accent_compatible(prefix, display):
+                if not display or (source != "diacritic"
+                                   and not self._accent_compatible(prefix, display)):
                     continue
                 key = fold(display)
+                if key in producer_seen:
+                    continue
+                producer_seen.add(key)
+                rank += 1
                 vote = weight / (8.0 + rank)
                 candidate = fused.get(key)
                 if candidate is None:
@@ -1323,10 +1443,11 @@ class TrieAutocomplete:
                     "suggestions": [], "source": "no-match",
                     "latencyMs": round((perf_counter() - t0) * 1000, 3)}
 
-        caps = {"exact": 0.99, "semantic": 0.96,
+        caps = {"exact": 0.99, "access-surface": 0.94,
+                "semantic": 0.96,
                 "first-token": 0.92, "suffix-continuation": 0.90,
                 "suffix": 0.86,
-                "fuzzy": 0.82, "popular": 0.55}
+                "diacritic": 0.84, "fuzzy": 0.82, "popular": 0.55}
         cap = caps[primary]
         floor = max(0.0, cap - 0.24)
         max_vote = ranked[0]["vote"] or 1.0
@@ -1396,14 +1517,20 @@ class TrieAutocomplete:
                         "latencyMs": round((perf_counter() - t0) * 1000, 3)}
 
         pools = []
+        access_surface_rows = self._access_surface_rows(key)
+        if access_surface_rows:
+            pools.append(("access-surface", access_surface_rows))
         node = self._walk(key)
         exact_rows = []
-        if node and node.top:
-            exact_rows = [(self.entries[index].display,
-                           self.entries[index].type,
-                           self.entries[index].score)
-                          for index in node.top]
-            pools.append(("exact", exact_rows))
+        if node and (node.ends or node.top):
+            candidate_indexes = list(dict.fromkeys([*node.ends, *node.top]))
+            exact_entries = self._rank_exact_rows(
+                key, [self.entries[index] for index in candidate_indexes])
+            exact_rows = [(entry.display, entry.type, entry.score)
+                          for entry in exact_entries
+                          if self._accent_compatible(prefix, entry.display)]
+            if exact_rows:
+                pools.append(("exact", exact_rows))
 
         # Later-token matches are useful for queries such as ``dong k`` but
         # must never pollute an available position-zero/head match (``pho``
@@ -1415,7 +1542,9 @@ class TrieAutocomplete:
                 suffix_rows = [(self.entries[index].display,
                                 self.entries[index].type,
                                 self.entries[index].score)
-                               for index in suffix_node.top]
+                               for index in suffix_node.top
+                               if self._accent_compatible(
+                                   prefix, self.entries[index].display)]
 
         semantic_rows = list((smart or {}).get("suggestions") or [])
         if semantic_rows:
@@ -1432,11 +1561,16 @@ class TrieAutocomplete:
                 if len(key.split()) >= 2 else "suffix"
             pools.append((suffix_source, suffix_rows))
 
+        if (not access_surface_rows and not exact_rows and not semantic_rows
+                and not first_token_rows and not suffix_rows):
+            diacritic_rows = self._diacritic_rows(prefix, node)
+            if diacritic_rows:
+                pools.append(("diacritic", diacritic_rows))
+
         # Fuzzy retrieval is a recovery tier, not padding. Once exact or
         # semantic evidence exists, returning a shorter grounded list is better
         # than filling it with one-edit lookalikes (for example xăng → Nẵng).
-        if (not exact_rows and not semantic_rows and not first_token_rows
-                and not suffix_rows):
+        if (not pools):
             have = {fold(row[0]) for row in exact_rows}
             have.update(fold(row.get("display") or row.get("text") or "")
                         for row in semantic_rows)

@@ -8,10 +8,11 @@ from typing import List, Optional
 import pandas as pd
 
 from .. import config
-from ..constants import (ADJECTIVE_STOP, ATTRIBUTE_TERMS, CATEGORY_CANON,
-                         CATEGORY_QUERY_TERMS, canon_category, canon_city)
+from ..constants import (ADJECTIVE_STOP, APPROVED_QUERY_SURFACES_V1,
+                         ATTRIBUTE_TERMS, CATEGORY_CANON, CATEGORY_QUERY_TERMS,
+                         canon_category, canon_city)
 from ..core.text import fold, nfc, normalize
-from .kb import AbbrevEntry, KnowledgeBase, POI
+from .kb import AbbrevEntry, KnowledgeBase, POI, QuerySurface
 
 # Folded surface forms that must never become a POI/alias/brand phrase, so a
 # generic word like "nhà hàng" or "ngon" can't masquerade as a place name.
@@ -285,6 +286,20 @@ def _add_abbrev(kb: KnowledgeBase, term: str, expansion: str, type_: str) -> Non
         kb.lexicon.add(primary, lex_type, weight=0.8)
 
 
+def _add_query_surface(kb: KnowledgeBase, entry: QuerySurface) -> None:
+    key = fold(entry.surface)
+    if not key or not kb.supports_query_surface(entry):
+        return
+    candidates = kb.query_surfaces.setdefault(key, [])
+    if entry not in candidates:
+        candidates.append(entry)
+
+
+def _seed_query_surfaces(kb: KnowledgeBase) -> None:
+    for values in APPROVED_QUERY_SURFACES_V1:
+        _add_query_surface(kb, QuerySurface(*values))
+
+
 def _seed_lexicon(kb: KnowledgeBase) -> None:
     """Seed canonical categories / cities / standard districts as phrases."""
     from ..constants import CATEGORY_CANON, CITY_CANON
@@ -335,12 +350,24 @@ def _build_semantic_registries(kb: KnowledgeBase) -> None:
         add(kb.category_terms, term, canonical)
     for term, canonical in CATEGORY_CANON.items():
         add(kb.category_terms, term, canonical)
+    ambiguous_subcategories = set()
     for poi in kb.pois:
         add(kb.category_terms, poi.category, poi.category)
         # Sub-categories such as Book Cafe, Bún Chả, or Business Hotel are
         # useful query surfaces while their parent remains the stable category.
         if poi.sub_category:
             add(kb.category_terms, poi.sub_category, poi.category)
+            key = normalize(poi.sub_category)
+            value = (nfc(poi.sub_category.strip()), nfc(poi.category.strip()))
+            existing = kb.sub_category_terms.get(key)
+            if key in ambiguous_subcategories:
+                continue
+            if existing and tuple(fold(item) for item in existing) \
+                    != tuple(fold(item) for item in value):
+                kb.sub_category_terms.pop(key, None)
+                ambiguous_subcategories.add(key)
+            elif key and all(value):
+                kb.sub_category_terms.setdefault(key, value)
 
     for term, canonical in ATTRIBUTE_TERMS.items():
         add(kb.attribute_terms, term, canonical)
@@ -397,6 +424,7 @@ def load_kb() -> KnowledgeBase:
     _load_track4(config.TRACK4_XLSX, kb)
     _load_track6_menu(config.TRACK6_XLSX, kb)
     _seed_lexicon(kb)
+    _seed_query_surfaces(kb)
     _build_semantic_registries(kb)
     _build_dish_registries(kb)
     _build_vocab(kb)
