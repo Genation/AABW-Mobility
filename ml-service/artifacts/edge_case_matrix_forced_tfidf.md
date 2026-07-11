@@ -27,7 +27,7 @@ Backend: `tfidf`; invocation: `forced_tfidf`
 | P7-BRAND | PASS | PASS | ['Circle K Hùng Vương', 'Circle K Láng Hạ', 'Circle K Lý Thường Kiệt', 'Circle K Nguyễn Huệ', 'Circle K Phạm Văn Đồng'] |
 | C-DISH | FAIL | PASS | ['Phở Thìn Lò Đúc'] |
 | C-DIVERSITY | FAIL | PASS | ['acb phuong 1', 'vpbank son tra', 'atm vietcombank nguyen hue', 'vpbank ba dinh', 'techcombank dong da', 'vpbank phuong 8', 'techcombank cau giay', 'acb hai chau'] |
-| A32-SEQUENTIAL-PROXY | PASS | PASS | mean=12.508 ms over 100 requests |
+| A32-SEQUENTIAL-PROXY | PASS | PASS | mean < 200 ms over 100 requests |
 
 ## Qualitative Audit
 

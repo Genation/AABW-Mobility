@@ -113,8 +113,13 @@ def main() -> int:
     for query in concurrency_queries:
         autocomplete.suggest(query, top_k=6)
     latency_ms = (perf_counter() - started) * 1000 / len(concurrency_queries)
-    check("A32-SEQUENTIAL-PROXY", latency_ms < 200.0,
-          f"mean={latency_ms:.3f} ms over {len(concurrency_queries)} requests")
+    latency_passed = latency_ms < 200.0
+    latency_detail = (
+        f"mean < 200 ms over {len(concurrency_queries)} requests"
+        if latency_passed else
+        f"mean={latency_ms:.3f} ms over {len(concurrency_queries)} requests"
+    )
+    check("A32-SEQUENTIAL-PROXY", latency_passed, latency_detail)
 
     audits = []
     for case_id, query in (
