@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RouteMate - System Performance Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f7; color: #0b0b0b; }
+        .card { background: #fcfcfb; border: 1px solid rgba(11,11,11,0.1); border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .text-brand-blue { color: #2a78d6; }
+        .bg-brand-blue { background-color: #2a78d6; }
+        .text-brand-aqua { color: #1baf7a; }
+        .text-brand-orange { color: #eb6834; }
+        .animate-pulse-fast { animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    </style>
+</head>
+<body class="p-8 h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="mb-8 flex justify-between items-end">
+        <div>
+            <div class="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-blue-600 bg-blue-50 px-3 py-1 rounded-full mb-3">
+                Live Simulation
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight text-gray-900">System Performance & Execution</h1>
+            <p class="text-gray-500 mt-1">Simulating 1,000 RPS Load on Tasco Maps Integration</p>
+        </div>
+        <div class="text-right">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium bg-green-100 text-green-800">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse-fast"></span>
+                System Healthy
+            </span>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 flex-grow">
+        <!-- Column 1: Live Metrics -->
+        <div class="card flex flex-col justify-between">
+            <h2 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Real-time Telemetry</h2>
+            
+            <div class="space-y-6">
+                <div>
+                    <p class="text-sm text-gray-500 uppercase tracking-wider font-semibold">Incoming Traffic (RPS)</p>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-4xl font-bold text-gray-900" id="rps-display">1024</span>
+                        <span class="text-sm text-gray-500">req/s</span>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-sm text-gray-500 uppercase tracking-wider font-semibold">Singleflight DB Load</p>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-3xl font-bold text-brand-aqua" id="db-load-display">340</span>
+                        <span class="text-sm text-gray-500">req/s (Collapsed)</span>
+                    </div>
+                    <p class="text-xs text-green-600 mt-1 font-medium">↓ 66% Database calls saved</p>
+                </div>
+
+                <div>
+                    <p class="text-sm text-gray-500 uppercase tracking-wider font-semibold">P95 Latency</p>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-3xl font-bold text-brand-orange" id="latency-display">42</span>
+                        <span class="text-sm text-gray-500">ms</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                        <div class="bg-brand-orange h-1.5 rounded-full" style="width: 42%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100 text-sm text-blue-800">
+                <span class="font-bold">Info:</span> Model Embedding Local 200MB hoạt động ổn định. Không nghẽn API ngoài.
+            </div>
+        </div>
+
+        <!-- Column 2: Live Request Stream -->
+        <div class="card md:col-span-2 flex flex-col">
+            <h2 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Agentic Workflow: Real-time Evaluation</h2>
+            <div class="overflow-hidden flex-grow relative bg-gray-50 rounded-lg border border-gray-200 p-2 font-mono text-sm">
+                <div id="log-container" class="space-y-2 h-[280px] overflow-hidden flex flex-col justify-end">
+                    <!-- Logs will be injected here -->
+                </div>
+                <div class="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-gray-50 to-transparent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Row: Charts & Disclaimer -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 h-64">
+        <div class="card">
+            <canvas id="latencyChart"></canvas>
+        </div>
+        
+        <div class="card bg-gray-900 text-white flex flex-col justify-center">
+            <h3 class="text-xl font-bold mb-3 text-brand-aqua">Roadmap to Production</h3>
+            <p class="text-gray-300 text-sm leading-relaxed mb-4">
+                Hiện tại hệ thống được mô phỏng và test trên tập dữ liệu hạn chế <span class="text-white font-bold bg-gray-800 px-1 rounded">(60 POIs)</span> của Hackathon. Semantic Score và NER Accuracy hiện đạt mức Prototype.
+            </p>
+            <p class="text-gray-300 text-sm leading-relaxed">
+                Khi được tích hợp vào môi trường dữ liệu thực tế của <span class="text-brand-blue font-bold">Tasco Maps</span> và <span class="text-brand-blue font-bold">VETC</span>, với hàng triệu điểm POI và lịch sử di chuyển thực tế, mô hình sẽ liên tục học (Continuous Learning) để tối ưu hóa trọng số (Weights) và đẩy Precision/Recall lên mức thương mại hóa.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const queries = [
+            "trạm sạc EV gần phan thiết", "quán ăn trưa có chỗ đậu xe", 
+            "ks Mường Thanh gần biển", "cafe yên tĩnh dọc ql1a", 
+            "cửa hàng tiện lợi", "nhà vệ sinh công cộng sạch",
+            "trạm xăng petrolimex", "khách sạn có hồ bơi cho trẻ em"
+        ];
+        const brands = ["Mường Thanh", "Petrolimex", "V-Green", "Highlands", "Vinmart"];
+
+        const logContainer = document.getElementById('log-container');
+        let logs = [];
+
+        function addLog() {
+            const query = queries[Math.floor(Math.random() * queries.length)];
+            const hasBrand = brands.some(b => query.toLowerCase().includes(b.toLowerCase()));
+            
+            // Fake varying latency based on process
+            const nerTime = Math.floor(Math.random() * 5) + 2; // 2-6ms
+            const embedTime = Math.floor(Math.random() * 15) + 10; // 10-24ms
+            const searchTime = Math.floor(Math.random() * 10) + 5; // 5-14ms
+            const totalTime = nerTime + embedTime + searchTime;
+
+            const semanticScore = (0.75 + Math.random() * 0.2).toFixed(2); // 0.75 - 0.95
+            const nerStatus = hasBrand ? "Exact Match" : "Semantic Only";
+            const colorClass = hasBrand ? "text-blue-600" : "text-green-600";
+
+            const logHtml = `
+                <div class="p-2 bg-white rounded border border-gray-100 shadow-sm animate-fade-in-up">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-gray-800">Q: "${query}"</span>
+                        <span class="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600">${totalTime}ms</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-xs">
+                        <div><span class="text-gray-400">NER:</span> <span class="${colorClass} font-semibold">${nerStatus}</span></div>
+                        <div><span class="text-gray-400">Semantic Score:</span> <span class="font-semibold text-gray-700">${semanticScore}</span></div>
+                        <div><span class="text-gray-400">Action:</span> <span class="text-purple-600">Hybrid Search</span></div>
+                    </div>
+                </div>
+            `;
+
+            logs.push(logHtml);
+            if (logs.length > 5) logs.shift(); // Keep only last 5
+            logContainer.innerHTML = logs.join('');
+        }
+
+        // Setup Chart.js
+        const ctx = document.getElementById('latencyChart').getContext('2d');
+        const latencyChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array(20).fill(''),
+                datasets: [{
+                    label: 'System Latency (ms)',
+                    data: Array(20).fill(40),
+                    borderColor: '#2a78d6',
+                    backgroundColor: 'rgba(42, 120, 214, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 0 },
+                plugins: { legend: { display: false }, title: { display: true, text: 'Real-time Latency (Target: < 50ms)' } },
+                scales: { 
+                    y: { beginAtZero: true, max: 100, grid: { color: '#f3f4f6' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Update Loop
+        setInterval(() => {
+            // Fluctuate RPS
+            const rps = 950 + Math.floor(Math.random() * 100);
+            document.getElementById('rps-display').innerText = rps;
+            
+            // Singleflight collapse effect
+            document.getElementById('db-load-display').innerText = Math.floor(rps * 0.35); 
+
+            // Fluctuate Latency
+            const latency = 38 + Math.floor(Math.random() * 15);
+            document.getElementById('latency-display').innerText = latency;
+
+            // Update Chart
+            latencyChart.data.datasets[0].data.shift();
+            latencyChart.data.datasets[0].data.push(latency);
+            latencyChart.update();
+
+            // Add Log randomly
+            if(Math.random() > 0.4) addLog();
+
+        }, 800);
+
+        // Initial setup
+        addLog(); addLog(); addLog();
+    </script>
+    <style>
+        .animate-fade-in-up { animation: fadeInUp 0.3s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</body>
+</html>

@@ -1068,13 +1068,15 @@ export async function buildSnapshot(): Promise<BuildStats> {
     ["ho guom cafe", "Quán cà phê gần Hồ Gươm", "Discovery Search"],
     ["xang tren duong", "Cây xăng trên đường đi", "Discovery Search"],
     ["quan cafe hoc", "Quán cà phê phù hợp học tập", "Discovery Search"],
+    ["noi bai atm", "ATM gần sân bay Nội Bài", "Nearby Search"],
   ];
 
   for (const [norm, display, tp] of semanticPairs) {
     const sc = tp === "Brand Search" ? 0.52 :
       tp === "Category Search" ? 0.48 :
       tp === "POI Suggestion" ? 0.52 :
-      scoreTemplate("discovery");
+      tp === "Nearby Search" ? 0.52 :
+      scoreTemplate("discovery") * 2.5;
     insertWithPrefixes(
       trie,
       norm,

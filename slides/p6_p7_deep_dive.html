@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P6 &amp; P7 Deep Dive — Tasco Maps AI</title>
+<style>
+  :root{
+    --bg:#f8fafc; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+    --p6:#0d9488; --p6-bg:#f0fdfa; --p6-bg2:#ccfbf1;
+    --p7:#7c3aed; --p7-bg:#f5f3ff; --p7-bg2:#ede9fe;
+    --code-bg:#0f172a; --code-ink:#e2e8f0;
+    --good:#16a34a; --warn:#d97706;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:32px 24px 80px;}
+  header.top{
+    padding:40px 24px; text-align:center;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:#f8fafc;
+  }
+  header.top h1{margin:0 0 8px; font-size:1.9rem;}
+  header.top p{margin:0; color:#94a3b8; font-size:1rem;}
+  .badges{display:flex; gap:10px; justify-content:center; margin-top:18px; flex-wrap:wrap;}
+  .badge{
+    font-size:.78rem; padding:5px 12px; border-radius:999px; background:#1e293b;
+    border:1px solid #334155; color:#cbd5e1;
+  }
+  nav.jump{
+    position:sticky; top:0; z-index:10; background:#fff; border-bottom:1px solid var(--line);
+    padding:10px 24px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+  }
+  nav.jump a{
+    text-decoration:none; font-size:.85rem; font-weight:600; padding:6px 14px;
+    border-radius:8px; color:var(--ink); background:var(--bg);
+  }
+  nav.jump a.p6{color:var(--p6);} nav.jump a.p7{color:var(--p7);}
+
+  h2.section-title{
+    font-size:1.5rem; margin:56px 0 4px; display:flex; align-items:center; gap:10px;
+  }
+  .tag{
+    font-size:.7rem; font-weight:700; letter-spacing:.03em; padding:3px 10px;
+    border-radius:6px; color:#fff;
+  }
+  .tag.p6{background:var(--p6);} .tag.p7{background:var(--p7);}
+  p.lede{color:var(--muted); margin:6px 0 28px; max-width:760px;}
+
+  .overview-cards{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:28px 0;}
+  @media (max-width:720px){.overview-cards{grid-template-columns:1fr;}}
+  .ocard{
+    border-radius:14px; padding:20px 22px; border:1px solid var(--line);
+  }
+  .ocard.p6{background:var(--p6-bg); border-color:var(--p6-bg2);}
+  .ocard.p7{background:var(--p7-bg); border-color:var(--p7-bg2);}
+  .ocard h3{margin:0 0 6px; font-size:1.05rem;}
+  .ocard .metric-row{display:flex; gap:14px; flex-wrap:wrap; margin-top:12px;}
+  .metric{font-size:.78rem; background:#fff; border:1px solid var(--line); border-radius:8px; padding:6px 10px;}
+  .metric b{display:block; font-size:.95rem;}
+
+  /* pipeline diagram */
+  .pipeline{
+    display:flex; align-items:stretch; gap:0; margin:28px 0 8px; overflow-x:auto;
+    padding-bottom:8px;
+  }
+  .pstep{
+    flex:1 1 0; min-width:132px; border-radius:12px; padding:14px 12px;
+    border:1px solid var(--line); background:#fff; position:relative; text-align:center;
+  }
+  .pstep .num{
+    width:26px; height:26px; border-radius:50%; color:#fff; font-weight:700;
+    display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:.85rem;
+  }
+  .p6 .pstep .num{background:var(--p6);}
+  .p7 .pstep .num{background:var(--p7);}
+  .pstep .t{font-weight:700; font-size:.82rem; margin-bottom:2px;}
+  .pstep .d{font-size:.72rem; color:var(--muted);}
+  .pipeline .arrow{
+    display:flex; align-items:center; justify-content:center; color:var(--muted);
+    font-size:1.2rem; padding:0 4px; flex:0 0 auto;
+  }
+
+  /* step card (input/output) */
+  .step-card{
+    border:1px solid var(--line); border-left-width:5px; border-radius:10px;
+    margin:16px 0; overflow:hidden; background:#fff;
+  }
+  .step-card.p6{border-left-color:var(--p6);}
+  .step-card.p7{border-left-color:var(--p7);}
+  .step-head{
+    padding:12px 18px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    border-bottom:1px solid var(--line);
+  }
+  .step-head .chip{
+    width:24px; height:24px; border-radius:50%; color:#fff; font-size:.78rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+  .p6 .step-head .chip{background:var(--p6);}
+  .p7 .step-head .chip{background:var(--p7);}
+  .step-head .title{font-weight:700; font-size:.98rem;}
+  .step-head .file{font-size:.72rem; color:var(--muted); font-family:ui-monospace,Menlo,Consolas,monospace;}
+  .step-body{padding:14px 18px;}
+  .step-body p{margin:0 0 10px; font-size:.9rem;}
+  .io-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:640px){.io-grid{grid-template-columns:1fr;}}
+  .io-box{border:1px dashed var(--line); border-radius:8px; padding:10px 12px;}
+  .io-label{font-size:.68rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin-bottom:6px;}
+  .io-label.in::before{content:"→ ";}
+  .io-label.out::before{content:"← ";}
+  pre.code{
+    background:var(--code-bg); color:var(--code-ink); padding:10px 12px; border-radius:8px;
+    font-size:.78rem; overflow-x:auto; margin:0; font-family:ui-monospace,Menlo,Consolas,monospace;
+    line-height:1.5;
+  }
+  .chips{display:flex; gap:6px; flex-wrap:wrap;}
+  .chip-pill{
+    font-size:.72rem; background:var(--bg); border:1px solid var(--line); border-radius:999px;
+    padding:3px 10px; font-family:ui-monospace,Menlo,Consolas,monospace;
+  }
+  .note{
+    font-size:.82rem; background:#fffbeb; border:1px solid #fde68a; color:#92400e;
+    border-radius:8px; padding:10px 12px; margin-top:10px;
+  }
+  .note.good{background:#f0fdf4; border-color:#bbf7d0; color:#166534;}
+
+  table.compare{width:100%; border-collapse:collapse; font-size:.82rem; margin:14px 0;}
+  table.compare th, table.compare td{border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top;}
+  table.compare th{background:var(--bg); font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted);}
+  table.compare td code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.78rem;}
+
+  table.signals{width:100%; border-collapse:collapse; font-size:.82rem; margin:10px 0;}
+  table.signals th, table.signals td{border:1px solid var(--line); padding:7px 9px; text-align:right;}
+  table.signals th:first-child, table.signals td:first-child{text-align:left;}
+  table.signals th{background:var(--p7-bg); font-size:.72rem;}
+  table.signals tr.top td{background:#faf5ff; font-weight:600;}
+
+  .formula{
+    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.85rem; background:#0f172a;
+    color:#e2e8f0; padding:12px 16px; border-radius:8px; overflow-x:auto;
+  }
+  .formula .op{color:#facc15;}
+  .formula .num{color:#67e8f9;}
+
+  footer{
+    margin-top:60px; padding-top:24px; border-top:1px solid var(--line);
+    font-size:.8rem; color:var(--muted);
+  }
+  footer code{font-family:ui-monospace,Menlo,Consolas,monospace; background:var(--bg); padding:1px 5px; border-radius:4px;}
+  .file-map{font-size:.8rem; background:#fff; border:1px solid var(--line); border-radius:10px; padding:14px 18px;}
+  .file-map div{padding:2px 0;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>P6 · P7 Deep Dive — Tasco Maps AI</h1>
+  <p>Step-by-step walkthrough of the actual pipeline, with real input/output captured from a live run — not illustrative numbers.</p>
+  <div class="badges">
+    <span class="badge">P6 · POST /understand</span>
+    <span class="badge">P7 · POST /search</span>
+    <span class="badge">tascomaps/core/understand.py</span>
+    <span class="badge">tascomaps/engines/semantic_search.py</span>
+  </div>
+</header>
+
+<nav class="jump">
+  <a class="p6" href="#p6">P6 · Search Understanding</a>
+  <a class="p6" href="#p6-examples">P6 · More examples</a>
+  <a class="p7" href="#p7">P7 · Semantic Search &amp; Ranking</a>
+  <a href="#footer-map">Files &amp; metrics</a>
+</nav>
+
+<div class="wrap">
+
+  <div class="overview-cards">
+    <div class="ocard p6">
+      <h3>P6 — AI Search Understanding</h3>
+      <div>Turns a messy Vietnamese query into structured intent: typos fixed, accents restored, abbreviations expanded, entities extracted.</div>
+      <div class="metric-row">
+        <div class="metric"><b>0.967</b>intent acc</div>
+        <div class="metric"><b>0.896</b>token F1</div>
+        <div class="metric"><b>0.762</b>entity F1</div>
+      </div>
+    </div>
+    <div class="ocard p7">
+      <h3>P7 — Semantic Search &amp; Ranking</h3>
+      <div>Uses P6's structured intent to retrieve candidates (dense + lexical) and re-rank with business signals, with human-readable reasons.</div>
+      <div class="metric-row">
+        <div class="metric"><b>0.892</b>recall@3</div>
+        <div class="metric"><b>0.951</b>MRR</div>
+        <div class="metric"><b>0.933</b>hit@1</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= P6 ============================= -->
+  <h2 class="section-title" id="p6"><span class="tag p6">P6</span> AI Search Understanding for Maps</h2>
+  <p class="lede">Worked example: <code>"bv bach mai"</code> → <code>"Bệnh viện Bạch Mai"</code> (POI Search). Every box below shows the real input/output at that stage, captured by running <code>tascomaps.core.understand.understand()</code> directly.</p>
+
+  <div class="pipeline p6">
+    <div class="pstep"><div class="num">1</div><div class="t">Normalize</div><div class="d">NFC, lowercase, tokenize, coordinate check</div></div>
+    <div class="arrow">→</div>
+    <div class="pstep"><div class="num">2</div><div class="t">Abbrev. expand</div><div class="d">type-aware substitution vs. hints</div></div>
+    <div class="arrow">→</div>
+    <div class="pstep"><div class="num">3</div><div class="t">Span linking</div><div class="d">accent restore + typo fix + entity link</div></div>
+    <div class="arrow">→</div>
+    <div class="pstep"><div class="num">4</div><div class="t">Attributes/city</div><div class="d">category, attrs, brand, city, district</div></div>
+    <div class="arrow">→</div>
+    <div class="pstep"><div class="num">5</div><div class="t">Reference parse</div><div class="d">nearby / nav / ambiguity flags</div></div>
+    <div class="arrow">→</div>
+    <div class="pstep"><div class="num">6</div><div class="t">Classify intent</div><div class="d">priority rules, 9 intents</div></div>
+    <div class="arrow">→</div>
+    <div class="pstep"><div class="num">7</div><div class="t">Reconstruct + score</div><div class="d">normalized_query + confidence</div></div>
+  </div>
+
+  <!-- step 1 -->
+  <div class="step-card p6">
+    <div class="step-head">
+      <div class="chip">1</div>
+      <div class="title">Normalize &amp; coordinate check</div>
+      <div class="file">core/text.py · normalize(), tokenize(), parse_coordinates()</div>
+    </div>
+    <div class="step-body">
+      <p>NFC-normalize, lowercase, strip stray punctuation, then tokenize. A regex checks first whether the whole string is a lat/lng pair (unambiguous → short-circuits everything else).</p>
+      <div class="io-grid">
+        <div class="io-box"><div class="io-label in">input</div><pre class="code">raw = "bv bach mai"</pre></div>
+        <div class="io-box"><div class="io-label out">output</div><pre class="code">tokens  = ["bv", "bach", "mai"]
+coords  = None   # not "lat,lng"</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- step 2 -->
+  <div class="step-card p6">
+    <div class="step-head">
+      <div class="chip">2</div>
+      <div class="title">Type-aware abbreviation expansion</div>
+      <div class="file">core/understand.py · _apply_abbrev()</div>
+    </div>
+    <div class="step-body">
+      <p>Looks up 3/2/1-gram windows in the abbreviation dictionary. The dictionary's <code>type</code> column decides behaviour: <b>place types</b> (category/brand/district/city/street/poi) are substituted into the text; <b>intent/nearby types</b> only set a hint flag so they don't corrupt the visible query.</p>
+      <div class="io-grid">
+        <div class="io-box"><div class="io-label in">input</div><pre class="code">tokens = ["bv", "bach", "mai"]
+kb.abbrev["bv"] = {expansion: "Bệnh viện", type: "category"}</pre></div>
+        <div class="io-box"><div class="io-label out">output</div><pre class="code">exp_tokens  = ["Bệnh", "viện", "bach", "mai"]
+abbrev_hits = {"bv": "Bệnh viện"}
+abbr_ent    = {"category": "Bệnh viện"}</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- step 3 -->
+  <div class="step-card p6">
+    <div class="step-head">
+      <div class="chip">3</div>
+      <div class="title">Span linking (accent restore + typo fix + entity grounding)</div>
+      <div class="file">core/understand.py · _link_spans() → data/kb.py phrase lexicon</div>
+    </div>
+    <div class="step-body">
+      <p>Folds every token (strip accents + lowercase) and tries the longest n-gram (up to 6 tokens) against an accent-insensitive phrase lexicon of every POI/brand/street/district/city/category name, with exact match first, fuzzy (rapidfuzz) as backup. The first, longest, highest-priority match wins — <code>poi &gt; alias &gt; street/brand &gt; district/city &gt; ward &gt; category</code>.</p>
+      <div class="io-grid">
+        <div class="io-box"><div class="io-label in">input</div><pre class="code">folded tokens = ["benh","vien","bach","mai"]
+lexicon.exact("benh vien bach mai")</pre></div>
+        <div class="io-box"><div class="io-label out">output</div><pre class="code">spans = [
+  Span(start=0, end=4, type="poi",
+       canonical="Bệnh viện Bạch Mai",
+       payload="poi_id:...")
+]</pre></div>
+      </div>
+      <div class="note good">All 4 tokens are consumed by one span — the query collapses onto a single known POI, accents restored and typo-tolerant, in one lookup.</div>
+    </div>
+  </div>
+
+  <!-- step 4 -->
+  <div class="step-card p6">
+    <div class="step-head">
+      <div class="chip">4</div>
+      <div class="title">Category / attribute / brand / city / district detection</div>
+      <div class="file">core/understand.py · _detect_category(), _detect_attributes(), _detect_city()</div>
+    </div>
+    <div class="step-body">
+      <p>Runs regex term-lookups against the parts of the query <em>not</em> already covered by a place span (so "hospital" words in a POI name don't get re-detected as a separate category). Here the whole query is already covered by the POI span, so category falls back to the abbreviation-derived one.</p>
+      <div class="io-grid">
+        <div class="io-box"><div class="io-label in">input</div><pre class="code">spans (from step 3), abbr_ent = {"category": "Bệnh viện"}
+cat_text = ""   # fully covered by the POI span</pre></div>
+        <div class="io-box"><div class="io-label out">output</div><pre class="code">category   = "Bệnh viện"
+attributes = []
+brand = district = city = None</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- step 5 -->
+  <div class="step-card p6">
+    <div class="step-head">
+      <div class="chip">5</div>
+      <div class="title">Reference / nearby / navigation / ambiguity detection</div>
+      <div class="file">core/understand.py · proximity-preposition, nav-marker, ambiguous-brand regexes</div>
+    </div>
+    <div class="step-body">
+      <p>Checks for "gần / near / cạnh…" (nearby + a reference place), navigation markers ("chỉ đường", "directions"), current-location phrases ("gần đây"), and short bare brand names that map to &gt;1 POI (ambiguous, e.g. <code>"galaxy"</code>).</p>
+      <div class="io-grid">
+        <div class="io-box"><div class="io-label in">input</div><pre class="code">qfold = "benh vien bach mai"</pre></div>
+        <div class="io-box"><div class="io-label out">output</div><pre class="code">has_nav = has_current_loc = False
+reference_poi = reference_area = None
+ambiguous = None</pre></div>
+      </div>
+      <p>None of these fire for this query — it is a plain, unambiguous named-place lookup.</p>
+    </div>
+  </div>
+
+  <!-- step 6 -->
+  <div class="step-card p6">
+    <div class="step-head">
+      <div class="chip">6</div>
+      <div class="title">Intent classification</div>
+      <div class="file">core/understand.py · priority if/elif chain over 9 intents</div>
+    </div>
+    <div class="step-body">
+      <p>Deterministic priority rules: Coordinate &gt; Navigation &gt; Ambiguous &gt; Nearby &gt; Address &gt; <b>POI</b> &gt; Brand-Category &gt; Discovery &gt; Category. A resolved <code>poi_span</code> with no competing "reference forces category" condition wins outright.</p>
+      <div class="io-grid">
+        <div class="io-box"><div class="io-label in">input</div><pre class="code">poi_span present, ref_forces_category = False
+has_nav / ambiguous / has_current_loc = False</pre></div>
+        <div class="io-box"><div class="io-label out">output</div><pre class="code">intent = "POI Search"</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- step 7 -->
+  <div class="step-card p6">
+    <div class="step-head">
+      <div class="chip">7</div>
+      <div class="title">Reconstruct normalized query + confidence</div>
+      <div class="file">core/understand.py · _build_normalized(), _confidence()</div>
+    </div>
+    <div class="step-body">
+      <p>For a POI-Search intent the canonical POI name is used directly (correct casing/accents), instead of rebuilding token-by-token. Confidence starts at a base and adds evidence-based bonuses.</p>
+      <div class="io-grid">
+        <div class="io-box"><div class="io-label in">input</div><pre class="code">intent="POI Search", ent={poi_name, category}
+spans=[poi], abbrev_hits={"bv": "Bệnh viện"}</pre></div>
+        <div class="io-box"><div class="io-label out">output</div><pre class="code">normalized_query = "Bệnh viện Bạch Mai"
+confidence = 0.82</pre></div>
+      </div>
+      <div class="formula">confidence = <span class="num">0.55</span> base
+  <span class="op">+</span> <span class="num">0.06</span> × 2 entities  <span class="op">=</span> <span class="num">0.67</span>
+  <span class="op">+</span> <span class="num">0.10</span> (a "poi" span exists)  <span class="op">=</span> <span class="num">0.77</span>
+  <span class="op">+</span> <span class="num">0.05</span> (an abbreviation was resolved)  <span class="op">=</span> <span class="num">0.82</span></div>
+      <p style="margin-top:10px;">Final P6 output for this query:</p>
+      <pre class="code">{
+  "raw": "bv bach mai",
+  "normalized_query": "Bệnh viện Bạch Mai",
+  "intent": "POI Search",
+  "entities": {
+    "poi_name": "Bệnh viện Bạch Mai",
+    "category": "Bệnh viện"
+  },
+  "confidence": 0.82,
+  "source": "deterministic"
+}</pre>
+    </div>
+  </div>
+
+  <!-- more examples -->
+  <h3 id="p6-examples" style="margin-top:40px;">More P6 traces (same pipeline, different intents)</h3>
+  <p class="lede">Same 7 steps, condensed — to show how abbreviation type (place vs. attribute vs. intent) and span priority change the outcome.</p>
+
+  <table class="compare">
+    <tr><th>Step</th><th><code>ks da nang gan bien</code> → <b>Category Search</b></th><th><code>nt long chau q1</code> → <b>Brand Category Search</b></th></tr>
+    <tr><td>1. Normalize</td><td><code>["ks","da","nang","gan","bien"]</code></td><td><code>["nt","long","chau","q1"]</code></td></tr>
+    <tr><td>2. Abbrev. expand</td><td><code>ks</code> (type=category) → <code>"Khách sạn"</code>; <code>abbrev_hits={"ks":"Khách sạn"}</code></td><td><code>nt</code> (type=category) → <code>"Nhà thuốc"</code>; <code>q1</code> (type=district) → <code>"Quận 1"</code></td></tr>
+    <tr><td>3. Span linking</td><td><code>spans=[(category,"Khách sạn"), (street,"đà nẵng")]</code> — city detector (step 4) overrides the stray "street" tag</td><td><code>spans=[(brand,"Nhà thuốc Long Châu"), (district,"Quận 1")]</code></td></tr>
+    <tr><td>4. Category/attr/city</td><td><code>category="Khách sạn"</code>, <code>city="Đà Nẵng"</code> (regex city detector, independent of span type), <code>attributes=["gần biển"]</code></td><td><code>category="Nhà thuốc"</code> (from abbrev), <code>brand="Nhà thuốc Long Châu"</code>, <code>district="Quận 1"</code></td></tr>
+    <tr><td>5. Reference/nav</td><td>"gan" + "bien" tried as a reference-area pattern, but nothing follows "biển" → treated as the attribute already captured, not a place reference</td><td>none triggered</td></tr>
+    <tr><td>6. Intent</td><td>no POI span, no brand+category combo (brand is empty) → falls to <code>category or dish</code> ⇒ <b>Category Search</b></td><td><code>brand</code> <b>and</b> <code>category</code> both set ⇒ <b>Brand Category Search</b></td></tr>
+    <tr><td>7. Reconstruct + confidence</td><td><code>normalized_query="Khách sạn đà nẵng gần biên"</code>, <code>confidence=0.78</code> (0.55 + 0.18 for 3 entities + 0.05 abbrev hit)</td><td><code>normalized_query="Nhà thuốc Long Châu Quận 1"</code>, <code>confidence=0.88</code> (0.55 + 0.18 for 3 entities + 0.10 brand/district span + 0.05 abbrev hit)</td></tr>
+  </table>
+
+  <div class="note">
+    <b>Real limitation, kept visible on purpose:</b> in the <code>ks da nang gan bien</code> trace, the structured <code>entities.attribute</code> field correctly says <code>"gần biển"</code> (regex works on accent-folded text), but the human-readable <code>normalized_query</code> shows <code>"...gần biên"</code> — the per-token accent-restorer guessed the wrong diacritic for an unseen token. Entity extraction and display-string reconstruction are decoupled, so one can be right while the other has a cosmetic slip.
+  </div>
+
+  <pre class="code" style="margin-top:14px;">// ks da nang gan bien
+{"normalized_query": "Khách sạn đà nẵng gần biên", "intent": "Category Search",
+ "entities": {"category": "Khách sạn", "city": "Đà Nẵng", "attribute": "gần biển"},
+ "confidence": 0.78}
+
+// nt long chau q1
+{"normalized_query": "Nhà thuốc Long Châu Quận 1", "intent": "Brand Category Search",
+ "entities": {"category": "Nhà thuốc", "brand": "Nhà thuốc Long Châu", "district": "Quận 1"},
+ "confidence": 0.88}</pre>
+
+  <!-- ============================= P7 ============================= -->
+  <h2 class="section-title" id="p7"><span class="tag p7">P7</span> AI Semantic Search &amp; Ranking</h2>
+  <p class="lede">Worked example: <code>"quán cà phê yên tĩnh để làm việc"</code> ("quiet coffee shop to work in") → a ranked, explained list of cafés. All numbers below are a real run of <code>SemanticSearchEngine.search()</code> against the 363-POI knowledge base.</p>
+
+  <div class="pipeline p7">
+    <div class="pstep"><div class="num">1</div><div class="t">Understand (P6)</div><div class="d">reuse P6 as the ranking input</div></div>
+    <div class="arrow">→</div>
+    <div class="pstep"><div class="num">2</div><div class="t">POI documents</div><div class="d">flatten each POI to searchable text</div></div>
+    <div class="arrow">→</div>
+    <div class="pstep"><div class="num">3</div><div class="t">Hybrid retrieval</div><div class="d">dense embeddings + BM25, min-max fused</div></div>
+    <div class="arrow">→</div>
+    <div class="pstep"><div class="num">4</div><div class="t">Multi-signal rerank</div><div class="d">6 weighted business signals</div></div>
+    <div class="arrow">→</div>
+    <div class="pstep"><div class="num">5</div><div class="t">Explanations</div><div class="d">per-result Vietnamese reasons</div></div>
+  </div>
+
+  <!-- step 1 -->
+  <div class="step-card p7">
+    <div class="step-head">
+      <div class="chip">1</div>
+      <div class="title">Query understanding as ranking input</div>
+      <div class="file">engines/semantic_search.py · understand(query, kb)  (P6 called directly)</div>
+    </div>
+    <div class="step-body">
+      <p>P7 never re-implements query parsing — it calls the exact P6 <code>understand()</code> function from step-by-step section above. Its output becomes structured ranking constraints, not just a bag of words.</p>
+      <div class="io-grid">
+        <div class="io-box"><div class="io-label in">input</div><pre class="code">query = "quán cà phê yên tĩnh để làm việc"</pre></div>
+        <div class="io-box"><div class="io-label out">output</div><pre class="code">{
+  "intent": "Category Search",
+  "entities": {
+    "category": "Quán cà phê",
+    "attributes": ["yên tĩnh", "phù hợp làm việc"]
+  },
+  "confidence": 0.67
+}
+required_attributes = ["yên tĩnh", "phù hợp làm việc"]</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- step 2 -->
+  <div class="step-card p7">
+    <div class="step-head">
+      <div class="chip">2</div>
+      <div class="title">POI document construction</div>
+      <div class="file">index/store.py · poi_document()</div>
+    </div>
+    <div class="step-body">
+      <p>Each POI's structured fields (name, category, brand, description, attributes, tags, district, city) are flattened into one text blob — used identically for both the dense embedding and the BM25 lexical index.</p>
+      <div class="io-grid">
+        <div class="io-box"><div class="io-label in">input</div><pre class="code">POI C004 = {
+  name: "Tranquil Books &amp; Coffee",
+  category: "Quán cà phê", sub_category: "Book Cafe",
+  brand: "Tranquil",
+  description: "Quán cà phê sách yên tĩnh, phù hợp học
+                bài, đọc sách và làm việc cá nhân.",
+  attributes: ["yên tĩnh","wifi","sách",
+               "phù hợp học tập","phù hợp làm việc"],
+  tags: ["quiet","study","book-cafe"],
+  district: "Hoàn Kiếm", city: "Hà Nội"
+}</pre></div>
+        <div class="io-box"><div class="io-label out">output</div><pre class="code">"Tranquil Books &amp; Coffee. Quán cà phê. Book Cafe.
+Tranquil. Quán cà phê sách yên tĩnh, phù hợp học bài,
+đọc sách và làm việc cá nhân.. yên tĩnh wifi sách phù
+hợp học tập phù hợp làm việc. quiet study book-cafe.
+Hoàn Kiếm. Hà Nội"</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- step 3 -->
+  <div class="step-card p7">
+    <div class="step-head">
+      <div class="chip">3</div>
+      <div class="title">Hybrid retrieval — dense embeddings + BM25, min-max fused</div>
+      <div class="file">index/store.py · HybridIndex.retrieve() · index/embed.py</div>
+    </div>
+    <div class="step-body">
+      <p>Two independent retrievers score every POI document: a local <code>multilingual-e5-small</code> sentence embedder (E5-style <code>"query: "</code> / <code>"passage: "</code> prefixes, cosine similarity) for meaning, and BM25 over accent-folded tokens for exact lexical overlap. Both score arrays are min-max normalized to [0,1] then combined <code>0.65 · vector + 0.35 · lexical</code>.</p>
+      <div class="io-grid">
+        <div class="io-box"><div class="io-label in">input</div><pre class="code">query: "quán cà phê yên tĩnh để làm việc"
+363 POI documents (from step 2)</pre></div>
+        <div class="io-box"><div class="io-label out">output</div><pre class="code">top-5 candidates (poi, vec, lex, hybrid):</pre></div>
+      </div>
+      <table class="signals" style="margin-top:8px;">
+        <tr><th>POI</th><th>vector cos-sim</th><th>BM25 (raw)</th><th>hybrid (fused)</th></tr>
+        <tr class="top"><td>Tranquil Books &amp; Coffee</td><td>0.898</td><td>16.913</td><td>1.000</td></tr>
+        <tr><td>The Workshop Coffee</td><td>0.894</td><td>16.237</td><td>0.968</td></tr>
+        <tr><td>WorkHub Cafe Cầu Giấy</td><td>0.896</td><td>14.343</td><td>0.940</td></tr>
+        <tr><td>The Coffee House Phường 3</td><td>0.883</td><td>12.616</td><td>0.836</td></tr>
+        <tr><td>Dream Beans Coffee Đà Nẵng</td><td>0.876</td><td>13.971</td><td>0.831</td></tr>
+      </table>
+      <p style="font-size:.8rem;color:var(--muted);">Tranquil scores the fused maximum (1.000) because it has both the top raw vector score <i>and</i> the top raw BM25 score in this candidate pool, so both min-max terms hit 1.0.</p>
+    </div>
+  </div>
+
+  <!-- step 4 -->
+  <div class="step-card p7">
+    <div class="step-head">
+      <div class="chip">4</div>
+      <div class="title">Multi-signal reranking</div>
+      <div class="file">engines/semantic_search.py · SemanticSearchEngine.search()</div>
+    </div>
+    <div class="step-body">
+      <p>The hybrid pool (top ~25 candidates) is rescored with 6 weighted business signals mirroring the dataset's <code>Ranking_Signals</code> sheet. If a category was explicitly requested and a candidate's category doesn't match, its final score is multiplied by 0.4 (hard penalty) regardless of everything else.</p>
+      <table class="signals">
+        <tr><th>signal</th><th>weight</th><th>Tranquil Books &amp; Coffee</th><th>The Workshop Coffee</th><th>Dream Beans Coffee ĐN</th></tr>
+        <tr><td>relevance (fused retrieval)</td><td>0.42</td><td>1.000</td><td>0.958</td><td>0.778</td></tr>
+        <tr><td>category match</td><td>0.14</td><td>1.0</td><td>1.0</td><td>1.0</td></tr>
+        <tr><td>attributes match (2/2 needed)</td><td>0.18</td><td>1.0</td><td>1.0</td><td>1.0</td></tr>
+        <tr><td>location/distance</td><td>0.12</td><td>0.0</td><td>0.0</td><td>0.0</td></tr>
+        <tr><td>rating /5</td><td>0.07</td><td>0.94 (4.7★)</td><td>0.92 (4.6★)</td><td>0.90 (4.5★)</td></tr>
+        <tr><td>popularity /100</td><td>0.07</td><td>0.85</td><td>0.91</td><td>0.78</td></tr>
+        <tr class="top"><td><b>weighted score</b></td><td></td><td><b>0.8653</b></td><td><b>0.8503</b></td><td><b>0.7645</b></td></tr>
+      </table>
+      <p style="font-size:.8rem;color:var(--muted); margin-top:-4px;">Location is 0.0 for all three: the query carries no city/district/reference-POI/coordinates entity, so <code>_location_score()</code> has nothing to compare against.</p>
+      <div class="formula">score(Tranquil) = <span class="num">0.42</span>×<span class="num">1.000</span> <span class="op">+</span> <span class="num">0.14</span>×<span class="num">1.0</span> <span class="op">+</span> <span class="num">0.18</span>×<span class="num">1.0</span> <span class="op">+</span> <span class="num">0.12</span>×<span class="num">0.0</span> <span class="op">+</span> <span class="num">0.07</span>×<span class="num">0.94</span> <span class="op">+</span> <span class="num">0.07</span>×<span class="num">0.85</span>
+              <span class="op">=</span> <span class="num">0.8653</span></div>
+    </div>
+  </div>
+
+  <!-- step 5 -->
+  <div class="step-card p7">
+    <div class="step-head">
+      <div class="chip">5</div>
+      <div class="title">Explainable output</div>
+      <div class="file">engines/semantic_search.py · reasons list per result</div>
+    </div>
+    <div class="step-body">
+      <p>Every signal that fired above a threshold appends a short Vietnamese reason string (capped at 4), so the ranked list is auditable — not a black-box score.</p>
+      <div class="io-grid">
+        <div class="io-box"><div class="io-label in">input</div><pre class="code">signals = {relevance:1.0, category:1.0,
+attributes:1.0(matched=["yên tĩnh","phù hợp làm việc"]),
+location:0.0, rating:4.7, popularity:85}</pre></div>
+        <div class="io-box"><div class="io-label out">output</div><pre class="code">reasons = [
+  "đúng loại Quán cà phê",
+  "phù hợp: yên tĩnh, phù hợp làm việc",
+  "đánh giá 4.7★",
+  "phổ biến"
+]</pre></div>
+      </div>
+      <p style="margin-top:10px;">Final P7 response (top 3):</p>
+      <pre class="code">{
+  "query": "quán cà phê yên tĩnh để làm việc",
+  "understanding": { "intent": "Category Search",
+    "entities": {"category": "Quán cà phê",
+                 "attributes": ["yên tĩnh","phù hợp làm việc"]},
+    "confidence": 0.67 },
+  "required_attributes": ["yên tĩnh", "phù hợp làm việc"],
+  "results": [
+    { "name": "Tranquil Books &amp; Coffee", "score": 0.8653,
+      "reasons": ["đúng loại Quán cà phê",
+                  "phù hợp: yên tĩnh, phù hợp làm việc",
+                  "đánh giá 4.7★", "phổ biến"] },
+    { "name": "The Workshop Coffee", "score": 0.8503,
+      "reasons": ["đúng loại Quán cà phê",
+                  "phù hợp: yên tĩnh, phù hợp làm việc",
+                  "đánh giá 4.6★", "phổ biến"] },
+    { "name": "Dream Beans Coffee Đà Nẵng", "score": 0.7645,
+      "reasons": ["đúng loại Quán cà phê",
+                  "phù hợp: yên tĩnh, phù hợp làm việc",
+                  "đánh giá 4.5★"] }
+  ]
+}</pre>
+    </div>
+  </div>
+
+  <footer id="footer-map">
+    <h3>Files behind each step</h3>
+    <div class="file-map">
+      <div><code>tascomaps/core/text.py</code> — Vietnamese normalize/fold/tokenize/coordinate primitives (P6 step 1)</div>
+      <div><code>tascomaps/core/understand.py</code> — full P6 engine: abbreviation, span linking, intent, reconstruction, confidence (P6 steps 2–7; also P7 step 1)</div>
+      <div><code>tascomaps/data/kb.py</code>, <code>data/loader.py</code> — unified knowledge base + accent-insensitive phrase lexicon</div>
+      <div><code>tascomaps/index/store.py</code> — POI document construction + hybrid (dense+BM25) retrieval (P7 steps 2–3)</div>
+      <div><code>tascomaps/index/embed.py</code> — multilingual-e5-small embedder with TF-IDF fallback</div>
+      <div><code>tascomaps/engines/semantic_search.py</code> — multi-signal reranking + explanations (P7 steps 4–5)</div>
+      <div><code>eval/evaluate.py</code> — gold-set scoring producing the metrics shown at the top</div>
+    </div>
+    <p style="margin-top:18px;">Data is synthetic hackathon data (Tasco Maps AI Challenge); numbers on this page were generated by directly invoking <code>understand()</code> and <code>SemanticSearchEngine.search()</code> in this repo, not hand-written.</p>
+  </footer>
+
+</div>
+</body>
+</html>

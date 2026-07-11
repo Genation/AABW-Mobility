@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RouteMate — Search the journey, not just the destination</title>
+<style>
+  :root {
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --border:         rgba(11,11,11,0.10);
+
+    --blue:    #2a78d6;   /* brand / system */
+    --blue-050:#eaf2fc;
+    --aqua:    #1baf7a;   /* search engine / user value */
+    --aqua-050:#e7f8f1;
+    --violet:  #4a3aa7;   /* LLM reasoning */
+    --violet-050:#eeecfa;
+    --orange:  #eb6834;   /* business value / monetization */
+    --orange-050:#fdece3;
+    --yellow:  #eda100;   /* sponsored / labels */
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    line-height: 1.55;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+  section { padding: 88px 0; }
+  section + section { border-top: 1px solid var(--gridline); }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: var(--blue-050);
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
+
+  h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+  h2 { font-size: 34px; margin-bottom: 14px; }
+  .section-sub { color: var(--text-secondary); font-size: 17px; max-width: 640px; margin-bottom: 48px; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    background:
+      radial-gradient(1100px 480px at 12% -10%, var(--blue-050), transparent 60%),
+      radial-gradient(900px 420px at 100% 0%, var(--aqua-050), transparent 55%),
+      var(--surface-1);
+    padding: 110px 0 96px;
+    border-bottom: 1px solid var(--gridline);
+  }
+  .hero-tag {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-size: 56px;
+    line-height: 1.06;
+    max-width: 820px;
+  }
+  .hero h1 span { color: var(--blue); }
+  .hero .tagline {
+    margin-top: 22px;
+    font-size: 23px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    max-width: 620px;
+  }
+  .hero-scene {
+    margin-top: 44px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .pin-route {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(11,11,11,0.04);
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .dot.start { background: var(--blue); }
+  .dot.end { background: var(--orange); }
+  .route-line { width: 60px; height: 2px; background: repeating-linear-gradient(90deg, var(--text-muted) 0 6px, transparent 6px 11px); }
+
+  /* ---------- PROBLEM ---------- */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .compare-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    background: var(--surface-1);
+  }
+  .compare-card.today { }
+  .compare-card.future { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue) inset; }
+  .compare-card h3 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 16px; }
+  .compare-card.future h3 { color: var(--blue); }
+  .compare-card ul { margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 15.5px; }
+  .compare-card li { margin-bottom: 10px; }
+  .compare-card li.bad::marker { color: var(--orange); }
+  .compare-card li.good::marker { color: var(--aqua); }
+
+  /* ---------- FLOW DIAGRAM ---------- */
+  .legend {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-secondary); font-weight: 600; }
+  .legend-swatch { width: 12px; height: 12px; border-radius: 4px; }
+
+  .flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .flow-step {
+    flex: 1 0 148px;
+    min-width: 148px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 6px;
+  }
+  .flow-card {
+    width: 100%;
+    border-radius: 14px;
+    padding: 20px 14px;
+    border: 1.5px solid transparent;
+    background: var(--surface-1);
+    box-shadow: 0 1px 2px rgba(11,11,11,0.05);
+  }
+  .flow-step .num {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .flow-step .icon { font-size: 26px; margin-bottom: 10px; }
+  .flow-step .label { font-size: 14px; font-weight: 700; }
+  .flow-step .who { margin-top: 6px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .flow-card.role-user   { border-color: var(--blue); }
+  .flow-card.role-user   .who { color: var(--blue); }
+  .flow-card.role-llm    { border-color: var(--violet); background: var(--violet-050); }
+  .flow-card.role-llm    .who { color: var(--violet); }
+  .flow-card.role-search { border-color: var(--aqua); background: var(--aqua-050); }
+  .flow-card.role-search .who { color: var(--aqua); }
+
+  .flow-arrow {
+    flex: 0 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 20px;
+    align-self: center;
+    margin-top: -20px;
+  }
+
+  .flow-note {
+    margin-top: 28px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--violet-050);
+    border: 1px solid var(--violet);
+    border-radius: 12px;
+    padding: 16px 20px;
+    color: var(--text-primary);
+    font-size: 15px;
+  }
+  .flow-note b { color: var(--violet); }
+
+  /* ---------- DEMO ---------- */
+  .demo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .demo-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--surface-1);
+  }
+  .demo-head {
+    padding: 22px 26px;
+    color: #fff;
+  }
+  .demo-card.near .demo-head { background: var(--blue); }
+  .demo-card.far  .demo-head { background: var(--orange); }
+  .demo-head .kicker { font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.85; }
+  .demo-head h3 { font-size: 20px; margin-top: 6px; }
+  .demo-body { padding: 22px 26px 26px; }
+  .quote-line {
+    font-style: italic;
+    color: var(--text-secondary);
+    border-left: 3px solid var(--gridline);
+    padding-left: 14px;
+    margin: 0 0 18px;
+    font-size: 15px;
+  }
+  .demo-body ul { margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 15px; }
+  .demo-body li { margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .chip {
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 999px;
+  }
+  .demo-card.near .chip { background: var(--blue-050); color: var(--blue); }
+  .demo-card.far .chip { background: var(--orange-050); color: var(--orange); }
+
+  /* ---------- RANKING ---------- */
+  .formula-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 40px;
+  }
+  .formula {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 30px;
+  }
+  .term {
+    padding: 14px 20px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 140px;
+  }
+  .term .t-label { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
+  .term.quality    { background: var(--blue-050);   color: var(--blue); }
+  .term.preference  { background: var(--aqua-050);   color: var(--aqua); }
+  .term.relevance   { background: var(--violet-050); color: var(--violet); }
+  .term.detour      { background: var(--orange-050); color: var(--orange); }
+  .term.score       { background: var(--text-primary); color: #fff; }
+  .op { color: var(--text-muted); font-size: 22px; font-weight: 400; }
+
+  .rules {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .rule {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14.5px;
+    color: var(--text-secondary);
+  }
+  .rule .rule-icon {
+    flex: 0 0 auto;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--aqua);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+
+  .sponsor-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 24px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--yellow);
+    background: #fff8e8;
+    border: 1px solid var(--yellow);
+    padding: 5px 12px;
+    border-radius: 999px;
+  }
+
+  /* ---------- WHY IT WINS ---------- */
+  .value-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 36px;
+  }
+  .value-card {
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .value-card.user { background: var(--aqua-050); border: 1px solid var(--aqua); }
+  .value-card.biz  { background: var(--orange-050); border: 1px solid var(--orange); }
+  .value-card h3 { font-size: 16px; margin-bottom: 16px; }
+  .value-card.user h3 { color: var(--aqua); }
+  .value-card.biz h3 { color: var(--orange); }
+  .value-card ul { margin: 0; padding-left: 20px; font-size: 15px; color: var(--text-primary); }
+  .value-card li { margin-bottom: 10px; }
+
+  .callout {
+    background: var(--text-primary);
+    color: #fff;
+    border-radius: 16px;
+    padding: 32px 36px;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .callout .by { display: block; margin-top: 14px; font-size: 13px; font-weight: 600; color: #b9b8b3; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* ---------- AGENDA ---------- */
+  .agenda { counter-reset: slide; }
+  .agenda-item {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--gridline);
+  }
+  .agenda-item:last-child { border-bottom: none; }
+  .agenda-num {
+    counter-increment: slide;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--blue);
+    min-width: 26px;
+  }
+  .agenda-num::before { content: counter(slide, decimal-leading-zero); }
+  .agenda-item .a-title { font-weight: 700; font-size: 16.5px; min-width: 260px; }
+  .agenda-item .a-desc { color: var(--text-secondary); font-size: 15px; }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    padding: 64px 0 80px;
+    text-align: center;
+  }
+  footer .brand { font-size: 22px; font-weight: 700; }
+  footer .brand span { color: var(--blue); }
+  footer .final-tag { margin-top: 10px; color: var(--text-secondary); font-size: 16px; }
+
+  @media (max-width: 860px) {
+    .hero h1 { font-size: 38px; }
+    .compare, .demo-grid, .value-grid { grid-template-columns: 1fr; }
+    .rules { grid-template-columns: 1fr; }
+    .flow { flex-wrap: nowrap; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="wrap">
+      <div class="hero-tag">Hackathon Product Pitch</div>
+      <h1><span>RouteMate</span> — search the journey, not just the destination.</h1>
+      <p class="tagline">An intelligent, route-aware discovery experience built for our self-drive rental customers.</p>
+      <div class="hero-scene">
+        <div class="pin-route">
+          <span class="dot start"></span> Ho Chi Minh City
+          <span class="route-line"></span>
+          <span class="dot end"></span> Phan Thiết
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEM -->
+  <section class="problem">
+    <div class="wrap">
+      <div class="eyebrow">The Problem</div>
+      <h2>Maps find destinations. Not complete journeys.</h2>
+      <p class="section-sub">Driving from Ho Chi Minh City to Phan Thiết, a map shows you the road — but you're still on your own to search for a hotel, a restaurant, a petrol station, or an EV charger, and to guess whether the result creates a big detour.</p>
+      <div class="compare">
+        <div class="compare-card today">
+          <h3>Today</h3>
+          <ul>
+            <li class="bad">You must know what to search for</li>
+            <li class="bad">Separate searches for every stop</li>
+            <li class="bad">No sense of detour or added time</li>
+            <li class="bad">Results ignore vehicle type (EV vs petrol)</li>
+          </ul>
+        </div>
+        <div class="compare-card future">
+          <h3>With RouteMate</h3>
+          <ul>
+            <li class="good">RouteMate understands the journey for you</li>
+            <li class="good">One flow recommends every stop you'll need</li>
+            <li class="good">Every result is ranked by detour cost</li>
+            <li class="good">Personalized to rented vehicle &amp; trip length</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works">
+    <div class="wrap">
+      <div class="eyebrow">How It Works</div>
+      <h2>Destination in. Complete journey out.</h2>
+      <p class="section-sub">The LLM reasons about what you'll likely need on this trip. The nearby-search engine finds the real places. Together, they turn a route into a plan — without ever inventing a business that doesn't exist.</p>
+
+      <div class="legend">
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--blue)"></span> User action</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--violet)"></span> LLM reasoning</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--aqua)"></span> Search engine (real places)</div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-card role-user">
+            <div class="num">STEP 1</div>
+            <div class="icon">📍</div>
+            <div class="label">Choose destination</div>
+            <div class="who">User</div>
+          </div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-card role-llm">
+            <div class="num">STEP 2</div>
+            <div class="icon">🧭</div>
+            <div class="label">Analyze trip context</div>
+            <div class="who">LLM</div>
+          </div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-card role-llm">
+            <div class="num">STEP 3</div>
+            <div class="icon">💡</div>
+            <div class="label">Suggest place categories</div>
+            <div class="who">LLM</div>
+          </div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-card role-search">
+            <div class="num">STEP 4</div>
+            <div class="icon">🔎</div>
+            <div class="label">Search the route corridor</div>
+            <div class="who">Search engine</div>
+          </div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-card role-search">
+            <div class="num">STEP 5</div>
+            <div class="icon">📊</div>
+            <div class="label">Rank by relevance &amp; detour</div>
+            <div class="who">Search engine</div>
+          </div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-card role-user">
+            <div class="num">STEP 6</div>
+            <div class="icon">✅</div>
+            <div class="label">User selects stops</div>
+            <div class="who">User</div>
+          </div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-card role-user">
+            <div class="num">STEP 7</div>
+            <div class="icon">🗺️</div>
+            <div class="label">Route redraws automatically</div>
+            <div class="who">System</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-note">
+        <span>🛡️</span>
+        <span><b>Why this split matters:</b> the LLM only recommends categories and reasoning — never specific businesses. The existing search engine returns real, verifiable places. This prevents hallucinated businesses and keeps the whole solution feasible to ship.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section class="demo">
+    <div class="wrap">
+      <div class="eyebrow">Demo Scenarios</div>
+      <h2>Two trips. One experience.</h2>
+      <p class="section-sub">A short commute and a long road trip stress the same engine in very different ways.</p>
+      <div class="demo-grid">
+        <div class="demo-card near">
+          <div class="demo-head">
+            <div class="kicker">Near-distance · Morning commute</div>
+            <h3>“Find me a quiet café on my way to work.”</h3>
+          </div>
+          <div class="demo-body">
+            <p class="quote-line">Detour budget: under 5 minutes.</p>
+            <ul>
+              <li>RouteMate surfaces 3 cafés along the existing commute</li>
+              <li>Each is scored against a tight detour tolerance</li>
+              <li>User picks one — the route redraws instantly</li>
+            </ul>
+            <div class="chips">
+              <span class="chip">Single request</span>
+              <span class="chip">Low detour tolerance</span>
+              <span class="chip">Instant redraw</span>
+            </div>
+          </div>
+        </div>
+        <div class="demo-card far">
+          <div class="demo-head">
+            <div class="kicker">Far-distance · HCMC → Phan Thiết</div>
+            <h3>A full-day road trip, planned automatically.</h3>
+          </div>
+          <div class="demo-body">
+            <p class="quote-line">RouteMate recognizes a long trip and plans the whole journey.</p>
+            <ul>
+              <li>A convenient rest stop partway through</li>
+              <li>Lunch along the route</li>
+              <li>A hotel near the destination</li>
+              <li>Petrol stations or EV chargers — based on the rented vehicle</li>
+            </ul>
+            <div class="chips">
+              <span class="chip">Multi-stop planning</span>
+              <span class="chip">Vehicle-aware</span>
+              <span class="chip">Rental integration</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RANKING -->
+  <section class="ranking">
+    <div class="wrap">
+      <div class="eyebrow">Ranking Logic</div>
+      <h2>Every result earns its place on the route.</h2>
+      <p class="section-sub">Sponsored results can appear — but only when they meet the user's needs, clearly labeled, and never at the cost of route suitability.</p>
+
+      <div class="formula-card">
+        <div class="formula">
+          <div class="term quality">Place quality<span class="t-label">rating &amp; reviews</span></div>
+          <span class="op">+</span>
+          <div class="term preference">User preference<span class="t-label">stated need</span></div>
+          <span class="op">+</span>
+          <div class="term relevance">Route relevance<span class="t-label">on the way</span></div>
+          <span class="op">−</span>
+          <div class="term detour">Detour cost<span class="t-label">extra time</span></div>
+          <span class="op">=</span>
+          <div class="term score">Rank score</div>
+        </div>
+
+        <div class="rules">
+          <div class="rule"><span class="rule-icon">✓</span> Sponsored placements must still satisfy the user's actual need.</div>
+          <div class="rule"><span class="rule-icon">✓</span> Every sponsored result is clearly labeled — never disguised as organic.</div>
+          <div class="rule"><span class="rule-icon">✓</span> Sponsorship never overrides route suitability or detour cost.</div>
+        </div>
+        <span class="sponsor-tag">★ Sponsored — clearly labeled, never ranked above suitability</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY IT WINS -->
+  <section class="why-wins">
+    <div class="wrap">
+      <div class="eyebrow">Why It Wins</div>
+      <h2>Better trips for users. A new channel for the business.</h2>
+      <div class="value-grid">
+        <div class="value-card user">
+          <h3>USER VALUE</h3>
+          <ul>
+            <li>Fewer searches and less trip planning</li>
+            <li>Recommendations that fit the whole journey</li>
+            <li>Detour-aware results, every time</li>
+            <li>Personalized by distance and rented vehicle type</li>
+          </ul>
+        </div>
+        <div class="value-card biz">
+          <h3>BUSINESS VALUE</h3>
+          <ul>
+            <li>Sponsored placements along relevant routes</li>
+            <li>Hotel and restaurant booking commissions</li>
+            <li>Charging and petrol partnerships</li>
+            <li>A more valuable self-drive rental experience</li>
+            <li>Strong intent signals without intrusive ads</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout">
+        “Normal advertising targets what users might want. RouteMate reaches them at the exact moment and location where they need it.”
+        <span class="by">The monetization line for judges</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- AGENDA -->
+  <section class="agenda-section">
+    <div class="wrap">
+      <div class="eyebrow">Suggested Pitch Flow</div>
+      <h2>Seven slides, start to finish.</h2>
+      <div class="agenda">
+        <div class="agenda-item">
+          <span class="agenda-num"></span>
+          <span class="a-title">The problem</span>
+          <span class="a-desc">Maps find destinations, not complete journeys</span>
+        </div>
+        <div class="agenda-item">
+          <span class="agenda-num"></span>
+          <span class="a-title">The idea</span>
+          <span class="a-desc">Search the journey, not just the destination</span>
+        </div>
+        <div class="agenda-item">
+          <span class="agenda-num"></span>
+          <span class="a-title">User experience</span>
+          <span class="a-desc">Destination → recommendations → selection → new route</span>
+        </div>
+        <div class="agenda-item">
+          <span class="agenda-num"></span>
+          <span class="a-title">Live demo</span>
+          <span class="a-desc">Café commute and HCMC → Phan Thiết</span>
+        </div>
+        <div class="agenda-item">
+          <span class="agenda-num"></span>
+          <span class="a-title">Technology</span>
+          <span class="a-desc">LLM planning + route corridor + nearby search</span>
+        </div>
+        <div class="agenda-item">
+          <span class="agenda-num"></span>
+          <span class="a-title">Business model</span>
+          <span class="a-desc">Sponsored stops, bookings, rental integration</span>
+        </div>
+        <div class="agenda-item">
+          <span class="agenda-num"></span>
+          <span class="a-title">Vision</span>
+          <span class="a-desc">Every route becomes a personalized travel assistant</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <div class="brand">Route<span>Mate</span></div>
+      <div class="final-tag">Search the journey, not just the destination.</div>
+    </div>
+  </footer>
+
+</body>
+</html>

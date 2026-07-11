@@ -1,19 +1,19 @@
 {
   "totalCases": 60,
   "metrics": {
-    "mrr": 0.8872,
-    "recallAt1": 0.7167,
-    "recallAt3": 0.8278,
-    "recallAt5": 0.8361,
-    "recallAt10": 0.8611,
-    "precisionAt5": 0.8611,
-    "precisionAt10": 0.8611,
-    "successRate": 0.9667,
-    "coverage": 0.8125,
-    "avgLatencyMs": 2878.05,
-    "p50LatencyMs": 0.09,
-    "p95LatencyMs": 51075.55,
-    "p99LatencyMs": 61058.55
+    "mrr": 0.9289,
+    "recallAt1": 0.7667,
+    "recallAt3": 0.8528,
+    "recallAt5": 0.8611,
+    "recallAt10": 0.8861,
+    "precisionAt5": 0.8861,
+    "precisionAt10": 0.8861,
+    "successRate": 1,
+    "coverage": 0.8333,
+    "avgLatencyMs": 2005.12,
+    "p50LatencyMs": 0.04,
+    "p95LatencyMs": 1.02,
+    "p99LatencyMs": 60193.11
   },
   "byDifficulty": {
     "Easy": {
@@ -23,13 +23,13 @@
     },
     "Medium": {
       "count": 25,
-      "mrr": 0.912,
+      "mrr": 0.932,
       "successRate": 1
     },
     "Hard": {
       "count": 19,
-      "mrr": 0.8070175438596491,
-      "successRate": 0.8947368421052632
+      "mrr": 0.9122807017543859,
+      "successRate": 1
     }
   },
   "byType": {
@@ -45,8 +45,8 @@
     },
     "Nearby Suggestions": {
       "count": 7,
-      "mrr": 0.8571,
-      "successRate": 0.8571
+      "mrr": 1,
+      "successRate": 1
     },
     "Address Suggestions": {
       "count": 4,
@@ -60,8 +60,8 @@
     },
     "Discovery Search": {
       "count": 17,
-      "mrr": 0.7608,
-      "successRate": 0.9412
+      "mrr": 0.849,
+      "successRate": 1
     },
     "Ambiguous": {
       "count": 2,
@@ -91,38 +91,22 @@
   },
   "bySource": {
     "exact": {
-      "count": 53,
-      "mrr": 0.9037735849056604,
-      "avgLatencyMs": 0.18264150943396223
+      "count": 54,
+      "mrr": 0.9333333333333333,
+      "avgLatencyMs": 0.07611111111111107
     },
     "fuzzy": {
       "count": 4,
       "mrr": 1,
-      "avgLatencyMs": 2.6325000000000003
+      "avgLatencyMs": 0.2325
     },
     "embedding": {
-      "count": 3,
-      "mrr": 0.4444444444444444,
-      "avgLatencyMs": 57554.19666666668
+      "count": 2,
+      "mrr": 0.6666666666666666,
+      "avgLatencyMs": 60151.225
     }
   },
-  "failures": [
-    {
-      "caseId": "PUB018",
-      "prefix": "noi bai atm",
-      "expected": [
-        "ATM gần sân bay Nội Bài"
-      ]
-    },
-    {
-      "caseId": "PUB021",
-      "prefix": "quan cafe hoc",
-      "expected": [
-        "Quán cà phê phù hợp học tập",
-        "Cafe có Wi-Fi"
-      ]
-    }
-  ],
+  "failures": [],
   "details": [
     {
       "caseId": "PUB001",
@@ -154,7 +138,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 1.05
+      "latencyMs": 1.02
     },
     {
       "caseId": "PUB002",
@@ -185,7 +169,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.36
+      "latencyMs": 0.33
     },
     {
       "caseId": "PUB003",
@@ -217,7 +201,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.09
+      "latencyMs": 0.13
     },
     {
       "caseId": "PUB004",
@@ -238,7 +222,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.16
+      "latencyMs": 0.2
     },
     {
       "caseId": "PUB005",
@@ -260,7 +244,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.15
+      "latencyMs": 0.09
     },
     {
       "caseId": "PUB006",
@@ -287,7 +271,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.18
+      "latencyMs": 0.13
     },
     {
       "caseId": "PUB007",
@@ -355,7 +339,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.03
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB010",
@@ -386,7 +370,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.18
+      "latencyMs": 0.13
     },
     {
       "caseId": "PUB011",
@@ -406,7 +390,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "fuzzy",
-      "latencyMs": 0.93
+      "latencyMs": 0.55
     },
     {
       "caseId": "PUB012",
@@ -426,7 +410,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.11
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB013",
@@ -448,7 +432,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.07
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB014",
@@ -461,16 +445,16 @@
         "Ăn đêm gần đây"
       ],
       "found": [
-        "Quán ăn gần đây",
         "Quán ăn mở cửa khuya",
+        "Nhà hàng phù hợp cho trẻ em",
+        "Quán ăn gần đây",
         "Quán ăn mở cửa khuyaTP.HCM",
         "Quán ăn mở cửa khuyaHà Nội",
         "Quán ăn mở cửa khuyaĐà Nẵng",
         "Quán ăn mở cửa khuyaHải Phòng",
         "Quán ăn mở cửa khuyaNha Trang",
         "Quán ăn mở cửa khuyaĐà Lạt",
-        "Quán ăn mở cửa khuyaCần Thơ",
-        "Quán ăn mở cửa khuyaHuế"
+        "Quán ăn mở cửa khuyaCần Thơ"
       ],
       "matched": [
         "Quán ăn mở cửa khuya",
@@ -479,7 +463,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.4
+      "latencyMs": 0.15
     },
     {
       "caseId": "PUB015",
@@ -504,7 +488,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.09
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB016",
@@ -529,7 +513,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.07
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB017",
@@ -551,7 +535,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "fuzzy",
-      "latencyMs": 0.6
+      "latencyMs": 0.1
     },
     {
       "caseId": "PUB018",
@@ -563,22 +547,15 @@
         "ATM gần sân bay Nội Bài"
       ],
       "found": [
-        "atm near me",
-        "atm gần đây hà nội",
-        "ATM đậu xe",
-        "ATM trẻ em",
-        "atm gần nhất",
-        "ATM có atm",
-        "ATM near me Huế",
-        "ATM atm",
-        "ATM gần đây",
-        "ATM BIDV gần đây"
+        "ATM gần sân bay Nội Bài"
       ],
-      "matched": [],
-      "rankOfFirstMatch": null,
-      "reciprocalRank": 0,
-      "source": "embedding",
-      "latencyMs": 51075.55
+      "matched": [
+        "ATM gần sân bay Nội Bài"
+      ],
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
+      "source": "exact",
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB019",
@@ -609,7 +586,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.06
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB020",
@@ -639,7 +616,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.06
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB021",
@@ -653,6 +630,7 @@
       ],
       "found": [
         "quán cafe học bài",
+        "Quán cà phê phù hợp học tập",
         "quán cafe gần đây hà nội",
         "quán cafe đẹp hà nội",
         "quán cafe view đẹp sài gòn",
@@ -660,14 +638,15 @@
         "quán cafe làm việc quận 1",
         "quán cafe làm việc hà nội",
         "quán cafe view biển đà nẵng",
-        "quán cafe yên tĩnh quận 1",
-        "quán cafe có wifi mạnh"
+        "quán cafe yên tĩnh quận 1"
       ],
-      "matched": [],
-      "rankOfFirstMatch": null,
-      "reciprocalRank": 0,
+      "matched": [
+        "Quán cà phê phù hợp học tập"
+      ],
+      "rankOfFirstMatch": 2,
+      "reciprocalRank": 0.5,
       "source": "exact",
-      "latencyMs": 0.11
+      "latencyMs": 0.06
     },
     {
       "caseId": "PUB022",
@@ -687,7 +666,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.04
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB023",
@@ -735,7 +714,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.25
+      "latencyMs": 0.18
     },
     {
       "caseId": "PUB025",
@@ -765,7 +744,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.04
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB026",
@@ -797,7 +776,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.04
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB027",
@@ -821,7 +800,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.04
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB028",
@@ -833,6 +812,7 @@
         "Địa điểm check-in đẹp ở Đà Lạt"
       ],
       "found": [
+        "Địa điểm check-in đẹp ở Đà Lạt",
         "Đà Lạt",
         "Đà Lạt Quán cà phê",
         "Đà Lạt Chợ",
@@ -841,8 +821,7 @@
         "Đà Lạt Bệnh viện",
         "Đà Lạt Sân bay",
         "Đà Lạt Rạp chiếu phim",
-        "Đà Lạt Khách sạn",
-        "Đà Lạt Cây xăng"
+        "Đà Lạt Khách sạn"
       ],
       "matched": [
         "Địa điểm check-in đẹp ở Đà Lạt"
@@ -850,7 +829,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.06
+      "latencyMs": 0.05
     },
     {
       "caseId": "PUB029",
@@ -872,7 +851,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.04
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB030",
@@ -902,7 +881,7 @@
       "rankOfFirstMatch": 5,
       "reciprocalRank": 0.2,
       "source": "exact",
-      "latencyMs": 0.05
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB031",
@@ -932,7 +911,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.24
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB032",
@@ -961,7 +940,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "embedding",
-      "latencyMs": 60528.49
+      "latencyMs": 60109.34
     },
     {
       "caseId": "PUB033",
@@ -981,7 +960,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.1
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB034",
@@ -1010,7 +989,7 @@
       "rankOfFirstMatch": 3,
       "reciprocalRank": 0.3333333333333333,
       "source": "embedding",
-      "latencyMs": 61058.55
+      "latencyMs": 60193.11
     },
     {
       "caseId": "PUB035",
@@ -1039,7 +1018,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.48
+      "latencyMs": 0.15
     },
     {
       "caseId": "PUB036",
@@ -1061,7 +1040,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.15
+      "latencyMs": 0.05
     },
     {
       "caseId": "PUB037",
@@ -1091,7 +1070,7 @@
       "rankOfFirstMatch": 10,
       "reciprocalRank": 0.1,
       "source": "exact",
-      "latencyMs": 0.05
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB038",
@@ -1113,7 +1092,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.07
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB039",
@@ -1133,7 +1112,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.04
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB040",
@@ -1163,7 +1142,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.09
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB041",
@@ -1192,7 +1171,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "fuzzy",
-      "latencyMs": 3.05
+      "latencyMs": 0.18
     },
     {
       "caseId": "PUB042",
@@ -1213,7 +1192,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.09
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB043",
@@ -1235,7 +1214,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.74
+      "latencyMs": 0.1
     },
     {
       "caseId": "PUB044",
@@ -1258,7 +1237,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.06
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB045",
@@ -1300,7 +1279,7 @@
       "rankOfFirstMatch": 2,
       "reciprocalRank": 0.5,
       "source": "exact",
-      "latencyMs": 0.07
+      "latencyMs": 0.05
     },
     {
       "caseId": "PUB047",
@@ -1312,9 +1291,9 @@
         "Nhà hàng phù hợp cho trẻ em"
       ],
       "found": [
-        "Quán ăn gần đây",
         "Nhà hàng phù hợp cho trẻ em",
         "Quán ăn mở cửa khuya",
+        "Quán ăn gần đây",
         "Quán ăn mở cửa khuyaTP.HCM",
         "Quán ăn mở cửa khuyaHà Nội",
         "Quán ăn mở cửa khuyaĐà Nẵng",
@@ -1326,10 +1305,10 @@
       "matched": [
         "Nhà hàng phù hợp cho trẻ em"
       ],
-      "rankOfFirstMatch": 2,
-      "reciprocalRank": 0.5,
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.2
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB048",
@@ -1353,7 +1332,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.23
+      "latencyMs": 0.12
     },
     {
       "caseId": "PUB049",
@@ -1373,7 +1352,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.05
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB050",
@@ -1393,7 +1372,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.03
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB051",
@@ -1413,7 +1392,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.05
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB052",
@@ -1442,7 +1421,7 @@
       "rankOfFirstMatch": 10,
       "reciprocalRank": 0.1,
       "source": "exact",
-      "latencyMs": 0.08
+      "latencyMs": 0.04
     },
     {
       "caseId": "PUB053",
@@ -1462,7 +1441,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.14
+      "latencyMs": 0.01
     },
     {
       "caseId": "PUB054",
@@ -1482,7 +1461,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.04
+      "latencyMs": 0.02
     },
     {
       "caseId": "PUB055",
@@ -1499,11 +1478,11 @@
         "Cafe thú cưng",
         "Cafe rooftop",
         "Cafe làm việc",
+        "Quán cà phê yên tĩnh",
         "cafe phố cổ hà nội",
         "cafe hồ tây",
         "cafe wifi miễn phí",
-        "cafe đà nẵng",
-        "cafe trứng hà nội"
+        "cafe đà nẵng"
       ],
       "matched": [
         "Quán cà phê yên tĩnh"
@@ -1511,7 +1490,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.38
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB056",
@@ -1531,7 +1510,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.06
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB057",
@@ -1575,7 +1554,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 0.06
+      "latencyMs": 0.03
     },
     {
       "caseId": "PUB059",
@@ -1595,7 +1574,7 @@
       "rankOfFirstMatch": 1,
       "reciprocalRank": 1,
       "source": "fuzzy",
-      "latencyMs": 5.95
+      "latencyMs": 0.1
     },
     {
       "caseId": "PUB060",
@@ -1607,16 +1586,16 @@
         "Quán cà phê đẹp để check-in"
       ],
       "found": [
-        "Quán cà phê đẹp Hà Nội",
-        "Quán cà phê đẹp để check-in"
+        "Quán cà phê đẹp để check-in",
+        "Quán cà phê đẹp Hà Nội"
       ],
       "matched": [
         "Quán cà phê đẹp để check-in"
       ],
-      "rankOfFirstMatch": 2,
-      "reciprocalRank": 0.5,
+      "rankOfFirstMatch": 1,
+      "reciprocalRank": 1,
       "source": "exact",
-      "latencyMs": 2.24
+      "latencyMs": 0.03
     }
   ]
 }

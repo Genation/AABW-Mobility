@@ -1,0 +1,1281 @@
+{
+  "summary": {
+    "total": 60,
+    "tool_accuracy": 0.45,
+    "entity_recall": 0.85,
+    "suggestion_overlap": 0.33611111111111114,
+    "avg_latency_ms": 475.44161333256244,
+    "p50_latency_ms": 476.0285999800544,
+    "p95_latency_ms": 584.010099992156,
+    "p99_latency_ms": 642.5177000055555,
+    "by_difficulty": {
+      "Easy": {
+        "count": 16,
+        "tool_accuracy": 0.375,
+        "entity_recall": 0.78125,
+        "avg_latency_ms": 465.0268374989537
+      },
+      "Medium": {
+        "count": 25,
+        "tool_accuracy": 0.48,
+        "entity_recall": 0.86,
+        "avg_latency_ms": 473.9516039972659
+      },
+      "Hard": {
+        "count": 19,
+        "tool_accuracy": 0.47368421052631576,
+        "entity_recall": 0.8947368421052632,
+        "avg_latency_ms": 486.17248947572847
+      }
+    },
+    "by_tool": {
+      "address_suggestion": {
+        "count": 4,
+        "tool_accuracy": 0.75,
+        "avg_latency_ms": 537.4069000099553
+      },
+      "ambiguous": {
+        "count": 2,
+        "tool_accuracy": 0.0,
+        "avg_latency_ms": 375.9050000080606
+      },
+      "attribute_search": {
+        "count": 1,
+        "tool_accuracy": 1.0,
+        "avg_latency_ms": 493.7482999812346
+      },
+      "brand_suggestion": {
+        "count": 6,
+        "tool_accuracy": 0.5,
+        "avg_latency_ms": 440.9093999953863
+      },
+      "category_search": {
+        "count": 11,
+        "tool_accuracy": 0.2727272727272727,
+        "avg_latency_ms": 470.65186363496736
+      },
+      "coordinate_search": {
+        "count": 1,
+        "tool_accuracy": 1.0,
+        "avg_latency_ms": 484.20180001994595
+      },
+      "discovery_search": {
+        "count": 17,
+        "tool_accuracy": 0.47058823529411764,
+        "avg_latency_ms": 486.66162352481695
+      },
+      "navigation": {
+        "count": 2,
+        "tool_accuracy": 1.0,
+        "avg_latency_ms": 493.1516999931773
+      },
+      "nearby_search": {
+        "count": 7,
+        "tool_accuracy": 0.0,
+        "avg_latency_ms": 476.9641571412129
+      },
+      "poi_suggestion": {
+        "count": 9,
+        "tool_accuracy": 0.6666666666666666,
+        "avg_latency_ms": 469.5757888936593
+      }
+    },
+    "errors": [
+      {
+        "case_id": "PUB003",
+        "input": "atm",
+        "expected": "nearby_search",
+        "predicted": "coordinate_search",
+        "difficulty": "Easy"
+      },
+      {
+        "case_id": "PUB004",
+        "input": "nguyen h",
+        "expected": "address_suggestion",
+        "predicted": "brand_suggestion",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB005",
+        "input": "ben th",
+        "expected": "poi_suggestion",
+        "predicted": "nearby_search",
+        "difficulty": "Easy"
+      },
+      {
+        "case_id": "PUB006",
+        "input": "ks d",
+        "expected": "category_search",
+        "predicted": "discovery_search",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB008",
+        "input": "cay x",
+        "expected": "nearby_search",
+        "predicted": "category_search",
+        "difficulty": "Easy"
+      },
+      {
+        "case_id": "PUB009",
+        "input": "pho th",
+        "expected": "poi_suggestion",
+        "predicted": "brand_suggestion",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB010",
+        "input": "coffee near",
+        "expected": "discovery_search",
+        "predicted": "navigation",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB013",
+        "input": "atm vcb q",
+        "expected": "nearby_search",
+        "predicted": "address_suggestion",
+        "difficulty": "Hard"
+      },
+      {
+        "case_id": "PUB015",
+        "input": "tra sua ng",
+        "expected": "discovery_search",
+        "predicted": "brand_suggestion",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB018",
+        "input": "noi bai atm",
+        "expected": "nearby_search",
+        "predicted": "coordinate_search",
+        "difficulty": "Hard"
+      },
+      {
+        "case_id": "PUB019",
+        "input": "galaxy",
+        "expected": "ambiguous",
+        "predicted": "brand_suggestion",
+        "difficulty": "Hard"
+      },
+      {
+        "case_id": "PUB020",
+        "input": "big c",
+        "expected": "ambiguous",
+        "predicted": "brand_suggestion",
+        "difficulty": "Hard"
+      },
+      {
+        "case_id": "PUB024",
+        "input": "trạm x",
+        "expected": "nearby_search",
+        "predicted": "coordinate_search",
+        "difficulty": "Easy"
+      },
+      {
+        "case_id": "PUB025",
+        "input": "win",
+        "expected": "brand_suggestion",
+        "predicted": "coordinate_search",
+        "difficulty": "Easy"
+      },
+      {
+        "case_id": "PUB029",
+        "input": "rooftop q1",
+        "expected": "discovery_search",
+        "predicted": "coordinate_search",
+        "difficulty": "Hard"
+      },
+      {
+        "case_id": "PUB034",
+        "input": "my khe hotel",
+        "expected": "discovery_search",
+        "predicted": "brand_suggestion",
+        "difficulty": "Hard"
+      },
+      {
+        "case_id": "PUB038",
+        "input": "cong cafe",
+        "expected": "brand_suggestion",
+        "predicted": "discovery_search",
+        "difficulty": "Easy"
+      },
+      {
+        "case_id": "PUB039",
+        "input": "ho guom cafe",
+        "expected": "discovery_search",
+        "predicted": "attribute_search",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB040",
+        "input": "pizza 4",
+        "expected": "brand_suggestion",
+        "predicted": "coordinate_search",
+        "difficulty": "Easy"
+      },
+      {
+        "case_id": "PUB041",
+        "input": "sua xe gan",
+        "expected": "category_search",
+        "predicted": "navigation",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB042",
+        "input": "gara oto",
+        "expected": "category_search",
+        "predicted": "coordinate_search",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB046",
+        "input": "xang tren duong",
+        "expected": "discovery_search",
+        "predicted": "coordinate_search",
+        "difficulty": "Hard"
+      },
+      {
+        "case_id": "PUB048",
+        "input": "cf lam viec",
+        "expected": "discovery_search",
+        "predicted": "brand_suggestion",
+        "difficulty": "Hard"
+      },
+      {
+        "case_id": "PUB049",
+        "input": "atm bidv",
+        "expected": "nearby_search",
+        "predicted": "coordinate_search",
+        "difficulty": "Easy"
+      },
+      {
+        "case_id": "PUB050",
+        "input": "benh vien gan san",
+        "expected": "nearby_search",
+        "predicted": "navigation",
+        "difficulty": "Hard"
+      },
+      {
+        "case_id": "PUB051",
+        "input": "spa gan day",
+        "expected": "category_search",
+        "predicted": "discovery_search",
+        "difficulty": "Easy"
+      },
+      {
+        "case_id": "PUB052",
+        "input": "gym 24",
+        "expected": "discovery_search",
+        "predicted": "attribute_search",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB053",
+        "input": "sieuthi gan",
+        "expected": "category_search",
+        "predicted": "nearby_search",
+        "difficulty": "Easy"
+      },
+      {
+        "case_id": "PUB054",
+        "input": "quan nuong q7",
+        "expected": "category_search",
+        "predicted": "coordinate_search",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB055",
+        "input": "cafe yen tinh",
+        "expected": "discovery_search",
+        "predicted": "attribute_search",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB057",
+        "input": "bến xe miền đông",
+        "expected": "poi_suggestion",
+        "predicted": "coordinate_search",
+        "difficulty": "Hard"
+      },
+      {
+        "case_id": "PUB058",
+        "input": "hoc vien gan day",
+        "expected": "category_search",
+        "predicted": "discovery_search",
+        "difficulty": "Medium"
+      },
+      {
+        "case_id": "PUB059",
+        "input": "do an vat",
+        "expected": "category_search",
+        "predicted": "discovery_search",
+        "difficulty": "Medium"
+      }
+    ]
+  },
+  "details": [
+    {
+      "case_id": "PUB001",
+      "input_query": "vin",
+      "expected_tool": "brand_suggestion",
+      "predicted_tool": "brand_suggestion",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 399.5,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "brand": "Vin"
+      }
+    },
+    {
+      "case_id": "PUB002",
+      "input_query": "cafe",
+      "expected_tool": "category_search",
+      "predicted_tool": "category_search",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.333,
+      "confidence": 0.5,
+      "latency_ms": 416.2,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "category": "cà phê"
+      }
+    },
+    {
+      "case_id": "PUB003",
+      "input_query": "atm",
+      "expected_tool": "nearby_search",
+      "predicted_tool": "coordinate_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 407.2,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "category": "ATM"
+      }
+    },
+    {
+      "case_id": "PUB004",
+      "input_query": "nguyen h",
+      "expected_tool": "address_suggestion",
+      "predicted_tool": "brand_suggestion",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 463.7,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "category": "nhà hàng",
+        "attribute": "Nguyễn Huệ"
+      }
+    },
+    {
+      "case_id": "PUB005",
+      "input_query": "ben th",
+      "expected_tool": "poi_suggestion",
+      "predicted_tool": "nearby_search",
+      "tool_match": false,
+      "entity_recall": 0.5,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 523.9,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "category": "bệnh viện",
+        "attribute": "gần th",
+        "nearby_ref": "th"
+      }
+    },
+    {
+      "case_id": "PUB006",
+      "input_query": "ks d",
+      "expected_tool": "category_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.5,
+      "confidence": 0.5,
+      "latency_ms": 541.5,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "Đà Nẵng",
+        "category": "khách sạn",
+        "city": "Đà Nẵng",
+        "attribute": "gần biển",
+        "nearby_ref": "biển"
+      }
+    },
+    {
+      "case_id": "PUB007",
+      "input_query": "bv bach",
+      "expected_tool": "poi_suggestion",
+      "predicted_tool": "poi_suggestion",
+      "tool_match": true,
+      "entity_recall": 0.5,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 494.5,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "brand": "bách khoa",
+        "category": "bệnh viện"
+      }
+    },
+    {
+      "case_id": "PUB008",
+      "input_query": "cay x",
+      "expected_tool": "nearby_search",
+      "predicted_tool": "category_search",
+      "tool_match": false,
+      "entity_recall": 0.5,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 469.0,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "category": "cà phê",
+        "attribute": "chay"
+      }
+    },
+    {
+      "case_id": "PUB009",
+      "input_query": "pho th",
+      "expected_tool": "poi_suggestion",
+      "predicted_tool": "brand_suggestion",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 434.4,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "Phở Th"
+      }
+    },
+    {
+      "case_id": "PUB010",
+      "input_query": "coffee near",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "navigation",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 459.3,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "category": "cà phê",
+        "attribute": "gần"
+      }
+    },
+    {
+      "case_id": "PUB011",
+      "input_query": "nguyen huee",
+      "expected_tool": "address_suggestion",
+      "predicted_tool": "address_suggestion",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 489.2,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "12 Nguyễn Huệ",
+        "street": "Nguyễn Huệ",
+        "building": "12"
+      }
+    },
+    {
+      "case_id": "PUB012",
+      "input_query": "vincom dong k",
+      "expected_tool": "poi_suggestion",
+      "predicted_tool": "poi_suggestion",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 493.1,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "Vincom Center Đồng Khởi"
+      }
+    },
+    {
+      "case_id": "PUB013",
+      "input_query": "atm vcb q",
+      "expected_tool": "nearby_search",
+      "predicted_tool": "address_suggestion",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.5,
+      "confidence": 0.5,
+      "latency_ms": 455.5,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "brand": "Vietcombank",
+        "category": "ATM"
+      }
+    },
+    {
+      "case_id": "PUB014",
+      "input_query": "quan an khu",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 438.5,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "category": "quán ăn",
+        "attribute": "khu"
+      }
+    },
+    {
+      "case_id": "PUB015",
+      "input_query": "tra sua ng",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "brand_suggestion",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.5,
+      "confidence": 0.5,
+      "latency_ms": 482.3,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "category": "trà sữa",
+        "attribute": "ng"
+      }
+    },
+    {
+      "case_id": "PUB016",
+      "input_query": "hotel da n",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 590.5,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "Đà Nẵng",
+        "category": "khách sạn",
+        "city": "Đà Nẵng",
+        "attribute": "gần biển",
+        "nearby_ref": "biển"
+      }
+    },
+    {
+      "case_id": "PUB017",
+      "input_query": "san bay n",
+      "expected_tool": "poi_suggestion",
+      "predicted_tool": "poi_suggestion",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 402.4,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "brand": "N",
+        "category": "sân bay"
+      }
+    },
+    {
+      "case_id": "PUB018",
+      "input_query": "noi bai atm",
+      "expected_tool": "nearby_search",
+      "predicted_tool": "coordinate_search",
+      "tool_match": false,
+      "entity_recall": 0.5,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 453.9,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "brand": "Nội Bài ATM",
+        "category": "sân bay"
+      }
+    },
+    {
+      "case_id": "PUB019",
+      "input_query": "galaxy",
+      "expected_tool": "ambiguous",
+      "predicted_tool": "brand_suggestion",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.333,
+      "confidence": 0.5,
+      "latency_ms": 387.1,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "brand": "Galaxy"
+      }
+    },
+    {
+      "case_id": "PUB020",
+      "input_query": "big c",
+      "expected_tool": "ambiguous",
+      "predicted_tool": "brand_suggestion",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 364.7,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "brand": "Big C"
+      }
+    },
+    {
+      "case_id": "PUB021",
+      "input_query": "quan cafe hoc",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": true,
+      "entity_recall": 0.5,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 468.9,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "category": "cà phê",
+        "attribute": "quận  học"
+      }
+    },
+    {
+      "case_id": "PUB022",
+      "input_query": "12 ngu",
+      "expected_tool": "address_suggestion",
+      "predicted_tool": "address_suggestion",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 554.3,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "12 Nguyễn Huệ",
+        "street": "Nguyễn Huệ",
+        "building": "12"
+      }
+    },
+    {
+      "case_id": "PUB023",
+      "input_query": "12 nguyen hue q",
+      "expected_tool": "address_suggestion",
+      "predicted_tool": "address_suggestion",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 642.5,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "brand": "Nguyễn Huệ, Quận 1, TP.HCM",
+        "city": "TP.HCM",
+        "district": "Quận 1",
+        "street": "Nguyễn Huệ",
+        "building": "12",
+        "attribute": "12 , ,"
+      }
+    },
+    {
+      "case_id": "PUB024",
+      "input_query": "trạm x",
+      "expected_tool": "nearby_search",
+      "predicted_tool": "coordinate_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 584.0,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "brand": "trạm x"
+      }
+    },
+    {
+      "case_id": "PUB025",
+      "input_query": "win",
+      "expected_tool": "brand_suggestion",
+      "predicted_tool": "coordinate_search",
+      "tool_match": false,
+      "entity_recall": 0.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 435.5,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "brand": "đánh dấu"
+      }
+    },
+    {
+      "case_id": "PUB026",
+      "input_query": "lotte",
+      "expected_tool": "brand_suggestion",
+      "predicted_tool": "brand_suggestion",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 385.6,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "lotte"
+      }
+    },
+    {
+      "case_id": "PUB027",
+      "input_query": "ha noi an",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 466.6,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "Hà Nội ăn",
+        "city": "Hà Nội",
+        "attribute": "ăn"
+      }
+    },
+    {
+      "case_id": "PUB028",
+      "input_query": "da lat check",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 423.0,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "đà lạt check",
+        "city": "Đà Lạt",
+        "attribute": "check"
+      }
+    },
+    {
+      "case_id": "PUB029",
+      "input_query": "rooftop q1",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "coordinate_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 572.7,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "district": "Quận 1"
+      }
+    },
+    {
+      "case_id": "PUB030",
+      "input_query": "cafe wifi",
+      "expected_tool": "attribute_search",
+      "predicted_tool": "attribute_search",
+      "tool_match": true,
+      "entity_recall": 0.5,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 493.7,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "category": "cà phê",
+        "attribute": "wifi"
+      }
+    },
+    {
+      "case_id": "PUB031",
+      "input_query": "quan chay",
+      "expected_tool": "category_search",
+      "predicted_tool": "category_search",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 494.0,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "attribute": "chay"
+      }
+    },
+    {
+      "case_id": "PUB032",
+      "input_query": "halal hcm",
+      "expected_tool": "category_search",
+      "predicted_tool": "category_search",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 542.4,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "category": "nhà hàng",
+        "city": "TP.HCM",
+        "attribute": "Halal"
+      }
+    },
+    {
+      "case_id": "PUB033",
+      "input_query": "bien my",
+      "expected_tool": "poi_suggestion",
+      "predicted_tool": "poi_suggestion",
+      "tool_match": true,
+      "entity_recall": 0.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 450.9,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "My",
+        "category": "bệnh viện"
+      }
+    },
+    {
+      "case_id": "PUB034",
+      "input_query": "my khe hotel",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "brand_suggestion",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 470.7,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "brand": "my khe",
+        "category": "khách sạn"
+      }
+    },
+    {
+      "case_id": "PUB035",
+      "input_query": "dai hoc bach",
+      "expected_tool": "poi_suggestion",
+      "predicted_tool": "poi_suggestion",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 510.3,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "Bách Khoa",
+        "category": "đại học"
+      }
+    },
+    {
+      "case_id": "PUB036",
+      "input_query": "dh bk",
+      "expected_tool": "poi_suggestion",
+      "predicted_tool": "poi_suggestion",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 494.8,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "brand": "Bách Khoa",
+        "category": "đại học"
+      }
+    },
+    {
+      "case_id": "PUB037",
+      "input_query": "phuc long",
+      "expected_tool": "brand_suggestion",
+      "predicted_tool": "brand_suggestion",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 479.1,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "brand": "Phúc Long Coffee & Tea",
+        "category": "cà phê"
+      }
+    },
+    {
+      "case_id": "PUB038",
+      "input_query": "cong cafe",
+      "expected_tool": "brand_suggestion",
+      "predicted_tool": "discovery_search",
+      "tool_match": false,
+      "entity_recall": 0.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 474.5,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "brand": "công viên cafe"
+      }
+    },
+    {
+      "case_id": "PUB039",
+      "input_query": "ho guom cafe",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "attribute_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 452.6,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "category": "cà phê",
+        "attribute": "học phí"
+      }
+    },
+    {
+      "case_id": "PUB040",
+      "input_query": "pizza 4",
+      "expected_tool": "brand_suggestion",
+      "predicted_tool": "coordinate_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 471.4,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "brand": "pizza 4"
+      }
+    },
+    {
+      "case_id": "PUB041",
+      "input_query": "sua xe gan",
+      "expected_tool": "category_search",
+      "predicted_tool": "navigation",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 433.5,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "sua xe gan",
+        "attribute": "gần đây"
+      }
+    },
+    {
+      "case_id": "PUB042",
+      "input_query": "gara oto",
+      "expected_tool": "category_search",
+      "predicted_tool": "coordinate_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 417.9,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "gara oto"
+      }
+    },
+    {
+      "case_id": "PUB043",
+      "input_query": "duong den ben",
+      "expected_tool": "navigation",
+      "predicted_tool": "navigation",
+      "tool_match": true,
+      "entity_recall": 0.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 495.2,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "category": "sân bay",
+        "attribute": "đường đến"
+      }
+    },
+    {
+      "case_id": "PUB044",
+      "input_query": "chi duong san",
+      "expected_tool": "navigation",
+      "predicted_tool": "navigation",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 491.1,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "category": "sân bay",
+        "attribute": "chỉ đường đến"
+      }
+    },
+    {
+      "case_id": "PUB045",
+      "input_query": "10.77",
+      "expected_tool": "coordinate_search",
+      "predicted_tool": "coordinate_search",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 484.2,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "brand": "10.77"
+      }
+    },
+    {
+      "case_id": "PUB046",
+      "input_query": "xang tren duong",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "coordinate_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 451.5,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "attribute": "tên xăng trên đường"
+      }
+    },
+    {
+      "case_id": "PUB047",
+      "input_query": "quan an tre em",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": true,
+      "entity_recall": 0.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 494.3,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "trứơc em",
+        "category": "quán ăn",
+        "attribute": "trước em"
+      }
+    },
+    {
+      "case_id": "PUB048",
+      "input_query": "cf lam viec",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "brand_suggestion",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 501.0,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "brand": "café làm việc",
+        "attribute": "làm việc"
+      }
+    },
+    {
+      "case_id": "PUB049",
+      "input_query": "atm bidv",
+      "expected_tool": "nearby_search",
+      "predicted_tool": "coordinate_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 476.0,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "brand": "BIDV",
+        "category": "ATM"
+      }
+    },
+    {
+      "case_id": "PUB050",
+      "input_query": "benh vien gan san",
+      "expected_tool": "nearby_search",
+      "predicted_tool": "navigation",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 493.1,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "category": "bệnh viện",
+        "attribute": "gần sân bay",
+        "nearby_ref": "sân bay"
+      }
+    },
+    {
+      "case_id": "PUB051",
+      "input_query": "spa gan day",
+      "expected_tool": "category_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 480.2,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "category": "spa",
+        "attribute": "đẹp check-in sống ảo"
+      }
+    },
+    {
+      "case_id": "PUB052",
+      "input_query": "gym 24",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "attribute_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 509.5,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "category": "phòng gym",
+        "attribute": "24/7"
+      }
+    },
+    {
+      "case_id": "PUB053",
+      "input_query": "sieuthi gan",
+      "expected_tool": "category_search",
+      "predicted_tool": "nearby_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 433.1,
+      "difficulty": "Easy",
+      "predicted_filters": {
+        "category": "siêu thị",
+        "attribute": "gần"
+      }
+    },
+    {
+      "case_id": "PUB054",
+      "input_query": "quan nuong q7",
+      "expected_tool": "category_search",
+      "predicted_tool": "coordinate_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 487.3,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "city": "TP.HCM"
+      }
+    },
+    {
+      "case_id": "PUB055",
+      "input_query": "cafe yen tinh",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "attribute_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 445.8,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "category": "cà phê",
+        "attribute": "yên tĩnh"
+      }
+    },
+    {
+      "case_id": "PUB056",
+      "input_query": "hotel near beach danang",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 509.4,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "brand": "Đà Nẵng",
+        "category": "khách sạn",
+        "city": "Đà Nẵng",
+        "attribute": "gần biển",
+        "nearby_ref": "biển"
+      }
+    },
+    {
+      "case_id": "PUB057",
+      "input_query": "bến xe miền đông",
+      "expected_tool": "poi_suggestion",
+      "predicted_tool": "coordinate_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 1.0,
+      "confidence": 0.5,
+      "latency_ms": 421.9,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "brand": "xe miền đông"
+      }
+    },
+    {
+      "case_id": "PUB058",
+      "input_query": "hoc vien gan day",
+      "expected_tool": "category_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": false,
+      "entity_recall": 0.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 450.4,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "category": "nhà hàng",
+        "attribute": "gần ngày",
+        "nearby_ref": "ngày"
+      }
+    },
+    {
+      "case_id": "PUB059",
+      "input_query": "do an vat",
+      "expected_tool": "category_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": false,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 480.6,
+      "difficulty": "Medium",
+      "predicted_filters": {
+        "brand": "đã ăn vặt"
+      }
+    },
+    {
+      "case_id": "PUB060",
+      "input_query": "cafe dep song ao",
+      "expected_tool": "discovery_search",
+      "predicted_tool": "discovery_search",
+      "tool_match": true,
+      "entity_recall": 1.0,
+      "suggestion_overlap": 0.0,
+      "confidence": 0.5,
+      "latency_ms": 536.7,
+      "difficulty": "Hard",
+      "predicted_filters": {
+        "category": "cà phê",
+        "attribute": "đẹp check-in sống ảo"
+      }
+    }
+  ]
+}
