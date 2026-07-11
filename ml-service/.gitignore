@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Virtual environments (never commit — 1GB+ with torch)
+.venv/
+venv/
+env/
+.env
+.env.local
+
+# Model / HF caches
+.cache/
+*.safetensors
+*.bin
+
+# Generated analysis artifacts (regenerate with scripts/)
+artifacts/autocomplete_analysis*.json
+artifacts/autocomplete_report*.html
+artifacts/benchmark_*.json
+
+# Tooling / OS
+.omc/
+.DS_Store
+*.log

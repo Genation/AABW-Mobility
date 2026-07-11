@@ -1,0 +1,1373 @@
+{
+  "P6": [
+    {
+      "query": "bv bach mai",
+      "output": {
+        "raw": "bv bach mai",
+        "normalized_query": "Bệnh viện Bạch Mai",
+        "intent": "POI Search",
+        "entities": {
+          "poi_name": "Bệnh viện Bạch Mai",
+          "category": "Bệnh viện"
+        },
+        "confidence": 0.82,
+        "source": "deterministic"
+      }
+    },
+    {
+      "query": "atm vcb",
+      "output": {
+        "raw": "atm vcb",
+        "normalized_query": "ATM Vietcombank",
+        "intent": "Brand Category Search",
+        "entities": {
+          "category": "ATM",
+          "brand": "Vietcombank"
+        },
+        "confidence": 0.82,
+        "source": "deterministic"
+      }
+    },
+    {
+      "query": "vincom q1",
+      "output": {
+        "raw": "vincom q1",
+        "normalized_query": "Vincom Center Đồng Khởi, Quận 1",
+        "intent": "POI Search",
+        "entities": {
+          "poi_name": "Vincom Center Đồng Khởi",
+          "brand": "Vincom",
+          "district": "Quận 1"
+        },
+        "confidence": 0.88,
+        "source": "deterministic"
+      }
+    },
+    {
+      "query": "cafe gan day",
+      "output": {
+        "raw": "cafe gan day",
+        "normalized_query": "Quán cà phê gần đây",
+        "intent": "Nearby Search",
+        "entities": {
+          "category": "Quán cà phê",
+          "location": "current_location"
+        },
+        "confidence": 0.72,
+        "source": "deterministic"
+      }
+    },
+    {
+      "query": "ks da nang gan bien",
+      "output": {
+        "raw": "ks da nang gan bien",
+        "normalized_query": "Khách sạn đà nẵng gần biên",
+        "intent": "Category Search",
+        "entities": {
+          "category": "Khách sạn",
+          "city": "Đà Nẵng",
+          "attribute": "gần biển"
+        },
+        "confidence": 0.78,
+        "source": "deterministic"
+      }
+    },
+    {
+      "query": "chi duong den san bay",
+      "output": {
+        "raw": "chi duong den san bay",
+        "normalized_query": "Chỉ đường đến Sân bay",
+        "intent": "Navigation",
+        "entities": {
+          "action": "directions",
+          "category": "Sân bay"
+        },
+        "confidence": 0.72,
+        "source": "deterministic"
+      }
+    },
+    {
+      "query": "12 nguyen hue q1",
+      "output": {
+        "raw": "12 nguyen hue q1",
+        "normalized_query": "12 Nguyễn Huệ Quận 1",
+        "intent": "Address Search",
+        "entities": {
+          "district": "Quận 1",
+          "street": "Nguyễn Huệ",
+          "house_number": "12"
+        },
+        "confidence": 0.88,
+        "source": "deterministic"
+      }
+    },
+    {
+      "query": "10.7769,106.7009",
+      "output": {
+        "raw": "10.7769,106.7009",
+        "normalized_query": "10.7769,106.7009",
+        "intent": "Coordinate Search",
+        "entities": {
+          "latitude": 10.7769,
+          "longitude": 106.7009
+        },
+        "confidence": 0.99,
+        "source": "deterministic"
+      }
+    },
+    {
+      "query": "galaxy",
+      "output": {
+        "raw": "galaxy",
+        "normalized_query": "Galaxy",
+        "intent": "Ambiguous",
+        "entities": {
+          "candidates": [
+            "Galaxy Nguyễn Du",
+            "Galaxy Cinema Cách Mạng Tháng Tám",
+            "Galaxy Cinema Hai Bà Trưng",
+            "Galaxy Cinema Võ Nguyên Giáp"
+          ],
+          "ambiguity_type": "brand_or_branch"
+        },
+        "confidence": 0.5,
+        "source": "deterministic"
+      }
+    },
+    {
+      "query": "benh vien bach maj",
+      "output": {
+        "raw": "benh vien bach maj",
+        "normalized_query": "Bệnh viện Bạch Mai",
+        "intent": "POI Search",
+        "entities": {
+          "poi_name": "Bệnh viện Bạch Mai",
+          "category": "Bệnh viện"
+        },
+        "confidence": 0.67,
+        "source": "deterministic"
+      }
+    },
+    {
+      "query": "coffee near ben thanh market",
+      "output": {
+        "raw": "coffee near ben thanh market",
+        "normalized_query": "Quán cà phê gần Chợ Bến Thành market",
+        "intent": "Nearby Search",
+        "entities": {
+          "category": "Quán cà phê",
+          "reference_poi": "Ben Thanh Market"
+        },
+        "confidence": 0.82,
+        "source": "deterministic"
+      }
+    },
+    {
+      "query": "nt long chau q1",
+      "output": {
+        "raw": "nt long chau q1",
+        "normalized_query": "Nhà thuốc Long Châu Quận 1",
+        "intent": "Brand Category Search",
+        "entities": {
+          "category": "Nhà thuốc",
+          "brand": "Nhà thuốc Long Châu",
+          "district": "Quận 1"
+        },
+        "confidence": 0.88,
+        "source": "deterministic"
+      }
+    }
+  ],
+  "P7": [
+    {
+      "query": "quán cà phê yên tĩnh để làm việc",
+      "results": [
+        {
+          "poi_id": "C004",
+          "name": "Tranquil Books & Coffee",
+          "category": "Quán cà phê",
+          "district": "Hoàn Kiếm",
+          "city": "Hà Nội",
+          "rating": 4.7,
+          "review_count": 940,
+          "score": 0.8653,
+          "reasons": [
+            "đúng loại Quán cà phê",
+            "phù hợp: yên tĩnh, phù hợp làm việc",
+            "đánh giá 4.7★",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 1.0,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.0,
+            "rating": 0.94,
+            "popularity": 0.85
+          }
+        },
+        {
+          "poi_id": "C001",
+          "name": "The Workshop Coffee",
+          "category": "Quán cà phê",
+          "district": "Quận 1",
+          "city": "TP Hồ Chí Minh",
+          "rating": 4.6,
+          "review_count": 1560,
+          "score": 0.8503,
+          "reasons": [
+            "đúng loại Quán cà phê",
+            "phù hợp: yên tĩnh, phù hợp làm việc",
+            "đánh giá 4.6★",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 0.958,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.0,
+            "rating": 0.92,
+            "popularity": 0.91
+          }
+        },
+        {
+          "poi_id": "C005",
+          "name": "Dream Beans Coffee Đà Nẵng",
+          "category": "Quán cà phê",
+          "district": "Hải Châu",
+          "city": "Đà Nẵng",
+          "rating": 4.5,
+          "review_count": 620,
+          "score": 0.7645,
+          "reasons": [
+            "đúng loại Quán cà phê",
+            "phù hợp: yên tĩnh, phù hợp làm việc",
+            "đánh giá 4.5★"
+          ],
+          "signals": {
+            "relevance": 0.778,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.0,
+            "rating": 0.9,
+            "popularity": 0.78
+          }
+        }
+      ]
+    },
+    {
+      "query": "cafe có wifi gần hồ gươm",
+      "results": [
+        {
+          "poi_id": "C007",
+          "name": "WorkHub Cafe Cầu Giấy",
+          "category": "Quán cà phê",
+          "district": "Cầu Giấy",
+          "city": "Hà Nội",
+          "rating": 4.5,
+          "review_count": 480,
+          "score": 0.8689,
+          "reasons": [
+            "đúng loại Quán cà phê",
+            "phù hợp: wifi",
+            "đánh giá 4.5★"
+          ],
+          "signals": {
+            "relevance": 1.0,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.106,
+            "rating": 0.9,
+            "popularity": 0.76
+          }
+        },
+        {
+          "poi_id": "G003",
+          "name": "Cộng Cà Phê Tây Hồ",
+          "category": "Quán cà phê",
+          "district": "Tây Hồ",
+          "city": "Hà Nội",
+          "rating": 3.9,
+          "review_count": 562,
+          "score": 0.8232,
+          "reasons": [
+            "đúng loại Quán cà phê",
+            "phù hợp: wifi",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 0.821,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.362,
+            "rating": 0.78,
+            "popularity": 0.86
+          }
+        },
+        {
+          "poi_id": "C004",
+          "name": "Tranquil Books & Coffee",
+          "category": "Quán cà phê",
+          "district": "Hoàn Kiếm",
+          "city": "Hà Nội",
+          "rating": 4.7,
+          "review_count": 940,
+          "score": 0.7511,
+          "reasons": [
+            "đúng loại Quán cà phê",
+            "phù hợp: wifi",
+            "cách ~0.8 km",
+            "đánh giá 4.7★"
+          ],
+          "signals": {
+            "relevance": 0.508,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.77,
+            "rating": 0.94,
+            "popularity": 0.85
+          }
+        }
+      ]
+    },
+    {
+      "query": "nơi phù hợp để hẹn hò ở quận 1",
+      "results": [
+        {
+          "poi_id": "R008",
+          "name": "Rooftop Sky Garden",
+          "category": "Nhà hàng",
+          "district": "Quận 1",
+          "city": "TP Hồ Chí Minh",
+          "rating": 4.6,
+          "review_count": 1220,
+          "score": 0.898,
+          "reasons": [
+            "phù hợp: lãng mạn",
+            "thuộc Quận 1",
+            "đánh giá 4.6★",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 1.0,
+            "category": 0.5,
+            "attributes": 1.0,
+            "location": 0.85,
+            "rating": 0.92,
+            "popularity": 0.88
+          }
+        },
+        {
+          "poi_id": "R002",
+          "name": "Pizza 4P's Lê Thánh Tôn",
+          "category": "Nhà hàng",
+          "district": "Quận 1",
+          "city": "TP Hồ Chí Minh",
+          "rating": 4.7,
+          "review_count": 4210,
+          "score": 0.813,
+          "reasons": [
+            "phù hợp: lãng mạn",
+            "thuộc Quận 1",
+            "đánh giá 4.7★",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 0.781,
+            "category": 0.5,
+            "attributes": 1.0,
+            "location": 0.85,
+            "rating": 0.94,
+            "popularity": 0.96
+          }
+        },
+        {
+          "poi_id": "G023",
+          "name": "Lẩu Phố Quận 1",
+          "category": "Nhà hàng",
+          "district": "Quận 1",
+          "city": "TP Hồ Chí Minh",
+          "rating": 4.3,
+          "review_count": 3208,
+          "score": 0.7948,
+          "reasons": [
+            "phù hợp: lãng mạn",
+            "thuộc Quận 1",
+            "đánh giá 4.3★",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 0.766,
+            "category": 0.5,
+            "attributes": 1.0,
+            "location": 0.85,
+            "rating": 0.86,
+            "popularity": 0.87
+          }
+        }
+      ]
+    },
+    {
+      "query": "nhà hàng cho gia đình có trẻ nhỏ",
+      "results": [
+        {
+          "poi_id": "R010",
+          "name": "Nhà hàng Gia Đình Hoa Sen",
+          "category": "Nhà hàng",
+          "district": "Tây Hồ",
+          "city": "Hà Nội",
+          "rating": 4.2,
+          "review_count": 510,
+          "score": 0.8492,
+          "reasons": [
+            "đúng loại Nhà hàng",
+            "phù hợp: phù hợp gia đình"
+          ],
+          "signals": {
+            "relevance": 1.0,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.0,
+            "rating": 0.84,
+            "popularity": 0.72
+          }
+        },
+        {
+          "poi_id": "R005",
+          "name": "Bếp Nhà Đà Nẵng",
+          "category": "Nhà hàng",
+          "district": "Sơn Trà",
+          "city": "Đà Nẵng",
+          "rating": 4.5,
+          "review_count": 980,
+          "score": 0.7409,
+          "reasons": [
+            "đúng loại Nhà hàng",
+            "phù hợp: phù hợp gia đình",
+            "đánh giá 4.5★"
+          ],
+          "signals": {
+            "relevance": 0.715,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.0,
+            "rating": 0.9,
+            "popularity": 0.82
+          }
+        },
+        {
+          "poi_id": "G058",
+          "name": "Nhà hàng Biển Xanh Phường 3",
+          "category": "Nhà hàng",
+          "district": "Phường 3",
+          "city": "Đà Lạt",
+          "rating": 4.6,
+          "review_count": 2116,
+          "score": 0.6599,
+          "reasons": [
+            "đúng loại Nhà hàng",
+            "phù hợp: phù hợp gia đình",
+            "đánh giá 4.6★",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 0.514,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.0,
+            "rating": 0.92,
+            "popularity": 0.85
+          }
+        }
+      ]
+    },
+    {
+      "query": "khách sạn gần biển đà nẵng có hồ bơi",
+      "results": [
+        {
+          "poi_id": "H001",
+          "name": "Sea Pearl Hotel Đà Nẵng",
+          "category": "Khách sạn",
+          "district": "Sơn Trà",
+          "city": "Đà Nẵng",
+          "rating": 4.4,
+          "review_count": 920,
+          "score": 0.9416,
+          "reasons": [
+            "đúng loại Khách sạn",
+            "phù hợp: gần biển, hồ bơi",
+            "tại Đà Nẵng",
+            "đánh giá 4.4★"
+          ],
+          "signals": {
+            "relevance": 1.0,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.7,
+            "rating": 0.88,
+            "popularity": 0.8
+          }
+        },
+        {
+          "poi_id": "H002",
+          "name": "Ocean View Resort Đà Nẵng",
+          "category": "Khách sạn",
+          "district": "Ngũ Hành Sơn",
+          "city": "Đà Nẵng",
+          "rating": 4.6,
+          "review_count": 760,
+          "score": 0.8816,
+          "reasons": [
+            "đúng loại Khách sạn",
+            "phù hợp: gần biển, hồ bơi",
+            "tại Đà Nẵng",
+            "đánh giá 4.6★"
+          ],
+          "signals": {
+            "relevance": 0.845,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.7,
+            "rating": 0.92,
+            "popularity": 0.83
+          }
+        },
+        {
+          "poi_id": "G043",
+          "name": "Lotus Hotel Ngũ Hành Sơn",
+          "category": "Khách sạn",
+          "district": "Ngũ Hành Sơn",
+          "city": "Đà Nẵng",
+          "rating": 4.4,
+          "review_count": 426,
+          "score": 0.6201,
+          "reasons": [
+            "đúng loại Khách sạn",
+            "phù hợp: hồ bơi",
+            "tại Đà Nẵng",
+            "đánh giá 4.4★"
+          ],
+          "signals": {
+            "relevance": 0.437,
+            "category": 1.0,
+            "attributes": 0.5,
+            "location": 0.7,
+            "rating": 0.88,
+            "popularity": 0.87
+          }
+        }
+      ]
+    },
+    {
+      "query": "quán ăn mở cửa sau 11 giờ tối",
+      "results": [
+        {
+          "poi_id": "R006",
+          "name": "Quán Ăn Đêm 24h Nguyễn Trãi",
+          "category": "Nhà hàng",
+          "district": "Quận 1",
+          "city": "TP Hồ Chí Minh",
+          "rating": 4.0,
+          "review_count": 720,
+          "score": 0.665,
+          "reasons": [
+            "đúng loại Nhà hàng"
+          ],
+          "signals": {
+            "relevance": 1.0,
+            "category": 1.0,
+            "attributes": 0.0,
+            "location": 0.0,
+            "rating": 0.8,
+            "popularity": 0.7
+          }
+        },
+        {
+          "poi_id": "R004",
+          "name": "Phở Thìn Lò Đúc",
+          "category": "Nhà hàng",
+          "district": "Hai Bà Trưng",
+          "city": "Hà Nội",
+          "rating": 4.1,
+          "review_count": 2760,
+          "score": 0.3833,
+          "reasons": [
+            "đúng loại Nhà hàng",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 0.301,
+            "category": 1.0,
+            "attributes": 0.0,
+            "location": 0.0,
+            "rating": 0.82,
+            "popularity": 0.85
+          }
+        },
+        {
+          "poi_id": "G040",
+          "name": "Quán Ngon Thanh Khê",
+          "category": "Nhà hàng",
+          "district": "Thanh Khê",
+          "city": "Đà Nẵng",
+          "rating": 4.0,
+          "review_count": 1280,
+          "score": 0.3715,
+          "reasons": [
+            "đúng loại Nhà hàng"
+          ],
+          "signals": {
+            "relevance": 0.331,
+            "category": 1.0,
+            "attributes": 0.0,
+            "location": 0.0,
+            "rating": 0.8,
+            "popularity": 0.52
+          }
+        }
+      ]
+    },
+    {
+      "query": "atm rút tiền 24/7 gần phố đi bộ nguyễn huệ",
+      "results": [
+        {
+          "poi_id": "S001",
+          "name": "ATM Vietcombank Nguyễn Huệ",
+          "category": "ATM",
+          "district": "Quận 1",
+          "city": "TP Hồ Chí Minh",
+          "rating": 4.0,
+          "review_count": 180,
+          "score": 0.8875,
+          "reasons": [
+            "đúng loại ATM",
+            "phù hợp: 24/7"
+          ],
+          "signals": {
+            "relevance": 1.0,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.366,
+            "rating": 0.8,
+            "popularity": 0.68
+          }
+        },
+        {
+          "poi_id": "S002",
+          "name": "ATM Techcombank Hồ Gươm",
+          "category": "ATM",
+          "district": "Hoàn Kiếm",
+          "city": "Hà Nội",
+          "rating": 4.0,
+          "review_count": 150,
+          "score": 0.6333,
+          "reasons": [
+            "đúng loại ATM",
+            "phù hợp: 24/7"
+          ],
+          "signals": {
+            "relevance": 0.503,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.0,
+            "rating": 0.8,
+            "popularity": 0.66
+          }
+        },
+        {
+          "poi_id": "G064",
+          "name": "ACB Phường 1",
+          "category": "ATM",
+          "district": "Phường 1",
+          "city": "Đà Lạt",
+          "rating": 4.4,
+          "review_count": 604,
+          "score": 0.6222,
+          "reasons": [
+            "đúng loại ATM",
+            "phù hợp: 24/7",
+            "đánh giá 4.4★",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 0.423,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.0,
+            "rating": 0.88,
+            "popularity": 0.9
+          }
+        }
+      ]
+    },
+    {
+      "query": "trạm sạc xe điện gần trung tâm đà nẵng",
+      "results": [
+        {
+          "poi_id": "S004",
+          "name": "Trạm sạc EV One Đà Nẵng",
+          "category": "Trạm sạc điện",
+          "district": "Hải Châu",
+          "city": "Đà Nẵng",
+          "rating": 4.3,
+          "review_count": 120,
+          "score": 0.781,
+          "reasons": [
+            "đúng loại Trạm sạc điện",
+            "tại Đà Nẵng",
+            "cách ~0.1 km",
+            "đánh giá 4.3★"
+          ],
+          "signals": {
+            "relevance": 1.0,
+            "category": 1.0,
+            "attributes": 0.0,
+            "location": 0.961,
+            "rating": 0.86,
+            "popularity": 0.65
+          }
+        },
+        {
+          "poi_id": "M004",
+          "name": "CGV Vincom Đà Nẵng",
+          "category": "Rạp chiếu phim",
+          "district": "Sơn Trà",
+          "city": "Đà Nẵng",
+          "rating": 4.3,
+          "review_count": 1650,
+          "score": 0.1189,
+          "reasons": [
+            "tại Đà Nẵng",
+            "cách ~0.8 km",
+            "đánh giá 4.3★"
+          ],
+          "signals": {
+            "relevance": 0.179,
+            "category": 0.1,
+            "attributes": 0.0,
+            "location": 0.772,
+            "rating": 0.86,
+            "popularity": 0.79
+          }
+        },
+        {
+          "poi_id": "G050",
+          "name": "Trạm xăng Shell Việt Ngũ Hành Sơn",
+          "category": "Cây xăng",
+          "district": "Ngũ Hành Sơn",
+          "city": "Đà Nẵng",
+          "rating": 4.6,
+          "review_count": 151,
+          "score": 0.1156,
+          "reasons": [
+            "tại Đà Nẵng",
+            "đánh giá 4.6★"
+          ],
+          "signals": {
+            "relevance": 0.188,
+            "category": 0.1,
+            "attributes": 0.0,
+            "location": 0.7,
+            "rating": 0.92,
+            "popularity": 0.68
+          }
+        }
+      ]
+    },
+    {
+      "query": "quán cafe học bài ở hoàn kiếm",
+      "results": [
+        {
+          "poi_id": "C004",
+          "name": "Tranquil Books & Coffee",
+          "category": "Quán cà phê",
+          "district": "Hoàn Kiếm",
+          "city": "Hà Nội",
+          "rating": 4.7,
+          "review_count": 940,
+          "score": 0.8653,
+          "reasons": [
+            "đúng loại Quán cà phê",
+            "phù hợp: phù hợp học tập",
+            "đánh giá 4.7★",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 1.0,
+            "category": 1.0,
+            "attributes": 1.0,
+            "location": 0.0,
+            "rating": 0.94,
+            "popularity": 0.85
+          }
+        },
+        {
+          "poi_id": "C007",
+          "name": "WorkHub Cafe Cầu Giấy",
+          "category": "Quán cà phê",
+          "district": "Cầu Giấy",
+          "city": "Hà Nội",
+          "rating": 4.5,
+          "review_count": 480,
+          "score": 0.5335,
+          "reasons": [
+            "đúng loại Quán cà phê",
+            "đánh giá 4.5★"
+          ],
+          "signals": {
+            "relevance": 0.66,
+            "category": 1.0,
+            "attributes": 0.0,
+            "location": 0.0,
+            "rating": 0.9,
+            "popularity": 0.76
+          }
+        },
+        {
+          "poi_id": "C001",
+          "name": "The Workshop Coffee",
+          "category": "Quán cà phê",
+          "district": "Quận 1",
+          "city": "TP Hồ Chí Minh",
+          "rating": 4.6,
+          "review_count": 1560,
+          "score": 0.4586,
+          "reasons": [
+            "đúng loại Quán cà phê",
+            "đánh giá 4.6★",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 0.453,
+            "category": 1.0,
+            "attributes": 0.0,
+            "location": 0.0,
+            "rating": 0.92,
+            "popularity": 0.91
+          }
+        }
+      ]
+    },
+    {
+      "query": "địa điểm check-in đẹp ở đà lạt",
+      "results": [
+        {
+          "poi_id": "A004",
+          "name": "Quảng trường Lâm Viên",
+          "category": "Điểm tham quan",
+          "district": "Phường 1",
+          "city": "Đà Lạt",
+          "rating": 4.4,
+          "review_count": 8900,
+          "score": 0.8786,
+          "reasons": [
+            "phù hợp: check-in",
+            "tại Đà Lạt",
+            "đánh giá 4.4★",
+            "phổ biến"
+          ],
+          "signals": {
+            "relevance": 1.0,
+            "category": 0.5,
+            "attributes": 1.0,
+            "location": 0.7,
+            "rating": 0.88,
+            "popularity": 0.9
+          }
+        },
+        {
+          "poi_id": "C006",
+          "name": "Dalat View Coffee",
+          "category": "Quán cà phê",
+          "district": "Phường 3",
+          "city": "Đà Lạt",
+          "rating": 4.4,
+          "review_count": 1330,
+          "score": 0.7326,
+          "reasons": [
+            "phù hợp: check-in",
+            "tại Đà Lạt",
+            "đánh giá 4.4★"
+          ],
+          "signals": {
+            "relevance": 0.662,
+            "category": 0.5,
+            "attributes": 1.0,
+            "location": 0.7,
+            "rating": 0.88,
+            "popularity": 0.84
+          }
+        },
+        {
+          "poi_id": "H004",
+          "name": "Dalat Garden Homestay",
+          "category": "Khách sạn",
+          "district": "Phường 4",
+          "city": "Đà Lạt",
+          "rating": 4.5,
+          "review_count": 680,
+          "score": 0.6831,
+          "reasons": [
+            "phù hợp: check-in",
+            "tại Đà Lạt",
+            "đánh giá 4.5★"
+          ],
+          "signals": {
+            "relevance": 0.551,
+            "category": 0.5,
+            "attributes": 1.0,
+            "location": 0.7,
+            "rating": 0.9,
+            "popularity": 0.78
+          }
+        }
+      ]
+    }
+  ],
+  "P9": [
+    {
+      "prefix": "vin",
+      "output": {
+        "prefix": "vin",
+        "suggestion_type": "Brand Suggestions",
+        "suggestions": [
+          {
+            "text": "Vincom Center",
+            "type": "Brand Suggestions",
+            "score": 1.3542,
+            "source": "curated"
+          },
+          {
+            "text": "Vinpearl",
+            "type": "Brand Suggestions",
+            "score": 1.3523,
+            "source": "curated"
+          },
+          {
+            "text": "Vinmec",
+            "type": "Brand Suggestions",
+            "score": 1.3344,
+            "source": "curated"
+          },
+          {
+            "text": "Vincom",
+            "type": "Brand Suggestions",
+            "score": 1.0194,
+            "source": "brand"
+          },
+          {
+            "text": "vincom đồng khởi",
+            "type": "POI Suggestions",
+            "score": 0.962,
+            "source": "popular"
+          }
+        ]
+      }
+    },
+    {
+      "prefix": "cafe",
+      "output": {
+        "prefix": "cafe",
+        "suggestion_type": "Category Suggestions",
+        "suggestions": [
+          {
+            "text": "Quán cà phê gần đây",
+            "type": "Category Suggestions",
+            "score": 1.3604,
+            "source": "curated"
+          },
+          {
+            "text": "Cà phê mở cửa 24/7",
+            "type": "Discovery Search",
+            "score": 1.3359,
+            "source": "curated"
+          },
+          {
+            "text": "Highlands Coffee",
+            "type": "Brand Suggestions",
+            "score": 1.3334,
+            "source": "curated"
+          },
+          {
+            "text": "quán cafe học bài",
+            "type": "Discovery Search",
+            "score": 0.952,
+            "source": "popular"
+          },
+          {
+            "text": "Mộc Cafe",
+            "type": "Brand Suggestions",
+            "score": 0.9184,
+            "source": "brand"
+          }
+        ]
+      }
+    },
+    {
+      "prefix": "atm",
+      "output": {
+        "prefix": "atm",
+        "suggestion_type": "Nearby Suggestions",
+        "suggestions": [
+          {
+            "text": "ATM Vietcombank gần nhất",
+            "type": "Nearby Suggestions",
+            "score": 1.3566,
+            "source": "curated"
+          },
+          {
+            "text": "ATM BIDV gần đây",
+            "type": "Nearby Suggestions",
+            "score": 1.3347,
+            "source": "curated"
+          },
+          {
+            "text": "ATM gần sân bay",
+            "type": "Nearby Suggestions",
+            "score": 1.3104,
+            "source": "curated"
+          },
+          {
+            "text": "atm vcb gần nhất",
+            "type": "Nearby Suggestions",
+            "score": 0.989,
+            "source": "popular"
+          },
+          {
+            "text": "ATM Vietcombank Nguyễn Huệ",
+            "type": "POI Suggestions",
+            "score": 0.945,
+            "source": "poi"
+          }
+        ]
+      }
+    },
+    {
+      "prefix": "nguyen h",
+      "output": {
+        "prefix": "nguyen h",
+        "suggestion_type": "Address Suggestions",
+        "suggestions": [
+          {
+            "text": "Nguyễn Huệ, Quận 1, TP.HCM",
+            "type": "Address Suggestions",
+            "score": 1.3598,
+            "source": "curated"
+          },
+          {
+            "text": "Phố đi bộ Nguyễn Huệ",
+            "type": "POI Suggestions",
+            "score": 1.3422,
+            "source": "curated"
+          },
+          {
+            "text": "Highlands Coffee Nguyễn Huệ",
+            "type": "POI Suggestions",
+            "score": 1.3364,
+            "source": "curated"
+          },
+          {
+            "text": "Nguyễn Huệ",
+            "type": "Address Suggestions",
+            "score": 0.88,
+            "source": "address"
+          },
+          {
+            "text": "Khách sạn Nguyễn Huệ TP.HCM",
+            "type": "POI Suggestions",
+            "score": 0.8764,
+            "source": "poi"
+          }
+        ]
+      }
+    },
+    {
+      "prefix": "ben th",
+      "output": {
+        "prefix": "ben th",
+        "suggestion_type": "POI Suggestions",
+        "suggestions": [
+          {
+            "text": "Chợ Bến Thành",
+            "type": "POI Suggestions",
+            "score": 1.3656,
+            "source": "curated"
+          },
+          {
+            "text": "Khách sạn gần Chợ Bến Thành",
+            "type": "Discovery Search",
+            "score": 1.3204,
+            "source": "curated"
+          },
+          {
+            "text": "Ben Thanh Market",
+            "type": "POI Suggestions",
+            "score": 0.882,
+            "source": "poi"
+          },
+          {
+            "text": "bến thành",
+            "type": "POI Suggestions",
+            "score": 0.882,
+            "source": "poi"
+          },
+          {
+            "text": "Bệnh viện Lý Thường Kiệt Hà Nội",
+            "type": "POI Suggestions",
+            "score": 0.8554,
+            "source": "poi"
+          }
+        ]
+      }
+    },
+    {
+      "prefix": "ks d",
+      "output": {
+        "prefix": "ks d",
+        "suggestion_type": "Category Suggestions",
+        "suggestions": [
+          {
+            "text": "Khách sạn gần đây",
+            "type": "Category Suggestions",
+            "score": 1.3629,
+            "source": "curated"
+          },
+          {
+            "text": "Khách sạn Đà Nẵng",
+            "type": "Location Search",
+            "score": 1.3488,
+            "source": "curated"
+          },
+          {
+            "text": "Khách sạn Đà Nẵng gần biển",
+            "type": "Discovery Search",
+            "score": 1.3476,
+            "source": "curated"
+          },
+          {
+            "text": "Khách sạn Mường Thanh Đà Nẵng",
+            "type": "POI Suggestions",
+            "score": 0.8704,
+            "source": "poi"
+          },
+          {
+            "text": "Khách sạn Pasteur Đà Nẵng",
+            "type": "POI Suggestions",
+            "score": 0.8584,
+            "source": "poi"
+          }
+        ]
+      }
+    },
+    {
+      "prefix": "bv bach",
+      "output": {
+        "prefix": "bv bach",
+        "suggestion_type": "POI Suggestions",
+        "suggestions": [
+          {
+            "text": "Bệnh viện Bạch Mai",
+            "type": "POI Suggestions",
+            "score": 1.373,
+            "source": "curated"
+          },
+          {
+            "text": "Bệnh viện gần đây",
+            "type": "Category Suggestions",
+            "score": 1.3377,
+            "source": "curated"
+          },
+          {
+            "text": "bv bach mai",
+            "type": "POI Suggestions",
+            "score": 0.882,
+            "source": "poi"
+          },
+          {
+            "text": "Bệnh viện Bạch Mai Cơ sở 1",
+            "type": "POI Suggestions",
+            "score": 0.82,
+            "source": "poi"
+          },
+          {
+            "text": "Bệnh viện Bạch Mai Cơ sở 2",
+            "type": "POI Suggestions",
+            "score": 0.82,
+            "source": "poi"
+          }
+        ]
+      }
+    },
+    {
+      "prefix": "pho th",
+      "output": {
+        "prefix": "pho th",
+        "suggestion_type": "POI Suggestions",
+        "suggestions": [
+          {
+            "text": "Phở Thìn Lò Đúc",
+            "type": "POI Suggestions",
+            "score": 1.3694,
+            "source": "curated"
+          },
+          {
+            "text": "Phở gần đây",
+            "type": "Category Suggestions",
+            "score": 1.3389,
+            "source": "curated"
+          },
+          {
+            "text": "Phở Thìn",
+            "type": "Brand Suggestions",
+            "score": 1.014,
+            "source": "brand"
+          },
+          {
+            "text": "Lẩu Phố Bình Thạnh",
+            "type": "POI Suggestions",
+            "score": 0.8656,
+            "source": "poi"
+          },
+          {
+            "text": "Phở Truyền Thống Xuân Thủy",
+            "type": "POI Suggestions",
+            "score": 0.82,
+            "source": "poi"
+          }
+        ]
+      }
+    },
+    {
+      "prefix": "galaxy",
+      "output": {
+        "prefix": "galaxy",
+        "suggestion_type": "Ambiguous",
+        "suggestions": [
+          {
+            "text": "Galaxy Cinema",
+            "type": "Ambiguous",
+            "score": 0.95,
+            "source": "brand"
+          }
+        ]
+      }
+    },
+    {
+      "prefix": "12 ngu",
+      "output": {
+        "prefix": "12 ngu",
+        "suggestion_type": "Address Suggestions",
+        "suggestions": [
+          {
+            "text": "12 Nguyễn Huệ, Quận 7, TP Hồ Chí Minh",
+            "type": "Address Suggestions",
+            "score": 0.8,
+            "source": "address"
+          },
+          {
+            "text": "12 Nguyễn Huệ, Bình Thạnh, TP Hồ Chí Minh",
+            "type": "Address Suggestions",
+            "score": 0.8,
+            "source": "address"
+          },
+          {
+            "text": "12 Võ Nguyên Giáp, Ba Đình, Hà Nội",
+            "type": "Address Suggestions",
+            "score": 0.8,
+            "source": "address"
+          },
+          {
+            "text": "12 Trần Hưng Đạo, Ngũ Hành Sơn, Đà Nẵng",
+            "type": "Address Suggestions",
+            "score": 0.8,
+            "source": "address"
+          },
+          {
+            "text": "12 Nguyễn Chí Thanh, Cầu Giấy, Hà Nội",
+            "type": "Address Suggestions",
+            "score": 0.8,
+            "source": "address"
+          }
+        ]
+      }
+    },
+    {
+      "prefix": "atm vcb q",
+      "output": {
+        "prefix": "atm vcb q",
+        "suggestion_type": "Nearby Suggestions",
+        "suggestions": [
+          {
+            "text": "ATM Vietcombank gần nhất",
+            "type": "Nearby Suggestions",
+            "score": 1.3566,
+            "source": "curated"
+          },
+          {
+            "text": "ATM BIDV gần đây",
+            "type": "Nearby Suggestions",
+            "score": 1.3347,
+            "source": "curated"
+          },
+          {
+            "text": "ATM gần sân bay",
+            "type": "Nearby Suggestions",
+            "score": 1.3104,
+            "source": "curated"
+          },
+          {
+            "text": "ATM gần vietcom",
+            "type": "Discovery Search",
+            "score": 0.78,
+            "source": "template"
+          },
+          {
+            "text": "ATM gần đây",
+            "type": "Category Suggestions",
+            "score": 0.72,
+            "source": "template"
+          }
+        ]
+      }
+    },
+    {
+      "prefix": "khach san da n",
+      "output": {
+        "prefix": "khach san da n",
+        "suggestion_type": "Location Search",
+        "suggestions": [
+          {
+            "text": "Khách sạn Đà Nẵng",
+            "type": "Location Search",
+            "score": 1.3488,
+            "source": "curated"
+          },
+          {
+            "text": "Khách sạn Đà Nẵng gần biển",
+            "type": "Discovery Search",
+            "score": 1.3476,
+            "source": "curated"
+          },
+          {
+            "text": "Khách sạn Mường Thanh Đà Nẵng",
+            "type": "POI Suggestions",
+            "score": 0.8704,
+            "source": "poi"
+          },
+          {
+            "text": "Khách sạn Pasteur Đà Nẵng",
+            "type": "POI Suggestions",
+            "score": 0.8584,
+            "source": "poi"
+          },
+          {
+            "text": "Khách sạn gần đây",
+            "type": "Category Suggestions",
+            "score": 0.72,
+            "source": "template"
+          }
+        ]
+      }
+    }
+  ]
+}

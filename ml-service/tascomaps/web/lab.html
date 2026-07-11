@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Model Test Lab — Tasco Maps AI</title>
+  <link rel="stylesheet" href="/assets/style.css"/>
+</head>
+<body class="lab-body">
+  <header class="lab-header">
+    <div class="lab-brand">
+      <a class="brand" href="/" aria-label="Back to Tasco Maps AI demos">
+        <div class="logo">T</div>
+        <div><h1>Tasco Maps AI</h1><div class="sub">Model Test Lab</div></div>
+      </a>
+      <div class="runtime" id="runtime" aria-live="polite">
+        <i></i><span>Connecting to models…</span>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Demo navigation">
+      <a class="on" href="/demo/lab">Unified Lab</a>
+      <a href="/demo/autocomplete">P9 only</a>
+      <a href="/demo/understand">P6 only</a>
+      <a href="/demo/search">P7 only</a>
+      <a href="/docs">API</a>
+    </nav>
+  </header>
+
+  <main class="lab-wrap">
+    <section class="lab-hero">
+      <div>
+        <span class="eyebrow">INTERACTIVE THREE-MODEL WORKSPACE</span>
+        <h2>See what each model adds to the search journey.</h2>
+        <p>Try each stage separately or run one query through all three. Results show live response time and the evidence behind each decision.</p>
+      </div>
+      <button class="secondary-btn" id="runAll" type="button">
+        <span>Run all models</span><small>uses the inputs below</small>
+      </button>
+    </section>
+
+    <section class="journey" aria-label="Model journey">
+      <div><b>1</b><span><strong>P9</strong> Predict while typing</span></div>
+      <i>→</i>
+      <div><b>2</b><span><strong>P6</strong> Understand the request</span></div>
+      <i>→</i>
+      <div><b>3</b><span><strong>P7</strong> Rank matching places</span></div>
+    </section>
+
+    <section class="lab-grid">
+      <article class="model-panel p9-panel">
+        <div class="panel-head">
+          <div><span class="model-id">P9</span><h3>Autocomplete</h3></div>
+          <span class="stage-state ready" id="p9State">Ready</span>
+        </div>
+        <p class="panel-desc">Enter a partial phrase. Suggestions update as you type; choose one to send it to P6 and P7.</p>
+        <label for="p9Input">Typed prefix</label>
+        <div class="field-row">
+          <input id="p9Input" value="cafe co wifi" autocomplete="off" spellcheck="false"/>
+          <button class="icon-btn" id="runP9" type="button" aria-label="Run P9 autocomplete">Run</button>
+        </div>
+        <div class="quick-tests" data-target="p9Input" data-action="runP9">
+          <button type="button">vin q1</button><button type="button">highl wifi</button><button type="button">trun tâm thương mại gần tôi</button>
+        </div>
+        <div class="panel-meta" id="p9Meta">Waiting for a prefix</div>
+        <div class="panel-output suggestions" id="p9Output" aria-live="polite">
+          <div class="empty-state"><span>⌨</span><b>Start typing</b><small>Suggestions will appear here</small></div>
+        </div>
+      </article>
+
+      <article class="model-panel p6-panel">
+        <div class="panel-head">
+          <div><span class="model-id">P6</span><h3>Query understanding</h3></div>
+          <span class="stage-state ready" id="p6State">Ready</span>
+        </div>
+        <p class="panel-desc">See how noisy Vietnamese text becomes a normalized query, intent, and structured entities.</p>
+        <label for="p6Input">User query</label>
+        <div class="field-row">
+          <input id="p6Input" value="highl wifi" autocomplete="off" spellcheck="false"/>
+          <button class="icon-btn" id="runP6" type="button">Run</button>
+        </div>
+        <div class="quick-tests" data-target="p6Input" data-action="runP6">
+          <button type="button">đại học</button><button type="button">trun tâm thương mại gần tôi</button><button type="button">phuc l q1</button><button type="button">chi duong den san bay</button>
+        </div>
+        <div class="panel-meta" id="p6Meta">Waiting for a query</div>
+        <div class="panel-output" id="p6Output" aria-live="polite">
+          <div class="empty-state"><span>◎</span><b>No analysis yet</b><small>Run P6 to inspect its interpretation</small></div>
+        </div>
+      </article>
+
+      <article class="model-panel p7-panel">
+        <div class="panel-head">
+          <div><span class="model-id">P7</span><h3>Semantic ranking</h3></div>
+          <span class="stage-state ready" id="p7State">Ready</span>
+        </div>
+        <p class="panel-desc">Search by need, not just name. Inspect the ranked places and why each one matched.</p>
+        <label for="p7Input">Search need</label>
+        <div class="field-row">
+          <input id="p7Input" value="cafe có wifi gần hồ gươm" autocomplete="off" spellcheck="false"/>
+          <button class="icon-btn" id="runP7" type="button">Run</button>
+        </div>
+        <div class="quick-tests" data-target="p7Input" data-action="runP7">
+          <button type="button">đại học</button><button type="button">quán cafe học bài</button><button type="button">khách sạn gần biển có hồ bơi</button><button type="button">nơi hẹn hò ở quận 1</button>
+        </div>
+        <div class="panel-meta" id="p7Meta">Waiting for a search need</div>
+        <div class="panel-output rankings" id="p7Output" aria-live="polite">
+          <div class="empty-state"><span>≋</span><b>No ranking yet</b><small>Run P7 to see its top matches</small></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="evidence-section">
+      <div class="section-title">
+        <div><span class="eyebrow">MEASURED EVIDENCE</span><h2>Semantic quality scorecard</h2></div>
+        <span class="dataset-note">Corpus-derived regression sample · E5 and TF-IDF frozen gates</span>
+      </div>
+      <div class="evidence-layout">
+        <div class="accuracy-table-wrap">
+          <table class="accuracy-table">
+            <thead><tr><th>Model</th><th>Evidence</th><th>Cases</th><th>Result</th><th>Gate</th></tr></thead>
+            <tbody>
+              <tr><td><span class="table-model p6">P6</span></td><td>Intent / slot fidelity</td><td>84 sampled</td><td><b>96.4% / 99.7%</b></td><td class="positive">PASS</td></tr>
+              <tr><td><span class="table-model p7">P7</span></td><td>E5 clean / perturbed constraints</td><td>91 each</td><td><b>97.8% / 80.2%</b></td><td class="positive">PASS</td></tr>
+              <tr><td><span class="table-model p7">P7</span></td><td>Reference address / OOD</td><td>106 / 10</td><td><b>100% / 100%</b></td><td class="positive">PASS</td></tr>
+              <tr><td><span class="table-model p9">P9</span></td><td>Semantic completion success@6</td><td>147 prefixes</td><td><b>95.9%</b></td><td class="positive">PASS</td></tr>
+              <tr><td><span class="table-model p9">VI</span></td><td>Accentless / typo retention</td><td>40 each</td><td><b>99.7% / 69.6%</b></td><td class="positive">PASS</td></tr>
+              <tr><td><span class="table-model p9">UX</span></td><td>Deterministic / bounded / unique</td><td>24 runtime</td><td><b>100%</b></td><td class="positive">PASS</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <aside class="integrity-card">
+          <div class="integrity-title"><span>✓</span><b>Independent semantic judge</b></div>
+          <p>The primary score uses a deterministic corpus-derived regression sample and an accent-safe metadata judge—not P6, embeddings, or public expected strings.</p>
+          <div class="integrity-stat"><span>Exact target MRR (diagnostic only)</span><strong>0.291</strong></div>
+          <div class="integrity-stat"><span>Executable public-answer literals in runtime</span><strong>0 / 96</strong></div>
+          <p class="integrity-foot">Catalog rows remain indexed by the live engine. Both E5 and TF-IDF must pass frozen semantic, Vietnamese, OOD, concurrency, and regression checks.</p>
+        </aside>
+      </div>
+      <div class="tradeoff-row">
+        <div><span class="tradeoff-label">P6 deterministic</span><b>≈3.6 ms</b><small>p50 · regression sample</small></div>
+        <div><span class="tradeoff-label">P7 TF-IDF</span><b>≈7.1 ms</b><small>p50 · offline fallback</small></div>
+        <div class="recommended"><span class="tradeoff-label">P7 E5 <i>quality choice</i></span><b>≈13.9 ms</b><small>p50 · stronger semantic ranking</small></div>
+        <div><span class="tradeoff-label">P9 hybrid</span><b>≈5.6 ms</b><small>p50 · corpus-derived</small></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const $ = selector => document.querySelector(selector);
+    const esc = value => (value == null ? "" : String(value)).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const pct = value => `${Math.round((Number(value) || 0) * 100)}%`;
+    const setState = (id, state, label) => { const el = $(id); el.className = `stage-state ${state}`; el.textContent = label; };
+    const empty = (icon, title, subtitle) => `<div class="empty-state"><span>${icon}</span><b>${esc(title)}</b><small>${esc(subtitle)}</small></div>`;
+    let debounce, p9Controller = null, p9Sequence = 0;
+    let p6Controller = null, p6Sequence = 0;
+    let p7Controller = null, p7Sequence = 0;
+
+    async function getJSON(url, options) {
+      const started = performance.now();
+      const response = await fetch(url, options);
+      let data;
+      try { data = await response.json(); } catch (_) { data = {}; }
+      if (!response.ok) throw new Error(data.detail || `Request failed (${response.status})`);
+      return {data, elapsed: performance.now() - started};
+    }
+
+    function fail(stage, error) {
+      setState(`#${stage}State`, "error", "Error");
+      $(`#${stage}Meta`).textContent = error.message;
+      $(`#${stage}Output`).innerHTML = empty("!", "Could not run this model", "Check the server and try again");
+    }
+
+    async function runP9() {
+      const input = $("#p9Input").value.trim();
+      if (!input) { if (p9Controller) p9Controller.abort(); p9Sequence++; $("#p9Output").innerHTML = empty("⌨", "Start typing", "Suggestions will appear here"); return; }
+      const sequence = ++p9Sequence;
+      if (p9Controller) p9Controller.abort();
+      p9Controller = new AbortController();
+      setState("#p9State", "running", "Running");
+      try {
+        const {data, elapsed} = await getJSON(`/autocomplete/hai?q=${encodeURIComponent(input)}&k=6`, {signal:p9Controller.signal});
+        if (sequence !== p9Sequence || $("#p9Input").value.trim() !== input) return;
+        setState("#p9State", "done", "Complete");
+        $("#p9Meta").innerHTML = `<b>${esc(data.suggestion_type || "unknown")}</b> type · ${elapsed.toFixed(1)} ms round-trip · ${esc(data.source || "local")}`;
+        const rows = data.suggestions || [];
+        $("#p9Output").innerHTML = rows.length ? rows.map((item, index) => `
+          <button class="suggestion-row" type="button" data-value="${esc(item.display || item.text)}">
+            <span class="suggestion-rank">${index + 1}</span>
+            <span class="suggestion-copy"><b>${esc(item.display || item.text)}</b><small>${esc(item.type)} · ${esc(item.source || "")}</small></span>
+            <span class="suggestion-score">${Number(item.score).toFixed(2)}</span><span class="send-arrow">→</span>
+          </button>`).join("") : empty("∅", "No suggestions", "Try a longer or different prefix");
+        document.querySelectorAll(".suggestion-row").forEach(button => button.addEventListener("click", () => {
+          $("#p6Input").value = button.dataset.value;
+          $("#p7Input").value = button.dataset.value;
+          showToast("Suggestion copied to P6 and P7");
+        }));
+      } catch (error) { if (error.name !== "AbortError" && sequence === p9Sequence) fail("p9", error); }
+    }
+
+    async function runP6() {
+      const input = $("#p6Input").value.trim();
+      if (!input) { if (p6Controller) p6Controller.abort(); p6Sequence++; return; }
+      const sequence = ++p6Sequence;
+      if (p6Controller) p6Controller.abort();
+      p6Controller = new AbortController();
+      setState("#p6State", "running", "Running");
+      try {
+        const {data, elapsed} = await getJSON("/understand", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({query:input, boost:false}), signal:p6Controller.signal});
+        if (sequence !== p6Sequence || $("#p6Input").value.trim() !== input) return;
+        setState("#p6State", "done", "Complete");
+        $("#p6Meta").innerHTML = `${elapsed.toFixed(1)} ms round-trip · ${esc(data.source || "deterministic")}`;
+        const entities = Object.entries(data.entities || {}).map(([key, value]) => `<span class="entity-chip"><small>${esc(key)}</small>${esc(Array.isArray(value) ? value.join(", ") : value)}</span>`).join("");
+        $("#p6Output").innerHTML = `
+          <div class="intent-row"><span>Detected intent</span><b>${esc(data.intent)}</b></div>
+          <div class="normalization"><span>Normalized query</span><strong>${esc(data.normalized_query)}</strong></div>
+          <div class="confidence-head"><span>Confidence</span><b>${pct(data.confidence)}</b></div>
+          <div class="confidence-track"><i style="width:${Math.max(0, Math.min(100, Number(data.confidence) * 100))}%"></i></div>
+          <div class="entity-title">Extracted entities</div>
+          <div class="entity-list">${entities || '<span class="no-entities">No structured entities found</span>'}</div>
+          <details><summary>View raw response</summary><pre>${esc(JSON.stringify(data, null, 2))}</pre></details>`;
+      } catch (error) { if (error.name !== "AbortError" && sequence === p6Sequence) fail("p6", error); }
+    }
+
+    async function runP7() {
+      const input = $("#p7Input").value.trim();
+      if (!input) { if (p7Controller) p7Controller.abort(); p7Sequence++; return; }
+      const sequence = ++p7Sequence;
+      if (p7Controller) p7Controller.abort();
+      p7Controller = new AbortController();
+      setState("#p7State", "running", "Running");
+      try {
+        const {data, elapsed} = await getJSON("/search", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({query:input, top_k:5}), signal:p7Controller.signal});
+        if (sequence !== p7Sequence || $("#p7Input").value.trim() !== input) return;
+        setState("#p7State", "done", "Complete");
+        const status = (data.diagnostics || {}).status || "ok";
+        $("#p7Meta").innerHTML = `${elapsed.toFixed(1)} ms round-trip · <b>${(data.results || []).length}</b> ranked places · status <b>${esc(status)}</b>`;
+        const rows = data.results || [];
+        const excluded = (data.excluded_attributes || []).map(value => `<span>excluded: ${esc(value)}</span>`).join("");
+        $("#p7Output").innerHTML = rows.length ? rows.map((item, index) => {
+          const signals = Object.entries(item.signals || {}).filter(([,v]) => Number(v) > 0).sort((a,b) => b[1] - a[1]).slice(0,3);
+          return `<div class="ranking-row">
+            <div class="ranking-top"><span class="ranking-rank">${index + 1}</span><div><b>${esc(item.display_name || item.name)}</b><small>${esc(item.category)} · ${esc(item.district || item.city || "Vietnam")}${item.address ? ` · ${esc(item.address)}` : ""}${item.rating ? ` · ★ ${esc(item.rating)}` : ""}</small></div><strong>utility ${Number(item.score).toFixed(2)}</strong></div>
+            <div class="score-track"><i style="width:${Math.max(4, Math.min(100, Number(item.score) * 100))}%"></i></div>
+            <div class="why-list">${excluded}${(item.reasons || []).map(reason => `<span>${esc(reason)}</span>`).join("")}</div>
+            ${signals.length ? `<div class="signal-list">${signals.map(([key,value]) => `<span>${esc(key)} <b>${Number(value).toFixed(2)}</b></span>`).join("")}</div>` : ""}
+          </div>`;
+        }).join("") : empty("∅", "No matching places", "Try relaxing the location or attribute constraints");
+      } catch (error) { if (error.name !== "AbortError" && sequence === p7Sequence) fail("p7", error); }
+    }
+
+    function showToast(message) {
+      const toast = $("#toast"); toast.textContent = message; toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    $("#runP9").addEventListener("click", runP9);
+    $("#runP6").addEventListener("click", runP6);
+    $("#runP7").addEventListener("click", runP7);
+    $("#p9Input").addEventListener("input", () => { clearTimeout(debounce); debounce = setTimeout(runP9, 160); });
+    $("#p6Input").addEventListener("input", () => { if (p6Controller) p6Controller.abort(); p6Sequence++; });
+    $("#p7Input").addEventListener("input", () => { if (p7Controller) p7Controller.abort(); p7Sequence++; });
+    ["p6", "p7"].forEach(stage => $(`#${stage}Input`).addEventListener("keydown", event => { if (event.key === "Enter") window[`run${stage.toUpperCase()}`](); }));
+    document.querySelectorAll(".quick-tests button").forEach(button => button.addEventListener("click", () => {
+      const parent = button.parentElement; $(`#${parent.dataset.target}`).value = button.textContent;
+      $(`#${parent.dataset.action}`).click();
+    }));
+    $("#runAll").addEventListener("click", async () => {
+      $("#runAll").disabled = true; $("#runAll span").textContent = "Running all models…";
+      await Promise.allSettled([runP9(), runP6(), runP7()]);
+      $("#runAll").disabled = false; $("#runAll span").textContent = "Run all models"; showToast("All three model tests finished");
+    });
+
+    getJSON("/health").then(({data}) => {
+      const kind = data.embedder === "sentence-transformer" ? "E5 embeddings" : "TF-IDF fallback";
+      $("#runtime").classList.add("online");
+      $("#runtime span").innerHTML = `Models online <small>${esc(kind)} · ${esc(data.pois_total)} places</small>`;
+    }).catch(() => { $("#runtime span").textContent = "Models offline"; });
+  </script>
+</body>
+</html>
