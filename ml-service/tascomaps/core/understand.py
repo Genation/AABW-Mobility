@@ -20,7 +20,7 @@ from rapidfuzz import fuzz
 from ..constants import (ADJECTIVE_STOP, ATTRIBUTE_TERMS, CATEGORY_QUERY_TERMS,
                          canon_city, CITY_CANON, FACILITY_CATEGORIES,
                          LANDMARK_CATEGORIES, STOPWORDS)
-from ..data.kb import KnowledgeBase
+from ..data.kb import AbbrevEntry, KnowledgeBase
 from .text import (accent_prefix_compatible, fold, has_accents, normalize,
                    parse_coordinates, title_vi, tokenize)
 
@@ -58,7 +58,15 @@ _TIME_RANGE_RE = re.compile(
     r"(?:h|giờ|gio|am|pm)?\b", re.I)
 _NEGATION_TAIL_RE = re.compile(
     r"(?:^|\s)(?:khong|ko|k|chang|tranh|without|no)"
-    r"(?:\s+(?:can|co|muon))?\s*$", re.I)
+    r"(?:\s+(?:can|co|muon|phai|qua))?\s*$", re.I)
+_NEGATION_RE = re.compile(
+    r"(?<!\w)(?P<operator>khong\s+phai|khong\s+qua|khong\s+co|"
+    r"khong|tranh|without|no)(?!\w)", re.I)
+_NEGATION_BOUNDARY_RE = re.compile(
+    r"(?<!\w)(?:nhung|but|tuy\s+nhien|"
+    r"(?:va|and)\s+(?:co|has|gan|near))(?!\w)", re.I)
+_CLAUSE_PUNCTUATION_RE = re.compile(
+    r"[!?;]|,(?!\d)|(?<!\d)[.:](?!\d)")
 _DISH_BOUNDARY_TOKENS = {
     "gan", "near", "quanh", "tai", "o", "co", "khong", "va", "cho",
     "duoi", "under", "sau", "after", "truoc", "before", "mo", "open",
@@ -93,6 +101,24 @@ class Span:
 
 
 @dataclass(frozen=True)
+class SemanticMention:
+    start: int
+    end: int
+    slot: str
+    canonical: str
+    polarity: str = "positive"
+    operator: str = "include"
+
+
+@dataclass(frozen=True)
+class _NegationRange:
+    start: int
+    end: int
+    complement_start: int
+    operator: str
+
+
+@dataclass(frozen=True)
 class _PrefixGrounding:
     """A unique live-corpus entity progressively matched from token zero."""
 
@@ -105,6 +131,141 @@ class _PrefixGrounding:
 
 _TYPE_PRIORITY = {"poi": 6, "alias": 5, "district": 4, "city": 4,
                   "brand": 4, "street": 3, "ward": 2, "category": 1}
+
+
+def _negation_ranges(qfold: str,
+                     explicit_boundaries: Optional[List[int]] = None) \
+        -> List[_NegationRange]:
+    """Return local negative scopes terminated by contrastive boundaries."""
+    ranges = []
+    explicit_boundaries = explicit_boundaries or []
+    for match in _NEGATION_RE.finditer(qfold):
+        boundary = _NEGATION_BOUNDARY_RE.search(qfold, match.end())
+        candidates = [value for value in explicit_boundaries
+                      if value >= match.end()]
+        if boundary:
+            candidates.append(boundary.start())
+        end = min(candidates, default=len(qfold))
+        operator = fold(match.group("operator")).replace(" ", "_")
+        ranges.append(_NegationRange(
+            start=match.start(), end=end,
+            complement_start=match.end(), operator=operator,
+        ))
+    return ranges
+
+
+def _grounded_negative_location_boundaries(
+        qfold: str, kb: KnowledgeBase) -> List[int]:
+    """Reopen location scope only after a modeled negative constraint."""
+    boundaries = []
+    for location in re.finditer(r"(?<!\w)(?:o|tai|in|at)(?!\w)", qfold):
+        negations = [match for match in _NEGATION_RE.finditer(
+            qfold, 0, location.start())]
+        if not negations:
+            continue
+        negation = negations[-1]
+        complement = qfold[negation.end():location.start()].strip()
+        clause = qfold[negation.start():location.start()].strip()
+        attribute_evidence = any(
+            re.search(r"(?<!\w)" + re.escape(fold(term)) + r"(?!\w)", complement)
+            for term in kb.attribute_terms if fold(term)
+        )
+        dish_evidence = bool(_detect_dish(complement, kb)[0])
+        price_evidence = bool(_PRICE_RE.search(clause))
+        cuisine_evidence = bool(
+            fold(negation.group("operator")) == "khong phai"
+            and re.match(r"^do\s+\S+", complement))
+        identity_terms = [
+            *kb.category_terms,
+            *kb.sub_category_terms,
+            *kb.brands.values(),
+            *kb.cities.values(),
+            *kb.districts.values(),
+            *kb.streets.values(),
+            *(poi.name for poi in kb.pois),
+            *(poi.ward for poi in kb.pois if poi.ward),
+            *(alias for poi in kb.pois for alias in poi.aliases),
+        ]
+        identity_evidence = any(
+            re.search(r"(?<!\w)" + re.escape(fold(term)) + r"(?!\w)", complement)
+            for term in identity_terms if fold(term)
+        )
+        reference_evidence = False
+        reference_match = re.match(r"^gan\s+(.+)$", complement)
+        if reference_match:
+            reference = reference_match.group(1).strip()
+            reference_evidence = bool(kb.lexicon.exact(
+                reference, types={"poi", "alias", "category", "brand"}))
+        if (attribute_evidence or dish_evidence or price_evidence
+                or cuisine_evidence or identity_evidence or reference_evidence):
+            boundaries.append(location.start())
+    return boundaries
+
+
+def _semantic_mention(start: int, end: int, slot: str, canonical: str,
+                      ranges: List[_NegationRange]) -> SemanticMention:
+    scope = next((scope for scope in ranges
+                  if scope.complement_start <= start < scope.end), None)
+    return SemanticMention(
+        start=start, end=end, slot=slot, canonical=canonical,
+        polarity="negative" if scope else "positive",
+        operator="exclude" if scope else "include",
+    )
+
+
+def _token_span(qfold: str, start: int, end: int) -> Tuple[int, int]:
+    ranges = [(match.start(), match.end())
+              for match in re.finditer(r"\S+", qfold)]
+    if start < 0 or end <= start or end > len(ranges):
+        return 0, 0
+    return ranges[start][0], ranges[end - 1][1]
+
+
+def _punctuation_boundaries(raw: str, origins: List[int],
+                            qfold: str) -> List[int]:
+    """Map raw clause punctuation to expanded-query character offsets."""
+    token_ranges = [(match.start(), match.end())
+                    for match in re.finditer(r"\S+", qfold)]
+    boundaries = []
+    for match in _CLAUSE_PUNCTUATION_RE.finditer(raw):
+        original_boundary = len(tokenize(raw[:match.end()]))
+        expanded_index = next((index for index, origin in enumerate(origins)
+                               if origin >= original_boundary), None)
+        if expanded_index is not None and expanded_index < len(token_ranges):
+            boundaries.append(token_ranges[expanded_index][0])
+    return boundaries
+
+
+def _unknown_negative_mentions(
+        qfold: str, ranges: List[_NegationRange],
+        known: List[SemanticMention]) -> List[SemanticMention]:
+    """Keep ungrounded negative complements as internal evidence only."""
+    unknown = []
+    for scope in ranges:
+        start = scope.complement_start
+        while start < scope.end and qfold[start].isspace():
+            start += 1
+        if start >= scope.end:
+            continue
+        covered = sorted(
+            (max(start, mention.start), min(scope.end, mention.end))
+            for mention in known
+            if mention.start < scope.end and mention.end > start
+        )
+        cursor = start
+        for left, right in [*covered, (scope.end, scope.end)]:
+            if cursor < left:
+                surface = qfold[cursor:left].strip()
+                if surface:
+                    surface_start = qfold.find(surface, cursor, left)
+                    unknown.append(SemanticMention(
+                        start=surface_start,
+                        end=surface_start + len(surface), slot="unknown",
+                        canonical=surface, polarity="negative",
+                        operator="exclude",
+                    ))
+            cursor = max(cursor, right)
+    return unknown
 
 
 def _accent_safe_contains(text: str, term: str) -> bool:
@@ -143,6 +304,7 @@ def _apply_abbrev(tokens: List[str], kb: KnowledgeBase,
     """
     out: List[str] = []
     kinds: List[Optional[str]] = []       # per output token: place-kind or None
+    origins: List[int] = []               # expanded token -> original token
     hits: Dict[str, str] = {}
     ent: Dict[str, str] = {}              # kind -> canonical value
     attrs: List[str] = []
@@ -159,6 +321,7 @@ def _apply_abbrev(tokens: List[str], kb: KnowledgeBase,
         if i < len(protected) and protected[i]:
             out.append(tokens[i])
             kinds.append("protected")
+            origins.append(i)
             i += 1
             continue
         matched = None
@@ -179,9 +342,22 @@ def _apply_abbrev(tokens: List[str], kb: KnowledgeBase,
                     continue
                 matched = (entry, n)
                 break
+            surface_entry = kb.resolve_query_surface(key)
+            if surface_entry and kb.supports_query_surface(surface_entry):
+                kind = "brand" if surface_entry.entity_type == "poi_family" \
+                    else surface_entry.entity_type
+                if kind in place_kinds:
+                    matched = (AbbrevEntry(
+                        abbr=surface_entry.surface,
+                        expansion=surface_entry.canonical,
+                        full=surface_entry.canonical,
+                        type=kind,
+                    ), n)
+                    break
         if not matched:
             out.append(tokens[i])
             kinds.append(None)
+            origins.append(i)
             i += 1
             continue
         e, n = matched
@@ -198,36 +374,43 @@ def _apply_abbrev(tokens: List[str], kb: KnowledgeBase,
                     if prefix and expansion_fold.startswith(prefix + " "):
                         del out[-prefix_size:]
                         del kinds[-prefix_size:]
+                        del origins[-prefix_size:]
                         break
             for p in parts:
                 out.append(p)
                 kinds.append(e.type)
+                origins.append(i)
             ent.setdefault(e.type, e.expansion)
         elif e.type == "amenity" or e.type == "attribute":
             attrs.append(e.expansion)
             for p in e.expansion.split():
                 out.append(p)
                 kinds.append(None)
+                origins.append(i)
         elif e.type == "intent":
             intent_hint = "Navigation"
             for j in range(n):
                 out.append(tokens[i + j])
                 kinds.append("navword")
+                origins.append(i + j)
         elif e.type == "nearby":
             current_loc = True
             for j in range(n):
                 out.append(tokens[i + j])
                 kinds.append(None)
+                origins.append(i + j)
         elif e.type in ("opening", "preposition"):
             for p in e.expansion.split():
                 out.append(p)
                 kinds.append(None)
+                origins.append(i)
         else:  # synonym: keep surface form
             for j in range(n):
                 out.append(tokens[i + j])
                 kinds.append(None)
+                origins.append(i + j)
         i += n
-    return out, kinds, hits, ent, attrs, intent_hint, current_loc
+    return out, kinds, origins, hits, ent, attrs, intent_hint, current_loc
 
 
 def _link_spans(tokens: List[str], kb: KnowledgeBase,
@@ -333,6 +516,27 @@ def _detect_category(text: str, kb: KnowledgeBase) -> Optional[str]:
     return longest[3]
 
 
+def _detect_sub_category(
+        text: str, kb: KnowledgeBase) -> Optional[Tuple[str, str]]:
+    """Return a unique, canonical data-derived subtype and its parent."""
+    qfold = fold(text)
+    matches = []
+    for surface, (canonical, parent) in kb.sub_category_terms.items():
+        target = fold(surface)
+        if (target and re.search(
+                r"(?<!\w)" + re.escape(target) + r"(?!\w)", qfold)
+                and _accent_safe_contains(text, surface)):
+            matches.append((len(target), canonical, parent))
+    if not matches:
+        return None
+    longest = max(length for length, _, _ in matches)
+    identities = {
+        (canonical, parent) for length, canonical, parent in matches
+        if length == longest
+    }
+    return next(iter(identities)) if len(identities) == 1 else None
+
+
 def _supports_named_facility_tail(category: Optional[str],
                                   kb: KnowledgeBase) -> bool:
     """Infer whether ``<category> <name>`` commonly identifies one facility.
@@ -368,7 +572,9 @@ def _supports_named_facility_tail(category: Optional[str],
 
 def _detect_attributes(qfold: str, kb: KnowledgeBase,
                        category: Optional[str] = None,
-                       identity_phrases: Optional[List[str]] = None) \
+                       identity_phrases: Optional[List[str]] = None,
+                       negation_ranges: Optional[List[_NegationRange]] = None,
+                       semantic_mentions: Optional[List[SemanticMention]] = None) \
         -> Tuple[List[str], List[str]]:
     """Return positive and explicitly excluded attributes.
 
@@ -379,6 +585,7 @@ def _detect_attributes(qfold: str, kb: KnowledgeBase,
     """
     positive: List[str] = []
     excluded: List[str] = []
+    ranges = negation_ranges or _negation_ranges(qfold)
     terms = dict(kb.attribute_terms or ATTRIBUTE_TERMS)
     if category:
         category_fold = fold(category)
@@ -421,8 +628,12 @@ def _detect_attributes(qfold: str, kb: KnowledgeBase,
         if any(not (end <= left or start >= right) for left, right in occupied):
             continue
         occupied.append((start, end))
+        mention = _semantic_mention(start, end, "attribute", canon, ranges)
+        if semantic_mentions is not None:
+            semantic_mentions.append(mention)
         prefix = qfold[max(0, start - 36):start]
-        target = excluded if _NEGATION_TAIL_RE.search(prefix) else positive
+        target = excluded if mention.polarity == "negative" \
+            or _NEGATION_TAIL_RE.search(prefix) else positive
         if canon not in target:
             target.append(canon)
     # An explicit exclusion wins if the same attribute was also picked up from
@@ -431,10 +642,17 @@ def _detect_attributes(qfold: str, kb: KnowledgeBase,
     return positive, excluded
 
 
-def _detect_city(qfold: str) -> Optional[str]:
+def _detect_city(qfold: str,
+                 negation_ranges: Optional[List[_NegationRange]] = None) \
+        -> Optional[str]:
+    ranges = negation_ranges or []
     for term, canon in CITY_CANON.items():
-        if re.search(r"\b" + re.escape(fold(term)) + r"\b", qfold):
-            return canon
+        for match in re.finditer(
+                r"\b" + re.escape(fold(term)) + r"\b", qfold):
+            mention = _semantic_mention(
+                match.start(), match.end(), "city", canon, ranges)
+            if mention.polarity == "positive":
+                return canon
     return None
 
 
@@ -1292,20 +1510,48 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
     if prefix_hint:
         for index in range(min(prefix_hint.consumed_tokens, len(protected))):
             protected[index] = True
-    (exp_tokens, kinds, abbrev_hits, abbr_ent, abbr_attrs,
+    (exp_tokens, kinds, origins, abbrev_hits, abbr_ent, abbr_attrs,
      intent_hint, abbr_current_loc) = _apply_abbrev(tokens, kb, protected)
     if prefix_hint:
         canonical_tokens = tokenize(prefix_hint.canonical)
         consumed = prefix_hint.consumed_tokens
         exp_tokens = canonical_tokens + exp_tokens[consumed:]
         kinds = [prefix_hint.kind] * len(canonical_tokens) + kinds[consumed:]
+        origins = [0] * len(canonical_tokens) + origins[consumed:]
     exp_norm = " ".join(exp_tokens)
     qfold = fold(exp_norm)
+    punctuation_boundaries = _punctuation_boundaries(raw, origins, qfold)
+    evidence_boundaries = _grounded_negative_location_boundaries(qfold, kb)
+    negation_ranges = _negation_ranges(
+        qfold, [*punctuation_boundaries, *evidence_boundaries])
+    semantic_mentions: List[SemanticMention] = []
     spans = _link_spans(exp_tokens, kb)
 
     by_type: Dict[str, List[Span]] = {}
     for s in spans:
+        if s.type in {"poi", "alias", "brand", "category", "district",
+                      "city", "street", "ward"}:
+            mention_start, mention_end = _token_span(qfold, s.start, s.end)
+            mention = _semantic_mention(
+                mention_start, mention_end, s.type, s.canonical,
+                negation_ranges)
+            semantic_mentions.append(mention)
+            if mention.polarity == "negative":
+                continue
         by_type.setdefault(s.type, []).append(s)
+
+    def _positive_abbreviation(kind: str) -> Optional[str]:
+        value = abbr_ent.get(kind)
+        if not value:
+            return None
+        value_fold = fold(value)
+        for match in re.finditer(
+                r"(?<!\w)" + re.escape(value_fold) + r"(?!\w)", qfold):
+            if _semantic_mention(
+                    match.start(), match.end(), kind, value,
+                    negation_ranges).polarity == "positive":
+                return value
+        return None
 
     # place-covered tokens (for category masking): everything except category
     place_cov = [False] * len(exp_tokens)
@@ -1321,11 +1567,11 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
     # entities from spans + abbrev hints
     def _first(t):
         return by_type[t][0].canonical if t in by_type else None
-    brand = abbr_ent.get("brand") or _first("brand")
+    brand = _positive_abbreviation("brand") or _first("brand")
     if brand and fold(brand) in ADJECTIVE_STOP:
         brand = None
-    district = abbr_ent.get("district") or _first("district")
-    street = abbr_ent.get("street") or _first("street")
+    district = _positive_abbreviation("district") or _first("district")
+    street = _positive_abbreviation("street") or _first("street")
     ward = _first("ward")
     # A non-overlapping linked city (commonly after "ở/tại") is explicit and
     # must beat a city token owned by a full POI name.
@@ -1335,7 +1581,8 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
         in {"o", "tai", "in", "at"}
     ]
     city = (explicit_city_spans[-1].canonical if explicit_city_spans
-            else abbr_ent.get("city") or _first("city") or _detect_city(qfold))
+            else _positive_abbreviation("city") or _first("city")
+            or _detect_city(qfold, negation_ranges))
     # Emit one canonical city identity no matter which path produced it, so the
     # downstream hard location constraint in P7 compares like against like.
     if city:
@@ -1343,14 +1590,61 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
     if street and city and fold(street) == fold(city):
         street = None
 
-    cat_raw = " ".join(t for j, t in enumerate(exp_tokens) if not place_cov[j])
+    cat_token_indices = [j for j in range(len(exp_tokens)) if not place_cov[j]]
+    cat_raw = " ".join(exp_tokens[j] for j in cat_token_indices)
     cat_text = fold(cat_raw)
     # Detect on the fully expanded surface first.  This preserves a requested
     # head category when a later related category arrived through an
     # abbreviation (``khach san co cf``, ``khach san gan bx``).  The typed
     # abbreviation remains the fallback when no structural mention exists.
-    category = _detect_category(cat_raw, kb) or abbr_ent.get("category") \
-        or ("category" in by_type and by_type["category"][0].canonical) or None
+    category = None
+    category_candidates = [
+        _detect_category(cat_raw, kb),
+        _positive_abbreviation("category"),
+        _first("category"),
+    ]
+    for candidate in category_candidates:
+        if not candidate:
+            continue
+        candidate_fold = fold(candidate)
+        matches = list(re.finditer(
+            r"(?<!\w)" + re.escape(candidate_fold) + r"(?!\w)", qfold))
+        if (not negation_ranges and not matches) or any(_semantic_mention(
+                match.start(), match.end(), "category", candidate,
+                negation_ranges).polarity == "positive"
+               for match in matches):
+            category = candidate
+            break
+    # Preserve the typed subtype surface before generic aliases such as
+    # ``cafe``/``coffee`` expand to their parent category.
+    sub_category_match = None if raw_has_specific_place else (
+        _detect_sub_category(stripped, kb)
+        or _detect_sub_category(exp_norm, kb)
+    )
+    sub_category = None
+    if sub_category_match:
+        candidate_sub_category, candidate_category = sub_category_match
+        raw_fold = fold(stripped)
+        subtype_matches = [
+            match
+            for surface, identity in kb.sub_category_terms.items()
+            if tuple(fold(value) for value in identity) == (
+                fold(candidate_sub_category), fold(candidate_category))
+            for match in re.finditer(
+                r"(?<!\w)" + re.escape(fold(surface)) + r"(?!\w)", raw_fold)
+        ]
+        raw_origins = list(range(len(tokenize(stripped))))
+        raw_negation_ranges = _negation_ranges(
+            raw_fold, _punctuation_boundaries(raw, raw_origins, raw_fold))
+        subtype_is_positive = any(
+            _semantic_mention(
+                match.start(), match.end(), "sub_category",
+                candidate_sub_category, raw_negation_ranges,
+            ).polarity == "positive"
+            for match in subtype_matches
+        )
+        if subtype_is_positive:
+            sub_category, category = sub_category_match
 
     attributes = []
     seen_attr = set()
@@ -1359,7 +1653,8 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
         if span.type in {"poi", "alias", "brand", "category"}
     ]
     detected_attrs, excluded_attributes = _detect_attributes(
-        qfold, kb, category, identity_phrases)
+        qfold, kb, category, identity_phrases,
+        negation_ranges, semantic_mentions)
     excluded_folds = {fold(value) for value in excluded_attributes}
     for a in abbr_attrs + detected_attrs:
         c = "wifi" if fold(a).replace("-", "").replace(" ", "") == "wifi" else a
@@ -1398,7 +1693,7 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
 
     # recover a brand that was captured as a brand-equal alias span ('vincom')
     if not brand:
-        for s in spans:
+        for s in by_type.get("brand", []) + by_type.get("alias", []):
             bf = fold(s.canonical)
             if bf in brand_folds:
                 brand = kb.brands.get(bf, s.canonical)
@@ -1416,15 +1711,31 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
              and fold(poi_obj.category) != fold(category))
             or _landmark_alias))
 
-    dish, dish_category, _, _ = _detect_dish(cat_raw, kb)
+    dish, dish_category, dish_start, dish_end = _detect_dish(cat_raw, kb)
+    if dish and dish_start is not None and dish_end is not None:
+        query_dish_start = cat_token_indices[dish_start]
+        query_dish_end = cat_token_indices[dish_end - 1] + 1
+        mention_start, mention_end = _token_span(
+            qfold, query_dish_start, query_dish_end)
+        dish_mention = _semantic_mention(
+            mention_start, mention_end, "dish", dish, negation_ranges)
+        semantic_mentions.append(dish_mention)
+        if dish_mention.polarity == "negative":
+            dish = None
     if dish and not category:
         category = dish_category
 
     # modifiers
     price_max = None
-    mp = _PRICE_RE.search(exp_norm)
+    mp = _PRICE_RE.search(qfold)
     if mp:
         price_max = _parse_price(mp.group(1), mp.group(2) or "")
+        if price_max is not None:
+            semantic_mentions.append(SemanticMention(
+                start=mp.start(), end=mp.end(), slot="price_max",
+                canonical=str(price_max), polarity="positive",
+                operator="upper_bound",
+            ))
     open_after, open_before = _parse_open_bounds(exp_norm)
     open_late = bool(_LATE_RE.search(exp_norm)) \
         and fold("mở khuya") not in excluded_folds
@@ -1461,12 +1772,35 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
     # reference detection after a proximity preposition
     reference_poi = reference_area = reference_address = None
     ref_coords = None
-    for prep in [fold(p) for p in _NEAR_PREP]:
-        m = re.search(r"(?:^|\s)" + re.escape(prep) + r"\s+(.+)$", qfold)
+    folded_prepositions = [fold(value) for value in _NEAR_PREP]
+    positive_proximity_starts = []
+    for prep in folded_prepositions:
+        for match in re.finditer(
+                r"(?:^|\s)(?P<prep>" + re.escape(prep) + r")(?=\s)",
+                qfold):
+            prep_start = match.start("prep")
+            mention = _semantic_mention(
+                prep_start, match.end("prep"), "proximity", prep,
+                negation_ranges)
+            if mention.polarity == "positive":
+                positive_proximity_starts.append(prep_start)
+    reference_offset = min(positive_proximity_starts, default=len(qfold))
+    reference_qfold = qfold[reference_offset:]
+    for prep in folded_prepositions:
+        m = re.search(
+            r"(?:^|\s)" + re.escape(prep) + r"\s+(.+)$",
+            reference_qfold)
         if not m:
             continue
         tail = _trim_reference_tail(m.group(1).strip(), kb)
         if not tail:
+            break
+        reference_mention = _semantic_mention(
+            reference_offset + m.start(1),
+            reference_offset + m.start(1) + len(tail), "reference", tail,
+            negation_ranges)
+        semantic_mentions.append(reference_mention)
+        if reference_mention.polarity == "negative":
             break
         tail_tokens = fold(tail).split()
         while tail_tokens and tail_tokens[-1] in {
@@ -1588,7 +1922,8 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
     if not poi_name and not has_nav \
             and _supports_named_facility_tail(category, kb) \
             and not reference_poi and not reference_area and not has_current_loc:
-        semantic_values = [category, city, district, street, ward, brand, dish,
+        semantic_values = [category, sub_category, city, district, street, ward,
+                           brand, dish,
                            *attributes, *excluded_attributes]
         semantic_tokens = {
             token for value in semantic_values if value
@@ -1668,8 +2003,11 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
             and not category and not reference_poi:
         surf = fold(exp_norm)
         base = surf
-        matched = [p for p in kb.pois
-                   if (p.brand and fold(p.brand) == base) or base in fold(p.name)]
+        if brand:
+            matched = [p for p in kb.pois
+                       if p.brand and fold(p.brand) == fold(brand)]
+        else:
+            matched = [p for p in kb.pois if base in fold(p.name)]
         names, seen = [], set()
         for p in matched:
             if p.name not in seen:
@@ -1682,6 +2020,8 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
                 "candidates": names[:4] or [display],
                 "ambiguity_type": "brand_or_branch" if len(cats) < 2 else "brand_or_poi",
             }
+            if brand:
+                ambiguous["brand"] = brand
 
     address_match = _HOUSE_NUMBER_RE.search(exp_norm)
     direct_address = bool(address_match and street and not reference_address)
@@ -1765,6 +2105,8 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
             ent["category"] = category
         if brand:
             ent["brand"] = brand
+        if sub_category and intent != "POI Search":
+            ent["sub_category"] = sub_category
         if dish:
             ent["dish"] = dish
         if district:
@@ -1819,6 +2161,8 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
     normalized = _build_normalized(exp_tokens, spans, kb, intent, ent,
                                    resolved_poi or full_poi, facility_poi)
     conf = _confidence(intent, ent, spans, abbrev_hits)
+    semantic_mentions.extend(_unknown_negative_mentions(
+        qfold, negation_ranges, semantic_mentions))
     debug = {"abbrev": abbrev_hits, "spans": [(s.type, s.canonical) for s in spans],
              "first_token_prefix": ({
                  "type": prefix_hint.kind,
@@ -1827,7 +2171,9 @@ def understand(query: str, kb: KnowledgeBase) -> QueryUnderstanding:
                  "consumed_tokens": prefix_hint.consumed_tokens,
              } if prefix_hint else None),
              "category": category, "attrs": attributes,
-             "excluded_attrs": excluded_attributes}
+             "excluded_attrs": excluded_attributes,
+             "semantic_mentions": [asdict(mention)
+                                   for mention in semantic_mentions]}
     return QueryUnderstanding(raw=raw, normalized_query=normalized, intent=intent,
                               entities={k: v for k, v in ent.items()
                                         if v not in (None, [], {})},
@@ -1839,6 +2185,8 @@ def _build_normalized(exp_tokens, spans, kb, intent, ent, resolved_poi,
     if intent == "Coordinate Search":
         return f"{ent.get('latitude')},{ent.get('longitude')}"
     if intent == "Ambiguous":
+        if ent.get("brand"):
+            return ent["brand"]
         return title_vi(" ".join(_restore_token(t, kb) for t in exp_tokens))
     # POI Search: use the canonical name (correct casing) directly.
     if intent == "POI Search":
@@ -1877,6 +2225,7 @@ def _build_normalized(exp_tokens, spans, kb, intent, ent, resolved_poi,
     # list of category/query-specific templates while keeping unmodelled text
     # available through the reconstruction fallback below.
     category = ent.get("category")
+    sub_category = ent.get("sub_category")
     dish = ent.get("dish")
     location = ent.get("reference_area") or ent.get("reference_poi") \
         or ent.get("reference_address") or ent.get("location")
@@ -1885,13 +2234,14 @@ def _build_normalized(exp_tokens, spans, kb, intent, ent, resolved_poi,
     attrs = ent.get("attributes") or ([ent["attribute"]]
                                       if ent.get("attribute") else [])
     excluded = ent.get("excluded_attributes") or []
-    structured = bool(dish or ent.get("brand") or attrs or excluded or location
+    structured = bool(sub_category or dish or ent.get("brand") or attrs
+                      or excluded or location
                       or ent.get("price_max") or ent.get("open_after")
                       or ent.get("open_before") or ent.get("open_late")
                       or ent.get("open_24h") or ent.get("open_now")
                       or ent.get("latitude") is not None)
     if category and structured:
-        text = f"Quán {dish.lower()}" if dish else category
+        text = f"Quán {dish.lower()}" if dish else sub_category or category
         if ent.get("brand") and fold(ent["brand"]) not in fold(text):
             text += f" {ent['brand']}"
 

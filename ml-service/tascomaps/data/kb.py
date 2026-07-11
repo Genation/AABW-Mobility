@@ -71,6 +71,14 @@ class AbbrevEntry:
     type: str
 
 
+@dataclass(frozen=True)
+class QuerySurface:
+    surface: str
+    canonical: str
+    entity_type: str
+    provenance: str
+
+
 @dataclass
 class PhraseEntry:
     canonical: str          # accented, display-ready
@@ -217,12 +225,14 @@ class KnowledgeBase:
     # Data-derived semantic registries. Keys retain their natural surface form
     # (matching itself is accent-insensitive); values are canonical labels.
     category_terms: Dict[str, str] = field(default_factory=dict)
+    sub_category_terms: Dict[str, Tuple[str, str]] = field(default_factory=dict)
     attribute_terms: Dict[str, str] = field(default_factory=dict)
     dish_terms: Dict[str, str] = field(default_factory=dict)
     dish_heads: Dict[str, str] = field(default_factory=dict)
     dish_categories: Dict[str, str] = field(default_factory=dict)
     dish_head_categories: Dict[str, str] = field(default_factory=dict)
     dish_token_vocab: Dict[str, str] = field(default_factory=dict)
+    query_surfaces: Dict[str, List[QuerySurface]] = field(default_factory=dict)
 
     @property
     def pois_t2(self) -> List[POI]:
@@ -231,6 +241,39 @@ class KnowledgeBase:
 
     def get(self, poi_id: str) -> Optional[POI]:
         return self.poi_by_id.get(poi_id)
+
+    def resolve_query_surface(self, surface: str,
+                              entity_type: str = "") -> Optional[QuerySurface]:
+        candidates = self.query_surfaces.get(fold(surface), [])
+        if entity_type:
+            candidates = [candidate for candidate in candidates
+                          if candidate.entity_type == entity_type]
+        targets = {(fold(candidate.canonical), candidate.entity_type)
+                   for candidate in candidates}
+        return candidates[0] if len(targets) == 1 else None
+
+    def supports_query_surface(self, candidate: QuerySurface) -> bool:
+        """Whether a typed surface points to an existing canonical entity."""
+        target = fold(candidate.canonical)
+        if not target:
+            return False
+        registries = {
+            "brand": self.brands.values(),
+            "city": self.cities.values(),
+            "district": self.districts.values(),
+            "street": self.streets.values(),
+            "category": self.category_terms.values(),
+        }
+        if candidate.entity_type in registries:
+            return target in {fold(value)
+                              for value in registries[candidate.entity_type]}
+        if candidate.entity_type == "poi":
+            return any(target in {fold(poi.name), fold(poi.name_en)}
+                       for poi in self.pois)
+        if candidate.entity_type == "poi_family":
+            return (target in {fold(value) for value in self.brands.values()}
+                    or any(target == fold(poi.name) for poi in self.pois))
+        return False
 
     def resolve(self, poi_id: str, surface: str = "") -> Optional[POI]:
         """Resolve a bare cross-track ID using the matched surface form.

@@ -1,13 +1,13 @@
 # Search Edge-Case Hardening Tasks
 
-- [ ] Shared typed access-surface registry is covered by failing then passing tests.
-- [ ] P9 aliases, evidence ordering, and fallback-only diacritic recovery pass.
-- [ ] P6 negative dish, attribute, and location scopes pass.
-- [ ] P6 preserves unique data-derived subcategories.
-- [ ] P7 never returns known hard dish/subcategory identity violations.
-- [ ] Generic ranking diversifies repeated display identities without merging branches.
-- [ ] Existing P6/P7/P9 regression suites pass.
-- [ ] Full ML test suite passes.
-- [ ] Deterministic edge-case matrix passes in available embedding modes.
-- [ ] Qualitative and data-quality cases are reported separately.
-- [ ] Final diff contains no unrelated or generated files.
+- [x] Shared typed access-surface registry is covered by failing then passing tests.
+- [x] P9 aliases, evidence ordering, and fallback-only diacritic recovery pass.
+- [x] P6 negative dish, attribute, category, place, and location scopes pass.
+- [x] P6 preserves unique data-derived subcategories and their polarity.
+- [x] P7 never returns known hard dish/subcategory identity violations.
+- [x] Generic ranking diversifies repeated display identities without merging branches.
+- [x] Existing P6/P7/P9 regression suites pass.
+- [x] Full ML test suite passes: 169 tests, 0 failures.
+- [x] Deterministic edge-case matrix passes: 22/22 with sentence-transformer and 22/22 with forced TF-IDF.
+- [x] Qualitative/data-quality cases are reported separately in mode-specific matrix artifacts.
+- [x] Final diff contains only ML runtime, focused tests, matrix runner/report, and SDLC status.

@@ -981,6 +981,50 @@ class SemanticSearchEngine:
             duplicate_count += 1
         return deduplicated, duplicate_count
 
+    @staticmethod
+    def _specialization_state(
+            poi: POI, specialization: str,
+            parent_category: Optional[str] = None) -> Optional[bool]:
+        """Return canonical identity evidence for an explicit specialization."""
+        target = normalize(specialization)
+        if not target:
+            return True
+        pattern = r"(?<!\w)" + re.escape(target) + r"(?!\w)"
+        if (parent_category and poi.category
+                and fold(poi.category) != fold(parent_category)):
+            return False
+        identity_text = " ".join(filter(None, (
+            poi.name, poi.name_en, poi.sub_category, *poi.aliases,
+        )))
+        if re.search(pattern, normalize(identity_text)):
+            return True
+        # A populated canonical subtype that names something else is negative
+        # evidence. Sparse records remain unknown rather than becoming matches
+        # through noisy attributes, tags, descriptions, or dense similarity.
+        return False if poi.sub_category else None
+
+    @staticmethod
+    def _diversify_generic_results(
+            results: Sequence[RankedResult], u: QueryUnderstanding) \
+            -> tuple[List[RankedResult], int]:
+        """Limit repeated display identities without merging physical branches."""
+        entities = u.entities or {}
+        if (u.intent not in {"Category Search", "Discovery Search", "Nearby Search"}
+                or entities.get("brand") or entities.get("poi_name")):
+            return list(results), 0
+
+        diversified: List[RankedResult] = []
+        seen = set()
+        suppressed = 0
+        for result in results:
+            key = fold(result.poi.name)
+            if key in seen:
+                suppressed += 1
+                continue
+            seen.add(key)
+            diversified.append(result)
+        return diversified, suppressed
+
     def _grounded_identity_members(self, name: str) -> frozenset[int]:
         """Resolve an exact catalog name to safe cross-track equivalents."""
         key = fold(name)
@@ -1606,6 +1650,21 @@ class SemanticSearchEngine:
                  catalog_duplicate_count) = self._rank_catalog_identity(
                     query, u, catalog_identity, required, excluded,
                     location_context, hard_location, moment, location_u)
+                specialization = e.get("sub_category") or e.get("dish")
+                specialization_unknowns = 0
+                if specialization:
+                    states = [
+                        (result, self._specialization_state(
+                            result.poi, specialization, core_category))
+                        for result in catalog_results
+                    ]
+                    specialization_unknowns = sum(
+                        state is None for _, state in states)
+                    catalog_results = [
+                        result for result, state in states if state is True
+                    ]
+                catalog_results, diversified_count = \
+                    self._diversify_generic_results(catalog_results, u)
                 if catalog_results:
                     strict_count = sum(
                         result.violations == 0 and result.unknowns == 0
@@ -1625,11 +1684,14 @@ class SemanticSearchEngine:
                             "pre_filter_candidate_count": len(catalog_identity),
                             "post_location_candidate_count": catalog_ranked_count,
                             "deduplicated_count": catalog_duplicate_count,
+                            "diversified_count": diversified_count,
                             "retrieved_count": 0,
                             "structured_union_count": 0,
                             "catalog_match_count": len(catalog_identity),
                             "strict_candidate_count": strict_count,
                             "unknown_candidate_count": unknown_count,
+                            "specialization_unknown_candidate_count":
+                                specialization_unknowns,
                             "rank_window": 0,
                             "query_view_count": 0,
                             "location_source": location_context.get("source"),
@@ -1640,7 +1702,9 @@ class SemanticSearchEngine:
                         },
                     }
 
-                if catalog_identity and hard_location:
+                if specialization and not catalog_results:
+                    reason = "no_strict_specialization_candidates"
+                elif catalog_identity and hard_location:
                     reason = "no_strict_location_candidates"
                 elif core_name:
                     reason = "entity_not_in_search_corpus"
@@ -1909,7 +1973,17 @@ class SemanticSearchEngine:
                 if expected_brand in fold(" ".join(
                     (result.poi.brand, result.poi.name)))
             ]
-        if (core_name or core_category) and not results:
+        specialization = e.get("sub_category") or e.get("dish")
+        specialization_unknowns = 0
+        if specialization:
+            states = [
+                (result, self._specialization_state(
+                    result.poi, specialization, wants_category))
+                for result in results
+            ]
+            specialization_unknowns = sum(state is None for _, state in states)
+            results = [result for result, state in states if state is True]
+        if (core_name or core_category) and not results and not specialization:
             return {
                 **base_response,
                 "results": [],
@@ -1919,6 +1993,21 @@ class SemanticSearchEngine:
                     "strict_candidate_count": 0,
                     "reason": ("entity_not_retrieved" if core_name
                                else "no_strict_category_candidates"),
+                    "hard_location": hard_location,
+                    "location_source": location_context.get("source"),
+                },
+            }
+        if specialization and not results:
+            return {
+                **base_response,
+                "results": [],
+                "diagnostics": {
+                    "status": "no_matches", "candidate_count": 0,
+                    "pre_filter_candidate_count": pre_filter_count,
+                    "strict_candidate_count": 0,
+                    "specialization_unknown_candidate_count":
+                        specialization_unknowns,
+                    "reason": "no_strict_specialization_candidates",
                     "hard_location": hard_location,
                     "location_source": location_context.get("source"),
                 },
@@ -1945,6 +2034,7 @@ class SemanticSearchEngine:
         # Multiple sources can describe the same physical place, while separate
         # branches can legitimately share a name.
         results, duplicate_count = self._deduplicate_ranked(results)
+        results, diversified_count = self._diversify_generic_results(results, u)
 
         strict_count = sum(result.violations == 0 and result.unknowns == 0
                            for result in results)
@@ -1957,10 +2047,12 @@ class SemanticSearchEngine:
             "candidate_count": len(results),
             "pre_filter_candidate_count": pre_filter_count,
             "deduplicated_count": duplicate_count,
+            "diversified_count": diversified_count,
             "retrieved_count": len(fused),
             "structured_union_count": structured_union_count,
             "strict_candidate_count": strict_count,
             "unknown_candidate_count": unknown_count,
+            "specialization_unknown_candidate_count": specialization_unknowns,
             "rank_window": rank_window,
             "query_view_count": len(views),
             "location_source": location_context.get("source"),
