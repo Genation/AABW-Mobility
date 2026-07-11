@@ -1849,6 +1849,13 @@ def _build_normalized(exp_tokens, spans, kb, intent, ent, resolved_poi,
                 return f"{base}, {ent['district']}"
             return base
 
+    # Once a category-only query is grounded, its canonical entity is the
+    # source of truth. Reconstructing fuzzy input here would reintroduce the
+    # typo that category detection already resolved.
+    if (intent == "Category Search" and ent.get("category")
+            and set(ent) == {"category"}):
+        return ent["category"]
+
     reconstructed = _reconstruct_tokens(exp_tokens, spans, kb)
 
     if intent == "Navigation":

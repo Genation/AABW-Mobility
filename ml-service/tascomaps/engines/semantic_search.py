@@ -1022,10 +1022,37 @@ class SemanticSearchEngine:
         name = raw_name
         category = None
         raw_category = str(entities.get("category") or "").strip() or None
+        grounded_brand_category = bool(
+            u.intent == "Brand Category Search" and entities.get("brand"))
         if (raw_category and u.intent in _CORE_CATEGORY_INTENTS
-                and self._category_is_core(u.raw, u, raw_category)):
+                and (grounded_brand_category
+                     or self._category_is_core(u.raw, u, raw_category))):
             category = raw_category
         return name, category
+
+    def _actionable_brand_ambiguity(
+            self, u: QueryUnderstanding) -> Optional[QueryUnderstanding]:
+        """Ground a bare multi-branch brand for ranked venue search only."""
+        entities = u.entities or {}
+        if (u.intent != "Ambiguous"
+                or entities.get("ambiguity_type") != "brand_or_branch"):
+            return None
+
+        query_key = fold(u.normalized_query or u.raw)
+        grounded = {
+            (poi.brand, poi.category)
+            for poi in self.catalog_pois
+            if poi.brand and fold(poi.brand) == query_key
+        }
+        if len(grounded) != 1:
+            return None
+
+        brand, category = grounded.pop()
+        return replace(
+            u,
+            intent="Brand Category Search",
+            entities={"brand": brand, "category": category},
+        )
 
     def _category_is_core(
             self, query: str, u: QueryUnderstanding, category: str) -> bool:
@@ -1468,7 +1495,25 @@ class SemanticSearchEngine:
         query = str(query or "")[:512]
         n_docs = len(self.pois)
         top_k = min(max(1, int(top_k or 1)), min(50, n_docs or 1))
-        u = understand(query, self.kb)
+        public_u = understand(query, self.kb)
+        u = public_u
+        public_entities = public_u.entities or {}
+        ambiguity_type = public_entities.get("ambiguity_type")
+        if (fold(query) and n_docs and public_u.intent == "Ambiguous"
+                and ambiguity_type != "no_match"):
+            actionable = self._actionable_brand_ambiguity(public_u)
+            if actionable is None:
+                return {
+                    "query": query,
+                    "understanding": public_u.to_dict(),
+                    "required_attributes": [],
+                    "excluded_attributes": [],
+                    "results": [],
+                    "diagnostics": {
+                        "status": "ambiguous_query", "candidate_count": 0,
+                    },
+                }
+            u = actionable
         e = u.entities or {}
         required = self._required_attributes(u)
         excluded = self._excluded_attributes(query, u, required)
@@ -1477,17 +1522,13 @@ class SemanticSearchEngine:
 
         base_response = {
             "query": query,
-            "understanding": u.to_dict(),
+            "understanding": public_u.to_dict(),
             "required_attributes": required,
             "excluded_attributes": excluded,
         }
         if not fold(query) or not n_docs:
             return {**base_response, "results": [],
                     "diagnostics": {"status": "empty_query", "candidate_count": 0}}
-        ambiguity_type = e.get("ambiguity_type")
-        if u.intent == "Ambiguous" and ambiguity_type != "no_match":
-            return {**base_response, "results": [],
-                    "diagnostics": {"status": "ambiguous_query", "candidate_count": 0}}
         if (u.intent == "Navigation" and e.get("route_destination")
                 and not (e.get("poi_name") or e.get("category"))):
             # A city-to-city (or district-to-district) route is already fully
