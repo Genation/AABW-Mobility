@@ -12,7 +12,7 @@ worktrees/
 .idea/workspace.xml
 .idea/usage.statistics.xml
 .idea/shelf
-
+ml-service/datasets
 # deps
 node_modules/
 
