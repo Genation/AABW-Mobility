@@ -1,13 +1,13 @@
 import { Activity, Clock, Layers } from "lucide-react";
-import { TRACKS } from "@/lib/constants";
+import { ACTIVE_TRACKS } from "@/lib/constants";
 import styles from "./stats-bar.module.css";
 
 /**
- * Stats bar — Total, Active, Coming Soon counts.
+ * Stats bar — Total, Active, Coming Soon counts for the live services.
  */
 export function StatsBar() {
-  const total = TRACKS.length;
-  const active = TRACKS.filter((t) => t.status === "active").length;
+  const total = ACTIVE_TRACKS.length;
+  const active = ACTIVE_TRACKS.filter((t) => t.status === "active").length;
   const comingSoon = total - active;
 
   return (

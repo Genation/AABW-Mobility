@@ -86,6 +86,9 @@ function transferSuggestions(
       display: sug.display,
       type: sug.type,
       score: sug.score,
+      lat: sug.lat,
+      lng: sug.lng,
+      category: sug.category,
     };
     for (let i = 2; i <= sug.text.length; i++) {
       trie.insert(sug.text.substring(0, i), suggestion);
