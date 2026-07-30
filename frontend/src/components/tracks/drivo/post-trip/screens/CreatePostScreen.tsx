@@ -49,6 +49,7 @@ export function CreatePostScreen({ onSubmit, onCancel, prefill }: Props) {
   const handleSubmit = () => {
     const now = new Date().toISOString();
     const post: PostTripPost = {
+      // TODO: Replace Date.now().toString(36) with crypto.randomUUID() in production
       id: `post-${Date.now().toString(36)}`,
       author: { ...mockUsers["nguyen-minh-tuan"], id: "current-user" },
       title: title || "Chuyến đi mới",
@@ -90,14 +91,18 @@ export function CreatePostScreen({ onSubmit, onCancel, prefill }: Props) {
           className={styles.cancelButton}
           onClick={onCancel}
           type="button"
+          aria-label="Hủy"
         >
           <X size={24} />
         </button>
       </div>
 
       <div className={styles.formGroup}>
-        <label className={styles.formLabel}>Tiêu đề</label>
+        <label className={styles.formLabel} htmlFor="post-title">
+          Tiêu đề
+        </label>
         <input
+          id="post-title"
           className={styles.formInput}
           placeholder="Đặt tên cho chuyến đi..."
           value={title}
@@ -106,19 +111,36 @@ export function CreatePostScreen({ onSubmit, onCancel, prefill }: Props) {
       </div>
 
       <div className={styles.formGroup}>
-        <label className={styles.formLabel}>Mô tả</label>
+        <label className={styles.formLabel} htmlFor="post-desc">
+          Mô tả
+        </label>
         <textarea
+          id="post-desc"
           className={styles.formTextarea}
           placeholder="Chia sẻ cảm nhận của bạn về chuyến đi..."
           value={description}
+          maxLength={500}
           onChange={(e) => setDescription(e.target.value)}
         />
+        <div
+          style={{
+            textAlign: "right",
+            fontSize: "var(--text-xs)",
+            color: "var(--color-text-muted)",
+            marginTop: "var(--space-1)",
+          }}
+        >
+          {description.length}/500
+        </div>
       </div>
 
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Điểm đi</label>
+          <label className={styles.formLabel} htmlFor="post-start">
+            Điểm đi
+          </label>
           <input
+            id="post-start"
             className={styles.formInput}
             placeholder="TP. Hồ Chí Minh"
             value={startName}
@@ -126,8 +148,11 @@ export function CreatePostScreen({ onSubmit, onCancel, prefill }: Props) {
           />
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Điểm đến</label>
+          <label className={styles.formLabel} htmlFor="post-end">
+            Điểm đến
+          </label>
           <input
+            id="post-end"
             className={styles.formInput}
             placeholder="Đà Lạt"
             value={endName}
@@ -138,8 +163,11 @@ export function CreatePostScreen({ onSubmit, onCancel, prefill }: Props) {
 
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Tổng km</label>
+          <label className={styles.formLabel} htmlFor="post-km">
+            Tổng km
+          </label>
           <input
+            id="post-km"
             className={styles.formInput}
             type="number"
             placeholder="320"
@@ -148,8 +176,11 @@ export function CreatePostScreen({ onSubmit, onCancel, prefill }: Props) {
           />
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Thời gian</label>
+          <label className={styles.formLabel} htmlFor="post-time">
+            Thời gian
+          </label>
           <input
+            id="post-time"
             className={styles.formInput}
             placeholder="6h 30p"
             value={movingTime}
@@ -160,8 +191,11 @@ export function CreatePostScreen({ onSubmit, onCancel, prefill }: Props) {
 
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Tốc độ TB (km/h)</label>
+          <label className={styles.formLabel} htmlFor="post-speed">
+            Tốc độ TB (km/h)
+          </label>
           <input
+            id="post-speed"
             className={styles.formInput}
             type="number"
             placeholder="49"
@@ -170,8 +204,11 @@ export function CreatePostScreen({ onSubmit, onCancel, prefill }: Props) {
           />
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Nhiên liệu (L)</label>
+          <label className={styles.formLabel} htmlFor="post-fuel">
+            Nhiên liệu (L)
+          </label>
           <input
+            id="post-fuel"
             className={styles.formInput}
             type="number"
             placeholder="28"
@@ -182,8 +219,11 @@ export function CreatePostScreen({ onSubmit, onCancel, prefill }: Props) {
       </div>
 
       <div className={styles.formGroup}>
-        <label className={styles.formLabel}>Tags (phân cách bằng dấu phẩy)</label>
+        <label className={styles.formLabel} htmlFor="post-tags">
+          Tags (phân cách bằng dấu phẩy)
+        </label>
         <input
+          id="post-tags"
           className={styles.formInput}
           placeholder="#phượt, #đà_lạt, #weekend"
           value={tags}
@@ -192,8 +232,11 @@ export function CreatePostScreen({ onSubmit, onCancel, prefill }: Props) {
       </div>
 
       <div className={styles.formGroup}>
-        <label className={styles.formLabel}>Tâm trạng</label>
+        <label className={styles.formLabel} htmlFor="post-mood">
+          Tâm trạng
+        </label>
         <select
+          id="post-mood"
           className={styles.formSelect}
           value={mood}
           onChange={(e) => setMood(e.target.value)}
@@ -208,21 +251,27 @@ export function CreatePostScreen({ onSubmit, onCancel, prefill }: Props) {
 
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>Ảnh bìa</label>
-        <div className={styles.photoPicker}>
-          {COVER_OPTIONS.map((photo) => (
-            <div
-              key={photo}
-              className={[
-                styles.photoOption,
-                coverPhoto === photo ? styles.photoOptionSelected : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onClick={() => setCoverPhoto(photo)}
-            >
-              <img src={photo} alt="" />
-            </div>
-          ))}
+        <div className={styles.photoPicker} role="radiogroup" aria-label="Chọn ảnh bìa">
+          {COVER_OPTIONS.map((photo) => {
+            const isSelected = coverPhoto === photo;
+            return (
+              <button
+                key={photo}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                className={[
+                  styles.photoOption,
+                  isSelected ? styles.photoOptionSelected : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => setCoverPhoto(photo)}
+              >
+                <img src={photo} alt={`Ảnh bìa ${photo.split("-").pop()?.replace(/\.[^.]+$/, "")}`} loading="lazy" />
+              </button>
+            );
+          })}
         </div>
       </div>
 

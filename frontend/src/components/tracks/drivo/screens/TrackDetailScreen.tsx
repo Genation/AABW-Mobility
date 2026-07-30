@@ -19,11 +19,12 @@ interface Props {
   /** Effective start point (previous track's real end, or the trip's start for track 0) — never a stored copy. */
   effectiveStartLocation: DrivoDestination | null;
   route: RouteInfo | null;
-  routePointCount: number | null;
+  /** Coordinate-value key the current route.legs was actually fetched for. */
+  routeCoordinateKey: string | null;
   routeDegraded: boolean;
   trackPointRange: TrackPointRange | undefined;
-  /** Current buildOrderedTripPoints(plan).length — staleness check against routePointCount. */
-  currentPointCount: number;
+  /** Current buildOrderedTripPointsKey(plan) — staleness check against routeCoordinateKey. */
+  currentCoordinateKey: string;
 }
 
 function formatDistance(m: number): string {
@@ -36,10 +37,10 @@ export function TrackDetailScreen({
   onDone,
   effectiveStartLocation,
   route,
-  routePointCount,
+  routeCoordinateKey,
   routeDegraded,
   trackPointRange,
-  currentPointCount,
+  currentCoordinateKey,
 }: Props) {
   const [crosshair, setCrosshair] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
@@ -48,7 +49,7 @@ export function TrackDetailScreen({
   const [addAfterId, setAddAfterId] = useState<string | null>(null);
 
   const isGated = track.endLocation == null;
-  const isRouteFresh = route != null && routePointCount === currentPointCount;
+  const isRouteFresh = route != null && routeCoordinateKey === currentCoordinateKey;
 
   const addDestination = useCallback((dest: DrivoDestination) => {
     const newDests = [...track.destinations];
@@ -111,7 +112,14 @@ export function TrackDetailScreen({
   }, [track, onUpdateTrack]);
 
   const stopItems: StopItem[] = useMemo(() => {
+    // A point that exactly matches its predecessor is dropped by buildOrderedTripPoints'
+    // dedup — mirror that rule here (same adjacency, since this track's own sequence is
+    // a contiguous sub-range of the global deduped list) so pointIndex never drifts out
+    // of sync with route.legs when a duplicate-coordinate stop exists.
     function distanceFrom(pointIndex: number, prev: DrivoDestination | undefined, curr: DrivoDestination): { text?: string; degraded: boolean } {
+      if (prev && prev.lat === curr.lat && prev.lng === curr.lng) {
+        return { text: formatDistance(0), degraded: false };
+      }
       if (isRouteFresh && trackPointRange && route) {
         const { distanceMeters } = sliceRouteRange(route, pointIndex, pointIndex + 1);
         return { text: formatDistance(distanceMeters), degraded: false };
@@ -132,9 +140,10 @@ export function TrackDetailScreen({
     }
 
     for (const d of track.destinations) {
+      const isNewPoint = !prev || prev.lat !== d.lat || prev.lng !== d.lng;
       const { text, degraded } = distanceFrom(pointIndex, prev, d);
       items.push({ id: d.id, label: d.name, kind: "waypoint", destination: d, distanceFromPrev: text, degraded: !!text && degraded });
-      pointIndex += 1;
+      if (isNewPoint) pointIndex += 1;
       prev = d;
     }
 

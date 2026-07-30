@@ -24,6 +24,7 @@ export function TimelineStopList({ stops }: Props) {
                 src={stop.photo}
                 alt={stop.name}
                 className={styles.timelineStopPhoto}
+                loading="lazy"
               />
             )}
           </div>

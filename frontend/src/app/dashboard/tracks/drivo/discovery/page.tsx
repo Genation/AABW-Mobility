@@ -9,8 +9,7 @@ export default function DiscoveryPage() {
     <div
       style={{
         width: "100%",
-        height:
-          "calc(100dvh - var(--header-height) - var(--bottom-nav-height))",
+        height: "calc(100dvh - var(--bottom-nav-height) - var(--safe-area-bottom, 0px))",
         position: "relative",
         overflow: "hidden",
       }}

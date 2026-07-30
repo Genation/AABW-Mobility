@@ -23,24 +23,34 @@ export function SocialBar({ post, onToggleLike, isLiked }: Props) {
           onToggleLike();
         }}
         type="button"
+        aria-label={isLiked ? "Bỏ thích" : "Thích"}
+        aria-pressed={isLiked}
       >
         <Heart size={18} fill={isLiked ? "currentColor" : "none"} />
         <span className={styles.socialCount}>
           {post.socialCounts.likes + (isLiked ? 1 : 0)}
         </span>
       </button>
-      <div className={styles.socialAction}>
+      <button
+        className={styles.socialAction}
+        type="button"
+        aria-label="Bình luận"
+      >
         <MessageCircle size={18} />
         <span className={styles.socialCount}>
           {post.socialCounts.comments}
         </span>
-      </div>
-      <div className={styles.socialAction}>
+      </button>
+      <button
+        className={styles.socialAction}
+        type="button"
+        aria-label="Chia sẻ"
+      >
         <Share2 size={18} />
         <span className={styles.socialCount}>
           {post.socialCounts.shares}
         </span>
-      </div>
+      </button>
     </div>
   );
 }

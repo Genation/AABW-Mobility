@@ -20,14 +20,14 @@ export function DiscoveryFeedScreen({
 }: Props) {
   const [query, setQuery] = useState("");
   const [activeTags, setActiveTags] = useState<string[]>([]);
-  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
+      const q = query.toLowerCase();
       const matchesQuery =
-        !query ||
-        post.title.toLowerCase().includes(query.toLowerCase()) ||
-        post.description.toLowerCase().includes(query.toLowerCase());
+        !q ||
+        post.title.toLowerCase().includes(q) ||
+        post.description.toLowerCase().includes(q);
       const matchesTags =
         activeTags.length === 0 ||
         activeTags.some((t) => post.tags.includes(t));
@@ -39,18 +39,6 @@ export function DiscoveryFeedScreen({
     setActiveTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
-  };
-
-  const handleToggleLike = (postId: string) => {
-    setLikedPosts((prev) => {
-      const next = new Set(prev);
-      if (next.has(postId)) {
-        next.delete(postId);
-      } else {
-        next.add(postId);
-      }
-      return next;
-    });
   };
 
   return (
@@ -73,24 +61,41 @@ export function DiscoveryFeedScreen({
           </div>
         </div>
       ) : (
-        filteredPosts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            onClick={() => onPostClick(post.id)}
-            onToggleLike={() => handleToggleLike(post.id)}
-            isLiked={likedPosts.has(post.id)}
-          />
-        ))
+        <div className={styles.masonryGrid}>
+          <div className={styles.masonryCol}>
+            {filteredPosts
+              .filter((_, i) => i % 2 === 0)
+              .map((post, idx) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  index={idx}
+                  onClick={() => onPostClick(post.id)}
+                />
+              ))}
+          </div>
+          <div className={styles.masonryCol}>
+            {filteredPosts
+              .filter((_, i) => i % 2 === 1)
+              .map((post, idx) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  index={idx}
+                  onClick={() => onPostClick(post.id)}
+                />
+              ))}
+          </div>
+        </div>
       )}
 
       <button
         className={styles.fabButton}
         onClick={onCreateClick}
-        title="Tạo bài đăng mới"
+        aria-label="Tạo bài đăng mới"
         type="button"
       >
-        <Plus size={28} />
+        <Plus size={26} />
       </button>
     </div>
   );

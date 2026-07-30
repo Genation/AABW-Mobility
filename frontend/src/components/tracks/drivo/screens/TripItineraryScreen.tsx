@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { TripPlan, DrivoTrack } from "../types";
 import { haversineMeters, sliceRouteRange, RouteInfo } from "@/lib/osrm";
-import { getTrackPointRanges, buildOrderedTripPoints } from "../track-chain-utils";
+import { getTrackPointRanges, buildOrderedTripPointsKey, getEffectiveTrackStart, getEffectiveTrackEnd } from "../track-chain-utils";
 import { TRACK_COLORS } from "../track-colors";
 import { Plus, Navigation, Clock, ArrowLeft, GripVertical, Trash2, PlusCircle } from "lucide-react";
 import styles from "../drivo.module.css";
@@ -27,7 +27,7 @@ interface Props {
   onDeleteTrack?: (id: string) => void;
   onReorder?: (fromIndex: number, toIndex: number) => void;
   route: RouteInfo | null;
-  routePointCount: number | null;
+  routeCoordinateKey: string | null;
   routeDegraded: boolean;
 }
 
@@ -40,26 +40,25 @@ export function TripItineraryScreen({
   onDeleteTrack,
   onReorder,
   route,
-  routePointCount,
+  routeCoordinateKey,
   routeDegraded,
 }: Props) {
   const trackPointRanges = useMemo(() => getTrackPointRanges(plan), [plan]);
-  const currentPointCount = useMemo(() => buildOrderedTripPoints(plan).length, [plan]);
-  const isRouteFresh = route != null && routePointCount === currentPointCount;
+  const currentCoordinateKey = useMemo(() => buildOrderedTripPointsKey(plan), [plan]);
+  const isRouteFresh = route != null && routeCoordinateKey === currentCoordinateKey;
 
   const totalDistance = useMemo(() => {
     if (isRouteFresh && route) return route.distanceMeters;
     let total = 0;
     for (let i = 0; i < plan.tracks.length; i++) {
-      const t = plan.tracks[i];
-      const start = t.startLocation ?? (i > 0 ? plan.tracks[i - 1].endLocation : plan.startLocation);
-      const end = t.endLocation ?? (i < plan.tracks.length - 1 ? plan.tracks[i + 1].startLocation : plan.endLocation);
+      const start = getEffectiveTrackStart(plan, i);
+      const end = getEffectiveTrackEnd(plan, i);
       if (start?.lat != null && start?.lng != null && end?.lat != null && end?.lng != null) {
         total += haversineMeters(start.lat, start.lng, end.lat, end.lng);
       }
     }
     return total;
-  }, [isRouteFresh, route, plan.tracks, plan.startLocation, plan.endLocation]);
+  }, [isRouteFresh, route, plan]);
   const totalDistanceDegraded = !isRouteFresh && routeDegraded && totalDistance > 0;
 
   return (
@@ -98,8 +97,8 @@ export function TripItineraryScreen({
           </div>
         ) : (
           plan.tracks.map((track, i) => {
-            const start = track.startLocation ?? (i > 0 ? plan.tracks[i - 1].endLocation : plan.startLocation);
-            const end = track.endLocation ?? (i < plan.tracks.length - 1 ? plan.tracks[i + 1].startLocation : plan.endLocation);
+            const start = getEffectiveTrackStart(plan, i);
+            const end = getEffectiveTrackEnd(plan, i);
             let distStr = "";
             let distDegraded = false;
             const range = trackPointRanges[i];

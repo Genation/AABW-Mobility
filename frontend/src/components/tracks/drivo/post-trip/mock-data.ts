@@ -440,6 +440,72 @@ export const mockPosts: PostTripPost[] = [
 
 export const allTags = [...new Set(mockPosts.flatMap((p) => p.tags))];
 
+const COVER_POOL = [
+  "/trip-image-1.jpg",
+  "/trip-image-2.jpg",
+  "/trip-image-3.jpg",
+  "/trip-image-4.jpg",
+  "/trip-image-5.jpeg",
+  "/trip-image-6.webp",
+  "/trip-image-7.webp",
+  "/trip-image-8.png",
+];
+
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomPick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function daysAgo(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString();
+}
+
+export function generateInfiniteFeed(count: number = 60): PostTripPost[] {
+  const posts: PostTripPost[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const template = mockPosts[i % mockPosts.length];
+    const variation = Math.floor(i / mockPosts.length);
+
+    posts.push({
+      ...template,
+      id: `post-gen-${i}`,
+      author: {
+        ...template.author,
+        id: `${template.author.id}-${i}`,
+      },
+      title: variation > 0
+        ? `${template.title} (Phần ${variation + 1})`
+        : template.title,
+      coverPhoto: randomPick(COVER_POOL),
+      photos: [randomPick(COVER_POOL), randomPick(COVER_POOL)],
+      stats: {
+        ...template.stats,
+        totalKm: template.stats.totalKm + randomInt(-20, 30),
+        totalStops: Math.max(2, template.stats.totalStops + randomInt(-1, 2)),
+      },
+      stops: template.stops.map((s, si) => ({
+        ...s,
+        id: `s-gen-${i}-${si}`,
+      })),
+      socialCounts: {
+        likes: template.socialCounts.likes + randomInt(-50, 100),
+        comments: template.socialCounts.comments + randomInt(-10, 20),
+        shares: template.socialCounts.shares + randomInt(-5, 10),
+      },
+      publishedAt: daysAgo(randomInt(0, 30 * (variation + 1))),
+      tripDate: template.tripDate,
+    });
+  }
+
+  return posts;
+}
+
 export function convertTripPlanToPostForm(tripPlan: {
   name: string;
   startLocation: { name: string } | null;

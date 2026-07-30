@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -20,7 +20,10 @@ export default function DashboardLayout({
 }) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isDrivoPage = pathname.startsWith("/dashboard/tracks/drivo");
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -33,10 +36,11 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className={styles.layout}>
+    <div className={`${styles.layout} ${isDrivoPage ? styles.drivoLayout : ""}`}>
       <Header
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+        hideOnMobile={isDrivoPage}
       />
       <div className={styles.body}>
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />

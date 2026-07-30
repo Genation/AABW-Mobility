@@ -93,7 +93,7 @@ export function DrivoApp() {
   const [plan, setPlan] = useState<TripPlan>(DEFAULT_PLAN);
   const [activeTrackId, setActiveTrackId] = useState<string | null>(null);
   const [route, setRoute] = useState<RouteInfo | null>(null);
-  const [routePointCount, setRoutePointCount] = useState<number | null>(null);
+  const [routeCoordinateKey, setRouteCoordinateKey] = useState<string | null>(null);
   const [routeDegraded, setRouteDegraded] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -203,7 +203,7 @@ export function DrivoApp() {
     try {
       const r = await fetchOsrmRoute(points, ac.signal);
       setRoute(r);
-      setRoutePointCount(points.length);
+      setRouteCoordinateKey(points.map(p => `${p.lat},${p.lng}`).join("|"));
       routeFailureCountRef.current = 0;
       setRouteDegraded(false);
     } catch (e) {
@@ -234,7 +234,7 @@ export function DrivoApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coordinateKey, plan.startLocation, plan.endLocation, calculateRoute]);
 
-  const isRouteFresh = route != null && routePointCount === orderedPoints.length;
+  const isRouteFresh = route != null && routeCoordinateKey === coordinateKey;
 
   const trackSegments = useMemo(() => {
     if (!isRouteFresh || !route) return [];
@@ -302,7 +302,7 @@ export function DrivoApp() {
                 onCancelTrip={handleCancelTrip}
                 activeTrackId={activeTrackId}
                 route={route}
-                routePointCount={routePointCount}
+                routeCoordinateKey={routeCoordinateKey}
                 routeDegraded={routeDegraded}
                 onDeleteTrack={(id) => {
                   setPlan((prev) => ({
@@ -331,10 +331,10 @@ export function DrivoApp() {
           onDone={handleDoneTrack}
           effectiveStartLocation={getEffectiveTrackStart(plan, activeTrackIndex)}
           route={route}
-          routePointCount={routePointCount}
+          routeCoordinateKey={routeCoordinateKey}
           routeDegraded={routeDegraded}
           trackPointRange={trackPointRanges.find(r => r.trackId === activeTrack.id)}
-          currentPointCount={orderedPoints.length}
+          currentCoordinateKey={coordinateKey}
         />
       )}
     </div>

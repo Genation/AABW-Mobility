@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Layers } from "lucide-react";
+import { LayoutDashboard, Compass } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import styles from "./sidebar.module.css";
 
@@ -13,7 +13,7 @@ interface SidebarProps {
 
 const NAV_ITEMS = [
   { href: ROUTES.DASHBOARD, label: "Dashboard", icon: LayoutDashboard },
-  { href: "#tracks", label: "Tracks", icon: Layers, disabled: true },
+  { href: "/dashboard/tracks/drivo/discovery", label: "Discovery", icon: Compass },
 ];
 
 /**
@@ -43,15 +43,6 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
-
-              if (item.disabled) {
-                return (
-                  <span key={item.label} className={styles.navItemDisabled}>
-                    <Icon size={18} />
-                    <span>{item.label}</span>
-                  </span>
-                );
-              }
 
               return (
                 <Link

@@ -27,6 +27,10 @@ export function AuthorHeader({ author, publishedAt }: Props) {
         src={author.avatar}
         alt={author.name}
         className={styles.authorAvatar}
+        loading="lazy"
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = "none";
+        }}
       />
       <div className={styles.authorInfo}>
         <div className={styles.authorName}>{author.name}</div>

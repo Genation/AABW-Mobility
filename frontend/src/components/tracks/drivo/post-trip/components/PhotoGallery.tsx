@@ -14,6 +14,7 @@ export function PhotoGallery({ photos, onPhotoClick }: Props) {
           src={photo}
           alt={`Ảnh ${index + 1}`}
           className={styles.photoItem}
+          loading="lazy"
           onClick={() => onPhotoClick(index)}
         />
       ))}

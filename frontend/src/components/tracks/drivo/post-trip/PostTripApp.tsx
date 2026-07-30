@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { PostTripPost, PostTripScreen } from "./types";
-import { mockPosts } from "./mock-data";
+import { generateInfiniteFeed } from "./mock-data";
 import { DiscoveryFeedScreen } from "./screens/DiscoveryFeedScreen";
 import { PostDetailScreen } from "./screens/PostDetailScreen";
 import { CreatePostScreen } from "./screens/CreatePostScreen";
@@ -10,7 +10,7 @@ import styles from "./post-trip.module.css";
 
 export function PostTripApp() {
   const [screen, setScreen] = useState<PostTripScreen>("FEED");
-  const [posts, setPosts] = useState<PostTripPost[]>(mockPosts);
+  const [posts, setPosts] = useState<PostTripPost[]>(() => generateInfiniteFeed(60));
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
   const selectedPost = posts.find((p) => p.id === selectedPostId) ?? null;

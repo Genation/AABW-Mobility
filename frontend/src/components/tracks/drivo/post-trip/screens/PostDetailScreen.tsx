@@ -4,7 +4,6 @@ import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import type { PostTripPost } from "../types";
 import { PostMap } from "../components/PostMap";
-
 import { TripStatsPanel } from "../components/TripStatsPanel";
 import { TimelineStopList } from "../components/TimelineStopList";
 import { PhotoGallery } from "../components/PhotoGallery";
@@ -30,36 +29,56 @@ export function PostDetailScreen({ post, onBack }: Props) {
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === "Enter") onBack();
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onBack();
+          }
         }}
+        aria-label="Quay lại khám phá"
       >
         <ChevronLeft size={20} />
         Khám phá
       </div>
 
-      <PostMap route={post.route} mapId={post.id} />
+      <img
+        src={post.coverPhoto}
+        alt={post.title}
+        className={styles.detailCover}
+        loading="lazy"
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = "none";
+        }}
+      />
 
       <div className={styles.detailAuthor}>
         <img
           src={post.author.avatar}
           alt={post.author.name}
           className={styles.detailAuthorAvatar}
+          loading="lazy"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = "none";
+          }}
         />
         <div className={styles.authorInfo}>
           <div className={styles.authorName}>{post.author.name}</div>
           <div className={styles.authorMeta}>
             <span className={styles.authorVehicle}>{post.author.vehicle}</span>
+            <span className={styles.authorTime}>Ngày đi: {post.tripDate}</span>
           </div>
         </div>
       </div>
 
       <div className={styles.detailTitle}>{post.title}</div>
-      <div className={styles.detailDate}>Ngày đi: {post.tripDate}</div>
 
       <div className={styles.detailBody}>
         <TripStatsPanel stats={post.stats} />
 
+        <TagRow tags={post.tags} interactive={false} />
+
         <div className={styles.detailDescription}>{post.description}</div>
+
+        <PostMap route={post.route} mapId={post.id} />
 
         <div className={styles.sectionTitle}>Hành trình</div>
         <TimelineStopList stops={post.stops} />
@@ -70,7 +89,6 @@ export function PostDetailScreen({ post, onBack }: Props) {
           onPhotoClick={(index) => setLightboxIndex(index)}
         />
 
-        <TagRow tags={post.tags} />
         <SocialBar
           post={post}
           onToggleLike={() => setIsLiked((v) => !v)}

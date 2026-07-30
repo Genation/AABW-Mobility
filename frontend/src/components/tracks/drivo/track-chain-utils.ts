@@ -27,28 +27,46 @@ export function getEffectiveTrackEnd(
   );
 }
 
+interface OwnedPoint {
+  point: DrivoDestination;
+  /** Index into plan.tracks that added this point, or null for plan.startLocation/endLocation. */
+  trackIndex: number | null;
+}
+
 /**
  * The single ordered, deduped point list for the whole trip: plan.startLocation,
  * then each track's destinations + endLocation in order, then plan.endLocation.
  * A point is dropped if it exactly matches the immediately preceding one (same
  * lat/lng) — e.g. a zero-destination track whose endLocation coincides with its
- * start. This is the ONLY place this dedup logic lives; both the OSRM call site
- * and getTrackPointRanges must use it so they can never disagree on indices.
+ * start, or a duplicate destination added twice in a row. This is the ONLY place
+ * this dedup logic lives — buildOrderedTripPoints, buildOrderedTripPointsKey, and
+ * getTrackPointRanges all derive from it so they can never disagree on indices.
  */
-export function buildOrderedTripPoints(plan: TripPlan): DrivoDestination[] {
-  const raw: DrivoDestination[] = [];
-  if (plan.startLocation) raw.push(plan.startLocation);
-  for (const track of plan.tracks) {
-    for (const dest of track.destinations) raw.push(dest);
-    if (track.endLocation) raw.push(track.endLocation);
-  }
-  if (plan.endLocation) raw.push(plan.endLocation);
+function buildOwnedPoints(plan: TripPlan): OwnedPoint[] {
+  const raw: OwnedPoint[] = [];
+  if (plan.startLocation) raw.push({ point: plan.startLocation, trackIndex: null });
+  plan.tracks.forEach((track, i) => {
+    for (const dest of track.destinations) raw.push({ point: dest, trackIndex: i });
+    if (track.endLocation) raw.push({ point: track.endLocation, trackIndex: i });
+  });
+  if (plan.endLocation) raw.push({ point: plan.endLocation, trackIndex: null });
 
-  return raw.filter((p, i) => {
+  return raw.filter((o, i) => {
     if (i === 0) return true;
     const prev = raw[i - 1];
-    return p.lat !== prev.lat || p.lng !== prev.lng;
+    return o.point.lat !== prev.point.lat || o.point.lng !== prev.point.lng;
   });
+}
+
+export function buildOrderedTripPoints(plan: TripPlan): DrivoDestination[] {
+  return buildOwnedPoints(plan).map((o) => o.point);
+}
+
+/** Coordinate-value fingerprint of buildOrderedTripPoints(plan) — changes only when actual geometry changes, unlike a length/reference comparison. */
+export function buildOrderedTripPointsKey(plan: TripPlan): string {
+  return buildOwnedPoints(plan)
+    .map((o) => `${o.point.lat},${o.point.lng}`)
+    .join("|");
 }
 
 export interface TrackPointRange {
@@ -66,27 +84,14 @@ export interface TrackPointRange {
  * adjacent duplicates), so a single forward-only pointer is sufficient.
  */
 export function getTrackPointRanges(plan: TripPlan): TrackPointRange[] {
-  type Owned = { point: DrivoDestination; trackIndex: number | null };
-  const raw: Owned[] = [];
-  if (plan.startLocation) raw.push({ point: plan.startLocation, trackIndex: null });
-  plan.tracks.forEach((track, i) => {
-    for (const dest of track.destinations) raw.push({ point: dest, trackIndex: i });
-    if (track.endLocation) raw.push({ point: track.endLocation, trackIndex: i });
-  });
-  if (plan.endLocation) raw.push({ point: plan.endLocation, trackIndex: null });
-
-  const deduped: Owned[] = raw.filter((o, i) => {
-    if (i === 0) return true;
-    const prev = raw[i - 1];
-    return o.point.lat !== prev.point.lat || o.point.lng !== prev.point.lng;
-  });
+  const owned = buildOwnedPoints(plan);
 
   const ranges: TrackPointRange[] = [];
   let boundaryIndex = 0;
   for (let i = 0; i < plan.tracks.length; i++) {
     const startIndex = boundaryIndex;
     let endIndex = boundaryIndex;
-    while (endIndex + 1 < deduped.length && deduped[endIndex + 1].trackIndex === i) {
+    while (endIndex + 1 < owned.length && owned[endIndex + 1].trackIndex === i) {
       endIndex++;
     }
     ranges.push({ trackId: plan.tracks[i].id, startIndex, endIndex });

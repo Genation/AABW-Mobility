@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Search, Layers, Settings } from "lucide-react";
+import { LayoutDashboard, Compass, Navigation } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import styles from "./bottom-nav.module.css";
 
 const NAV_ITEMS = [
   { href: ROUTES.DASHBOARD, label: "Home", icon: LayoutDashboard },
-  { href: ROUTES.TRACK_DETAIL("track-4"), label: "Search", icon: Search },
-  { href: "#tracks", label: "Tracks", icon: Layers, disabled: true },
-  { href: "#settings", label: "Settings", icon: Settings, disabled: true },
+  { href: "/dashboard/tracks/drivo/discovery", label: "Discovery", icon: Compass },
+  { href: "/dashboard/tracks/drivo", label: "Drivo", icon: Navigation },
 ];
 
 /**
@@ -26,15 +25,6 @@ export function BottomNav() {
         const isActive = pathname === item.href || 
           (item.href !== ROUTES.DASHBOARD && pathname.startsWith(item.href.split('#')[0]));
         const Icon = item.icon;
-
-        if (item.disabled) {
-          return (
-            <span key={item.label} className={styles.item} aria-disabled="true">
-              <Icon size={20} />
-              <span className={styles.label}>{item.label}</span>
-            </span>
-          );
-        }
 
         return (
           <Link

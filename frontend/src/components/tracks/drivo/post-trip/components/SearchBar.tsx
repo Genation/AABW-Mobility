@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { allTags } from "../mock-data";
 import styles from "../post-trip.module.css";
 
@@ -20,12 +20,22 @@ export function SearchBar({
       <div className={styles.searchInputWrapper}>
         <Search className={styles.searchIcon} />
         <input
-          type="text"
+          type="search"
           className={styles.searchInput}
           placeholder="Tìm chuyến đi..."
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
         />
+        {query && (
+          <button
+            className={styles.searchClearBtn}
+            onClick={() => onQueryChange("")}
+            type="button"
+            aria-label="Xóa tìm kiếm"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
       <div className={styles.tagFilters}>
         {allTags.map((tag) => {

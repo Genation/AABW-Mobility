@@ -12,6 +12,7 @@ import styles from "./header.module.css";
 interface HeaderProps {
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
+  hideOnMobile?: boolean;
 }
 
 const DRIVO_PATH = "/dashboard/tracks/drivo";
@@ -19,13 +20,13 @@ const DRIVO_PATH = "/dashboard/tracks/drivo";
 /**
  * Dashboard header — logo, mobile menu toggle, theme toggle, user/logout.
  */
-export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
+export function Header({ sidebarOpen, onToggleSidebar, hideOnMobile }: HeaderProps) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const isDrivo = pathname.startsWith(DRIVO_PATH);
 
   return (
-    <header className={styles.header} id="dashboard-header">
+    <header className={`${styles.header} ${hideOnMobile ? styles.hideOnMobile : ""}`} id="dashboard-header">
       <div className={styles.left}>
         <button
           className={styles.menuBtn}
@@ -49,7 +50,7 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
       </div>
 
       <div className={styles.right}>
-        <ThemeToggle />
+        <span className={styles.themeToggle}><ThemeToggle /></span>
         {user && (
           <div className={styles.userSection}>
             <span className={styles.username}>{user.username}</span>
