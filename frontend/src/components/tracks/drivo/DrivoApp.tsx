@@ -8,12 +8,17 @@ import { CreateTripScreen } from "./screens/CreateTripScreen";
 import { TripItineraryScreen } from "./screens/TripItineraryScreen";
 import { TrackDetailScreen } from "./screens/TrackDetailScreen";
 import { DrivoMap } from "./components/DrivoMap";
-import { fetchOsrmRoute, RouteInfo, LatLng } from "@/lib/osrm";
+import { fetchOsrmRoute, sliceRouteRange, RouteInfo, LatLng } from "@/lib/osrm";
+import { buildOrderedTripPoints, getTrackPointRanges, getEffectiveTrackStart } from "./track-chain-utils";
+import { TRACK_COLORS } from "./track-colors";
 import styles from "./drivo.module.css";
 
 const STORAGE_KEY = "drivo-app-state";
 const STORAGE_VERSION_KEY = "drivo-app-version";
-const CURRENT_VERSION = 2;
+const CURRENT_VERSION = 3;
+const ROUTE_FETCH_DEBOUNCE_MS = 300;
+const ROUTE_FAILURE_BACKOFF_MS = 30000;
+const ROUTE_FAILURE_THRESHOLD = 2;
 
 const DEFAULT_PLAN: TripPlan = {
   id: "1",
@@ -88,8 +93,13 @@ export function DrivoApp() {
   const [plan, setPlan] = useState<TripPlan>(DEFAULT_PLAN);
   const [activeTrackId, setActiveTrackId] = useState<string | null>(null);
   const [route, setRoute] = useState<RouteInfo | null>(null);
+  const [routePointCount, setRoutePointCount] = useState<number | null>(null);
+  const [routeDegraded, setRouteDegraded] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const routeFetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const routeFailureCountRef = useRef(0);
+  const routeBackoffUntilRef = useRef(0);
 
   useEffect(() => {
     setMounted(true);
@@ -128,16 +138,10 @@ export function DrivoApp() {
   };
 
   const handleAddTrack = () => {
-    let defaultStart = plan.startLocation;
-    if (plan.tracks.length > 0) {
-      const prev = plan.tracks[plan.tracks.length - 1];
-      defaultStart = prev.endLocation || (prev.destinations.length > 0 ? prev.destinations[prev.destinations.length - 1] : prev.startLocation) || plan.startLocation;
-    }
-
     const newTrack: DrivoTrack = {
       id: Math.random().toString(36).substring(7),
       name: `Chặng ${plan.tracks.length + 1}`,
-      startLocation: defaultStart,
+      startLocation: null,
       endLocation: null,
       destinations: []
     };
@@ -154,68 +158,97 @@ export function DrivoApp() {
     setScreen("TRACK_DETAIL");
   };
 
-  const handleSaveTrack = (track: DrivoTrack) => {
+  const handleUpdateTrack = useCallback((track: DrivoTrack) => {
     setPlan(prev => ({
       ...prev,
       tracks: prev.tracks.map(t => t.id === track.id ? track : t)
     }));
-    setActiveTrackId(null);
-    setScreen("TRIP_ITINERARY");
-  };
+  }, []);
 
-  const handleCancelTrack = () => {
+  const handleDoneTrack = useCallback(() => {
     setActiveTrackId(null);
     setScreen("TRIP_ITINERARY");
-  };
+  }, []);
 
   const handleCancelTrip = () => {
     setScreen("CREATE_TRIP");
   };
 
-  const allWaypoints = useMemo(() => {
+  // Display-only markers for the overview map: intermediate stops + each track's
+  // end point. Excludes plan.startLocation/endLocation (rendered separately as
+  // the A/B markers) and track.startLocation (always null for chained tracks —
+  // the previous track's real endLocation already occupies that slot).
+  const mapWaypoints = useMemo(() => {
     return plan.tracks.flatMap(t => {
-      const points = [];
-      if (t.startLocation) points.push(t.startLocation);
-      points.push(...t.destinations);
+      const points = [...t.destinations];
       if (t.endLocation) points.push(t.endLocation);
       return points;
     });
   }, [plan.tracks]);
 
+  const orderedPoints = useMemo(() => buildOrderedTripPoints(plan), [plan]);
+  const trackPointRanges = useMemo(() => getTrackPointRanges(plan), [plan]);
+  const coordinateKey = useMemo(
+    () => orderedPoints.map(p => `${p.lat},${p.lng}`).join("|"),
+    [orderedPoints],
+  );
+
+  const calculateRoute = useCallback(async (points: LatLng[]) => {
+    if (Date.now() < routeBackoffUntilRef.current) return;
+
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
+
+    try {
+      const r = await fetchOsrmRoute(points, ac.signal);
+      setRoute(r);
+      setRoutePointCount(points.length);
+      routeFailureCountRef.current = 0;
+      setRouteDegraded(false);
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      console.error("Failed to fetch route", e);
+      routeFailureCountRef.current += 1;
+      if (routeFailureCountRef.current >= ROUTE_FAILURE_THRESHOLD) {
+        routeBackoffUntilRef.current = Date.now() + ROUTE_FAILURE_BACKOFF_MS;
+        setRouteDegraded(true);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (!plan.startLocation || !plan.endLocation) return;
 
-    const calculateRoute = async () => {
-      abortRef.current?.abort();
-      const ac = new AbortController();
-      abortRef.current = ac;
+    if (routeFetchTimerRef.current) clearTimeout(routeFetchTimerRef.current);
+    routeFetchTimerRef.current = setTimeout(() => {
+      calculateRoute(orderedPoints.map(p => ({ lat: p.lat, lng: p.lng })));
+    }, ROUTE_FETCH_DEBOUNCE_MS);
 
-      try {
-        const rawPoints: LatLng[] = [
-          { lat: plan.startLocation!.lat, lng: plan.startLocation!.lng },
-          ...allWaypoints.map(w => ({ lat: w.lat, lng: w.lng })),
-          { lat: plan.endLocation!.lat, lng: plan.endLocation!.lng }
-        ];
-
-        const points = rawPoints.filter((p, i, arr) => {
-          if (i === 0) return true;
-          return p.lat !== arr[i - 1].lat || p.lng !== arr[i - 1].lng;
-        });
-
-        const r = await fetchOsrmRoute(points, ac.signal);
-        setRoute(r);
-      } catch (e) {
-        if (e instanceof DOMException && e.name === "AbortError") return;
-        console.error("Failed to fetch route", e);
-      }
+    return () => {
+      if (routeFetchTimerRef.current) clearTimeout(routeFetchTimerRef.current);
     };
+    // orderedPoints is captured fresh whenever coordinateKey actually changes
+    // (its dependency below) — see track-chain-utils.ts for why coordinate
+    // values, not plan.tracks reference identity, drive this effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coordinateKey, plan.startLocation, plan.endLocation, calculateRoute]);
 
-    calculateRoute();
-  }, [plan.startLocation, plan.endLocation, allWaypoints]);
+  const isRouteFresh = route != null && routePointCount === orderedPoints.length;
 
-  const activeTrack = useMemo(() => {
-    return plan.tracks.find(t => t.id === activeTrackId);
+  const trackSegments = useMemo(() => {
+    if (!isRouteFresh || !route) return [];
+    return plan.tracks.map((t, i) => ({
+      trackId: t.id,
+      coordinates: sliceRouteRange(route, trackPointRanges[i].startIndex, trackPointRanges[i].endIndex).coordinates,
+      color: TRACK_COLORS[i % TRACK_COLORS.length],
+    }));
+  }, [isRouteFresh, route, plan.tracks, trackPointRanges]);
+
+  const activeTrackIndex = useMemo(() => {
+    return plan.tracks.findIndex(t => t.id === activeTrackId);
   }, [plan.tracks, activeTrackId]);
+  const activeTrack = activeTrackIndex >= 0 ? plan.tracks[activeTrackIndex] : undefined;
   const [mapExpanded, setMapExpanded] = useState(false);
 
   const mapClassName = [
@@ -247,8 +280,9 @@ export function DrivoApp() {
             <DrivoMap
               origin={plan.startLocation}
               destination={plan.endLocation}
-              waypoints={allWaypoints}
-              route={route}
+              waypoints={mapWaypoints}
+              route={null}
+              trackSegments={trackSegments}
             />
             <button
               onClick={toggleMapSize}
@@ -267,6 +301,9 @@ export function DrivoApp() {
                 onEditTrack={handleEditTrack}
                 onCancelTrip={handleCancelTrip}
                 activeTrackId={activeTrackId}
+                route={route}
+                routePointCount={routePointCount}
+                routeDegraded={routeDegraded}
                 onDeleteTrack={(id) => {
                   setPlan((prev) => ({
                     ...prev,
@@ -290,9 +327,14 @@ export function DrivoApp() {
       {screen === "TRACK_DETAIL" && activeTrack && (
         <TrackDetailScreen
           track={activeTrack}
-          onSave={handleSaveTrack}
-          onCancel={handleCancelTrack}
-          routeCoordinates={route?.coordinates}
+          onUpdateTrack={handleUpdateTrack}
+          onDone={handleDoneTrack}
+          effectiveStartLocation={getEffectiveTrackStart(plan, activeTrackIndex)}
+          route={route}
+          routePointCount={routePointCount}
+          routeDegraded={routeDegraded}
+          trackPointRange={trackPointRanges.find(r => r.trackId === activeTrack.id)}
+          currentPointCount={orderedPoints.length}
         />
       )}
     </div>

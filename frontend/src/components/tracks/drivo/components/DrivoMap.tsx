@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { RouteInfo } from "@/lib/osrm";
 import { DrivoDestination } from "../types";
+import type { TrackSegment } from "./DrivoMapInner";
 import styles from "../drivo.module.css";
 
 const DrivoMapInner = dynamic(
@@ -21,7 +22,8 @@ interface Props {
   origin: DrivoDestination | null;
   destination: DrivoDestination | null;
   waypoints: DrivoDestination[];
-  route: RouteInfo | null;
+  route: Pick<RouteInfo, "coordinates" | "distanceMeters" | "durationSeconds"> | null;
+  trackSegments?: TrackSegment[];
   interactive?: boolean;
   onMapClick?: (latlng: { lat: number; lng: number }) => void;
   onMarkerDrag?: (id: string, lat: number, lng: number) => void;

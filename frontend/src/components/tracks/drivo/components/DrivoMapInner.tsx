@@ -48,11 +48,21 @@ const crosshairIconFactory = () => L.divIcon({
 });
 const crosshairIcon = crosshairIconFactory();
 
+/** Narrower shape accepted by `route`/segments — only coordinates are ever read here. */
+type RouteLike = Pick<RouteInfo, "coordinates" | "distanceMeters" | "durationSeconds">;
+
+export interface TrackSegment {
+  trackId: string;
+  coordinates: [number, number][];
+  color: string;
+}
+
 interface Props {
   origin: DrivoDestination | null;
   destination: DrivoDestination | null;
   waypoints: DrivoDestination[];
-  route: RouteInfo | null;
+  route: RouteLike | null;
+  trackSegments?: TrackSegment[];
   interactive?: boolean;
   onMapClick?: (latlng: { lat: number; lng: number }) => void;
   onMarkerDrag?: (id: string, lat: number, lng: number) => void;
@@ -60,9 +70,8 @@ interface Props {
   crosshairLatLng?: { lat: number; lng: number } | null;
 }
 
-function toPositions(route: RouteInfo | null): [number, number][] {
-  if (!route) return [];
-  return route.coordinates.map(([lng, lat]) => [lat, lng] as [number, number]);
+function toPositions(coordinates: [number, number][]): [number, number][] {
+  return coordinates.map(([lng, lat]) => [lat, lng] as [number, number]);
 }
 
 function MapAutoFit({
@@ -104,13 +113,17 @@ export function DrivoMapInner({
   destination,
   waypoints,
   route,
+  trackSegments,
   interactive,
   onMapClick,
   onMarkerDrag,
   selectedMarkerId,
   crosshairLatLng,
 }: Props) {
-  const routePositions = useMemo(() => toPositions(route), [route]);
+  const routePositions = useMemo(
+    () => (route ? toPositions(route.coordinates) : []),
+    [route],
+  );
 
   // Default center if nothing is provided (Vietnam)
   const defaultCenter: [number, number] = [16.047079, 108.206230];
@@ -155,6 +168,20 @@ export function DrivoMapInner({
           }}
         />
       )}
+
+      {trackSegments?.map((seg) => (
+        <Polyline
+          key={seg.trackId}
+          positions={toPositions(seg.coordinates)}
+          pathOptions={{
+            color: seg.color,
+            weight: 5,
+            opacity: 0.8,
+            lineCap: "round",
+            lineJoin: "round"
+          }}
+        />
+      ))}
 
       {origin && (
         <Marker position={[origin.lat, origin.lng]} icon={originIcon}>

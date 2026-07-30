@@ -2,13 +2,19 @@
 
 import { useMemo } from "react";
 import { TripPlan, DrivoTrack } from "../types";
-import { haversineMeters } from "@/lib/osrm";
+import { haversineMeters, sliceRouteRange, RouteInfo } from "@/lib/osrm";
+import { getTrackPointRanges, buildOrderedTripPoints } from "../track-chain-utils";
+import { TRACK_COLORS } from "../track-colors";
 import { Plus, Navigation, Clock, ArrowLeft, GripVertical, Trash2, PlusCircle } from "lucide-react";
 import styles from "../drivo.module.css";
 
 function formatDate(d: Date | null): string {
   if (!d || !(d instanceof Date) || isNaN(d.getTime())) return "Chưa định";
   return d.toLocaleDateString("vi-VN");
+}
+
+function formatDistance(m: number): string {
+  return m >= 1000 ? `${(m / 1000).toFixed(0)}km` : `${m.toFixed(0)}m`;
 }
 
 interface Props {
@@ -20,12 +26,10 @@ interface Props {
   onSelectTrack?: (id: string) => void;
   onDeleteTrack?: (id: string) => void;
   onReorder?: (fromIndex: number, toIndex: number) => void;
+  route: RouteInfo | null;
+  routePointCount: number | null;
+  routeDegraded: boolean;
 }
-
-const TRACK_COLORS = [
-  "#FFC928", "#F97316", "#10B981", "#3B82F6", "#8B5CF6",
-  "#EC4899", "#06B6D4", "#84CC16", "#F59E0B", "#6366F1",
-];
 
 export function TripItineraryScreen({
   plan,
@@ -35,8 +39,16 @@ export function TripItineraryScreen({
   activeTrackId,
   onDeleteTrack,
   onReorder,
+  route,
+  routePointCount,
+  routeDegraded,
 }: Props) {
+  const trackPointRanges = useMemo(() => getTrackPointRanges(plan), [plan]);
+  const currentPointCount = useMemo(() => buildOrderedTripPoints(plan).length, [plan]);
+  const isRouteFresh = route != null && routePointCount === currentPointCount;
+
   const totalDistance = useMemo(() => {
+    if (isRouteFresh && route) return route.distanceMeters;
     let total = 0;
     for (let i = 0; i < plan.tracks.length; i++) {
       const t = plan.tracks[i];
@@ -47,7 +59,8 @@ export function TripItineraryScreen({
       }
     }
     return total;
-  }, [plan.tracks, plan.startLocation, plan.endLocation]);
+  }, [isRouteFresh, route, plan.tracks, plan.startLocation, plan.endLocation]);
+  const totalDistanceDegraded = !isRouteFresh && routeDegraded && totalDistance > 0;
 
   return (
     <div className={styles.itinerarySheet}>
@@ -63,7 +76,7 @@ export function TripItineraryScreen({
             <span><Navigation size={12} /> {plan.tracks.length} chặng</span>
             <span><Clock size={12} /> {formatDate(plan.startTime)}</span>
             {totalDistance > 0 && (
-              <span>{totalDistance >= 1000 ? `${(totalDistance / 1000).toFixed(0)}km` : `${totalDistance.toFixed(0)}m`}</span>
+              <span>{formatDistance(totalDistance)}{totalDistanceDegraded ? " (ước tính)" : ""}</span>
             )}
           </div>
         </div>
@@ -88,9 +101,15 @@ export function TripItineraryScreen({
             const start = track.startLocation ?? (i > 0 ? plan.tracks[i - 1].endLocation : plan.startLocation);
             const end = track.endLocation ?? (i < plan.tracks.length - 1 ? plan.tracks[i + 1].startLocation : plan.endLocation);
             let distStr = "";
-            if (start?.lat && start?.lng && end?.lat && end?.lng) {
+            let distDegraded = false;
+            const range = trackPointRanges[i];
+            if (isRouteFresh && route && range) {
+              const m = sliceRouteRange(route, range.startIndex, range.endIndex).distanceMeters;
+              distStr = formatDistance(m);
+            } else if (start?.lat && start?.lng && end?.lat && end?.lng) {
               const m = haversineMeters(start.lat, start.lng, end.lat, end.lng);
-              distStr = m >= 1000 ? `${(m / 1000).toFixed(0)}km` : `${m.toFixed(0)}m`;
+              distStr = formatDistance(m);
+              distDegraded = routeDegraded;
             }
 
             const color = TRACK_COLORS[i % TRACK_COLORS.length];
@@ -134,7 +153,7 @@ export function TripItineraryScreen({
                     {start?.name ?? "?"} → {end?.name ?? "?"}
                   </div>
                   <div className={styles.itineraryTrackMeta}>
-                    {distStr && <span>{distStr}</span>}
+                    {distStr && <span>{distStr}{distDegraded ? " (ước tính)" : ""}</span>}
                     <span>{track.destinations.length} điểm dừng</span>
                   </div>
                 </div>
