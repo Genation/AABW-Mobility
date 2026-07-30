@@ -1246,6 +1246,14 @@
   max-height: 70%;
 }
 
+/* Gate's end-point search: grows well past the default expanded height once the
+   user focuses the input, so suggestion/result lists have room instead of being
+   squeezed against the bottom of a content-sized panel. */
+.trackDetailPanelSearching {
+  min-height: 55%;
+  max-height: 88%;
+}
+
 .panelDragHandle {
   display: flex;
   justify-content: center;

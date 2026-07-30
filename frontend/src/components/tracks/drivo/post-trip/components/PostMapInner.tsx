@@ -5,32 +5,21 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { PostTripRoute } from "../types";
 
-const startIcon = L.icon({
-  iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
+function shortLabel(name: string): string {
+  return name.length > 12 ? name.slice(0, 10) + "…" : name;
+}
 
-const endIcon = L.icon({
-  iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-const waypointIcon = L.icon({
-  iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
+function createLabelIcon(color: string, label: string): L.DivIcon {
+  return L.divIcon({
+    className: "map-label-marker",
+    html: `<div class="map-label-wrap">
+      <div class="map-label-dot" style="background:${color}"></div>
+      <span class="map-label-text">${shortLabel(label)}</span>
+    </div>`,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
+  });
+}
 
 interface Props {
   route: PostTripRoute;
@@ -39,9 +28,7 @@ interface Props {
 
 export function PostMapInner({ route, mapId }: Props) {
   useEffect(() => {
-    const container = document.getElementById(
-      `detail-map-${mapId}`
-    );
+    const container = document.getElementById(`detail-map-${mapId}`);
     if (!container) return;
 
     const map = L.map(container, {
@@ -56,37 +43,35 @@ export function PostMapInner({ route, mapId }: Props) {
 
     const allPoints: [number, number][] = [
       [route.start.lat, route.start.lng],
-      ...route.waypoints.map(
-        (w) => [w.lat, w.lng] as [number, number]
-      ),
+      ...route.waypoints.map((w) => [w.lat, w.lng] as [number, number]),
       [route.end.lat, route.end.lng],
     ];
 
     if (allPoints.length > 1) {
       L.polyline(allPoints, {
-        color: "#3B82F6",
+        color: "#1a73e8",
         weight: 4,
-        opacity: 0.8,
+        opacity: 0.9,
       }).addTo(map);
     }
 
-    L.marker([route.start.lat, route.start.lng], { icon: startIcon })
-      .addTo(map)
-      .bindPopup(`<b>Bắt đầu:</b> ${route.start.name}`);
+    L.marker([route.start.lat, route.start.lng], {
+      icon: createLabelIcon("#22C55E", route.start.name),
+    }).addTo(map);
 
     route.waypoints.forEach((w) => {
-      L.marker([w.lat, w.lng], { icon: waypointIcon })
-        .addTo(map)
-        .bindPopup(w.name);
+      L.marker([w.lat, w.lng], {
+        icon: createLabelIcon("#3B82F6", w.name),
+      }).addTo(map);
     });
 
-    L.marker([route.end.lat, route.end.lng], { icon: endIcon })
-      .addTo(map)
-      .bindPopup(`<b>Kết thúc:</b> ${route.end.name}`);
+    L.marker([route.end.lat, route.end.lng], {
+      icon: createLabelIcon("#EF4444", route.end.name),
+    }).addTo(map);
 
     if (allPoints.length > 1) {
       const bounds = L.latLngBounds(allPoints);
-      map.fitBounds(bounds, { padding: [30, 30] });
+      map.fitBounds(bounds, { padding: [50, 50] });
     } else {
       map.setView([route.start.lat, route.start.lng], 13);
     }

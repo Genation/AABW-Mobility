@@ -5,16 +5,18 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { PostTripRoute } from "../types";
 
-const defaultIcon = L.icon({
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
+function createTinyIcon(color: string): L.DivIcon {
+  return L.divIcon({
+    className: "map-dot-marker",
+    html: `<div style="width:7px;height:7px;border-radius:50%;background:${color};border:1.5px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.2)"></div>`,
+    iconSize: [7, 7],
+    iconAnchor: [4, 4],
+  });
+}
+
+const startIcon = createTinyIcon("#22C55E");
+const endIcon = createTinyIcon("#EF4444");
+const waypointIcon = createTinyIcon("#3B82F6");
 
 interface Props {
   route: PostTripRoute;
@@ -23,9 +25,7 @@ interface Props {
 
 export function RouteMapThumbnailInner({ route, mapId }: Props) {
   useEffect(() => {
-    const container = document.getElementById(
-      `thumb-map-${mapId}`
-    );
+    const container = document.getElementById(`thumb-map-${mapId}`);
     if (!container) return;
 
     const map = L.map(container, {
@@ -43,30 +43,26 @@ export function RouteMapThumbnailInner({ route, mapId }: Props) {
 
     const allPoints: [number, number][] = [
       [route.start.lat, route.start.lng],
-      ...route.waypoints.map(
-        (w) => [w.lat, w.lng] as [number, number]
-      ),
+      ...route.waypoints.map((w) => [w.lat, w.lng] as [number, number]),
       [route.end.lat, route.end.lng],
     ];
 
     if (allPoints.length > 1) {
       L.polyline(allPoints, {
-        color: "#3B82F6",
+        color: "#1a73e8",
         weight: 3,
-        opacity: 0.8,
+        opacity: 0.85,
       }).addTo(map);
     }
 
-    L.marker([route.start.lat, route.start.lng], { icon: defaultIcon })
-      .addTo(map)
-      .bindPopup(route.start.name);
-    L.marker([route.end.lat, route.end.lng], { icon: defaultIcon })
-      .addTo(map)
-      .bindPopup(route.end.name);
+    L.marker([route.start.lat, route.start.lng], { icon: startIcon })
+      .addTo(map);
+    L.marker([route.end.lat, route.end.lng], { icon: endIcon })
+      .addTo(map);
 
     if (allPoints.length > 1) {
       const bounds = L.latLngBounds(allPoints);
-      map.fitBounds(bounds, { padding: [20, 20] });
+      map.fitBounds(bounds, { padding: [15, 15] });
     } else {
       map.setView([route.start.lat, route.start.lng], 10);
     }

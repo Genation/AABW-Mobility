@@ -47,6 +47,7 @@ export function TrackDetailScreen({
   const [activeCategory, setActiveCategory] = useState<string>("");
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [addAfterId, setAddAfterId] = useState<string | null>(null);
+  const [gateSearchActive, setGateSearchActive] = useState(false);
 
   const isGated = track.endLocation == null;
   const isRouteFresh = route != null && routeCoordinateKey === currentCoordinateKey;
@@ -193,7 +194,7 @@ export function TrackDetailScreen({
       </div>
 
       {isGated ? (
-        <div className={`${styles.trackDetailPanel} ${styles.trackDetailPanelExpanded}`}>
+        <div className={`${styles.trackDetailPanel} ${gateSearchActive ? styles.trackDetailPanelSearching : styles.trackDetailPanelExpanded}`}>
           <div className={styles.panelDragHandle}>
             <div className={styles.panelDragBar} />
           </div>
@@ -203,6 +204,7 @@ export function TrackDetailScreen({
             <SmartLocationInput
               placeholder="Tìm điểm đến cho chặng này..."
               onSelect={handleSetEndLocation}
+              onFocus={() => setGateSearchActive(true)}
             />
           </div>
         </div>
