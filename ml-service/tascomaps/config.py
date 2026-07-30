@@ -27,15 +27,15 @@ def _find_datasets_dir() -> Path:
 
 DATASETS_DIR = _find_datasets_dir()
 
-TRACK1_XLSX = DATASETS_DIR / "Track 1: AI Search Understanding for Maps" / \
+TRACK1_XLSX = DATASETS_DIR / "Track 1 - AI Search Understanding for Maps" / \
     "ai_maps_track1_dataset_participants_v2.xlsx"
-TRACK2_XLSX = DATASETS_DIR / "Track 2: AI Semantic Search & Ranking" / \
+TRACK2_XLSX = DATASETS_DIR / "Track 2 - AI Semantic Search & Ranking" / \
     "ai_maps_track2_dataset_participants.xlsx"
-TRACK4_XLSX = DATASETS_DIR / "Track 4: AI-Powered Autocomplete & Query Suggestions" / \
+TRACK4_XLSX = DATASETS_DIR / "Track 4 - AI-Powered Autocomplete & Query Suggestions" / \
     "ai_maps_track4_dataset_participants.xlsx"
 TRACK6_XLSX = Path(os.getenv(
     "TASCO_TRACK6_XLSX",
-    str(DATASETS_DIR / "Track 6: AI-Powered Restaurant & Menu Intelligence" /
+    str(DATASETS_DIR / "Track 6 - AI-Powered Restaurant & Menu Intelligence" /
         "ai_maps_track6_dataset_participants.xlsm"),
 )).expanduser().resolve()
 
