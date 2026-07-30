@@ -22,6 +22,11 @@ interface Props {
   destination: DrivoDestination | null;
   waypoints: DrivoDestination[];
   route: RouteInfo | null;
+  interactive?: boolean;
+  onMapClick?: (latlng: { lat: number; lng: number }) => void;
+  onMarkerDrag?: (id: string, lat: number, lng: number) => void;
+  selectedMarkerId?: string | null;
+  crosshairLatLng?: { lat: number; lng: number } | null;
 }
 
 export function DrivoMap(props: Props) {

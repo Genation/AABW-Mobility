@@ -1,155 +1,204 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { DrivoTrack, DrivoDestination } from "../types";
-import { SmartLocationInput } from "../components/SmartLocationInput";
-import { ArrowLeft, Check, MapPin, X } from "lucide-react";
+import { DrivoMap } from "../components/DrivoMap";
+import { HorizontalTimeline, TimelineWaypoint } from "../components/HorizontalTimeline";
+import { AISuggestions } from "../components/AISuggestions";
+import { PlaceCandidate } from "@/lib/api";
+import { haversineMeters } from "@/lib/osrm";
+import { ArrowLeft, Check } from "lucide-react";
 import styles from "../drivo.module.css";
 
 interface Props {
   track: DrivoTrack;
   onSave: (track: DrivoTrack) => void;
   onCancel: () => void;
-  onSearchFocus?: () => void;
-  onSearchBlur?: () => void;
+  routeCoordinates?: [number, number][];
 }
 
-export function TrackDetailScreen({ track: initialTrack, onSave, onCancel, onSearchFocus, onSearchBlur }: Props) {
-  const [track, setTrack] = useState<DrivoTrack>(initialTrack);
-  const [addingDest, setAddingDest] = useState(false);
+export function TrackDetailScreen({ track: initialTrack, onSave, onCancel, routeCoordinates }: Props) {
+  const [track, setTrack] = useState<DrivoTrack>({ ...initialTrack });
+  const [crosshair, setCrosshair] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>("");
+  const [panelExpanded, setPanelExpanded] = useState(false);
+  const [addAfterId, setAddAfterId] = useState<string | null>(null);
 
-  const handleAddDest = (dest: DrivoDestination) => {
-    setTrack(prev => ({
+  const addDestination = useCallback((dest: DrivoDestination) => {
+    setTrack((prev) => {
+      const newDests = [...prev.destinations];
+      if (addAfterId) {
+        const idx = newDests.findIndex((d) => d.id === addAfterId);
+        if (idx >= 0) {
+          newDests.splice(idx + 1, 0, dest);
+        } else {
+          newDests.push(dest);
+        }
+      } else {
+        newDests.push(dest);
+      }
+      return { ...prev, destinations: newDests };
+    });
+    setCrosshair(null);
+    setAddAfterId(null);
+  }, [addAfterId]);
+
+  const removeDestination = useCallback((id: string) => {
+    setTrack((prev) => ({
       ...prev,
-      destinations: [...prev.destinations, dest]
+      destinations: prev.destinations.filter((d) => d.id !== id),
     }));
-    setAddingDest(false);
-    onSearchBlur?.();
-  };
+    if (selectedMarkerId === id) setSelectedMarkerId(null);
+  }, [selectedMarkerId]);
 
-  const handleRemoveDest = (id: string) => {
-    setTrack(prev => ({
-      ...prev,
-      destinations: prev.destinations.filter(d => d.id !== id)
-    }));
-  };
+  const handleMarkerDrag = useCallback((id: string, lat: number, lng: number) => {
+    setTrack((prev) => {
+      if (prev.startLocation?.id === id) {
+        return { ...prev, startLocation: { ...prev.startLocation!, lat, lng } };
+      }
+      if (prev.endLocation?.id === id) {
+        return { ...prev, endLocation: { ...prev.endLocation!, lat, lng } };
+      }
+      return {
+        ...prev,
+        destinations: prev.destinations.map((d) =>
+          d.id === id ? { ...d, lat, lng } : d
+        ),
+      };
+    });
+  }, []);
 
-  const handleStartSearch = () => {
-    setAddingDest(true);
-    onSearchFocus?.();
-  };
+  const handleMapClick = useCallback((latlng: { lat: number; lng: number }) => {
+    setCrosshair(latlng);
+    setAddAfterId(null);
+    setPanelExpanded(true);
+  }, []);
 
-  const handleCancelSearch = () => {
-    setAddingDest(false);
-    onSearchBlur?.();
-  };
+  const handleAddBetween = useCallback((afterId: string) => {
+    setAddAfterId(afterId);
+    setCrosshair(null);
+    setPanelExpanded(true);
+  }, []);
+
+  const handleAddPOI = useCallback((poi: PlaceCandidate) => {
+    if (poi.lat == null || poi.lng == null) return;
+    const dest: DrivoDestination = {
+      id: `dest-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      name: poi.name,
+      lat: poi.lat,
+      lng: poi.lng,
+      poi_id: poi.poi_id,
+      category: poi.category,
+      score: poi.score,
+      reasons: poi.reasons,
+    };
+    addDestination(dest);
+  }, [addDestination]);
+
+  const timelineWaypoints: TimelineWaypoint[] = useMemo(() => {
+    const items: TimelineWaypoint[] = [];
+    if (track.startLocation) {
+      items.push({
+        id: track.startLocation.id,
+        label: track.startLocation.name,
+        kind: "start",
+        destination: track.startLocation,
+      });
+    }
+    track.destinations.forEach((d, i) => {
+      const prev = i === 0 ? track.startLocation : track.destinations[i - 1];
+      let dist = "";
+      if (prev && prev.lat && prev.lng && d.lat && d.lng) {
+        const m = haversineMeters(prev.lat, prev.lng, d.lat, d.lng);
+        if (m >= 1000) dist = `${(m / 1000).toFixed(0)}km`;
+        else dist = `${m.toFixed(0)}m`;
+      }
+      items.push({
+        id: d.id,
+        label: d.name,
+        kind: "waypoint",
+        destination: d,
+        distanceFromPrev: dist || undefined,
+      });
+    });
+    if (track.endLocation) {
+      const prev = track.destinations.length > 0
+        ? track.destinations[track.destinations.length - 1]
+        : track.startLocation;
+      let dist = "";
+      if (prev && prev.lat && prev.lng && track.endLocation.lat && track.endLocation.lng) {
+        const m = haversineMeters(prev.lat, prev.lng, track.endLocation.lat, track.endLocation.lng);
+        if (m >= 1000) dist = `${(m / 1000).toFixed(0)}km`;
+        else dist = `${m.toFixed(0)}m`;
+      }
+      items.push({
+        id: track.endLocation.id,
+        label: track.endLocation.name,
+        kind: "end",
+        destination: track.endLocation,
+        distanceFromPrev: dist || undefined,
+      });
+    }
+    return items;
+  }, [track]);
 
   return (
-    <div className={styles.bottomSheetTall}>
-      <div className={styles.detailHeader}>
-        <button onClick={onCancel} className={styles.detailHeaderBtn}>
-          <ArrowLeft size={24} />
+    <div className={styles.trackDetailContainer}>
+      <div className={styles.trackDetailMap}>
+        <DrivoMap
+          origin={track.startLocation}
+          destination={track.endLocation}
+          waypoints={track.destinations}
+          route={null}
+          interactive
+          onMapClick={handleMapClick}
+          onMarkerDrag={handleMarkerDrag}
+          selectedMarkerId={selectedMarkerId}
+          crosshairLatLng={crosshair}
+        />
+      </div>
+
+      <div className={styles.trackDetailHeader}>
+        <button onClick={onCancel} className={styles.trackDetailBackBtn}>
+          <ArrowLeft size={22} />
         </button>
-        <h3 className={styles.detailHeaderTitle}>Chi tiết Track</h3>
-        <button onClick={() => onSave(track)} className={styles.detailHeaderSave}>
-          <Check size={24} />
+        <div className={styles.trackDetailHeaderInfo}>
+          <input
+            value={track.name}
+            onChange={(e) => setTrack((prev) => ({ ...prev, name: e.target.value }))}
+            className={styles.trackDetailNameInput}
+            placeholder="Tên chặng"
+          />
+        </div>
+        <button onClick={() => onSave(track)} className={styles.trackDetailSaveBtn}>
+          <Check size={22} />
         </button>
       </div>
 
-      <div className={styles.detailBody}>
-        <div style={{ marginBottom: 12 }}>
-          <label className={styles.fieldLabel}>Tên chặng</label>
-          <input
-            value={track.name}
-            onChange={(e) => setTrack(prev => ({ ...prev, name: e.target.value }))}
-            placeholder="Ví dụ: Chặng 1 - Lên đèo"
-            className={styles.trackNameInput}
+      <div className={`${styles.trackDetailPanel} ${panelExpanded ? styles.trackDetailPanelExpanded : ""}`}>
+        <div
+          className={styles.panelDragHandle}
+          onClick={() => setPanelExpanded((p) => !p)}
+        >
+          <div className={styles.panelDragBar} />
+        </div>
+
+        <HorizontalTimeline
+          waypoints={timelineWaypoints}
+          activeId={selectedMarkerId}
+          onSelect={setSelectedMarkerId}
+          onAddBetween={handleAddBetween}
+          onRemove={removeDestination}
+        />
+
+        {panelExpanded && (
+          <AISuggestions
+            routeLatLngs={routeCoordinates?.map(([lng, lat]) => ({ lat, lng })) ?? []}
+            activeCategory={activeCategory}
+            onCategoryChange={setActiveCategory}
+            onAddPOI={handleAddPOI}
           />
-        </div>
-
-        <div className={styles.formFields} style={{ marginBottom: 16, gap: 10 }}>
-          <div>
-            <label className={styles.fieldLabel} style={{ marginBottom: 4 }}>
-              <MapPin size={14} color="var(--color-primary)" /> Điểm xuất phát
-            </label>
-            {track.startLocation ? (
-              <div className={styles.selectedLocation}>
-                <span className={styles.selectedLocationName}>{track.startLocation.name}</span>
-                <button onClick={() => setTrack(prev => ({ ...prev, startLocation: null }))} className={styles.changeBtn}>Đổi</button>
-              </div>
-            ) : (
-              <SmartLocationInput
-                placeholder="Nhập điểm bắt đầu chặng..."
-                onSelect={(dest) => {
-                  setTrack(prev => ({ ...prev, startLocation: dest }));
-                  onSearchBlur?.();
-                }}
-                onFocus={onSearchFocus}
-              />
-            )}
-          </div>
-
-          <div>
-            <label className={styles.fieldLabel} style={{ marginBottom: 4 }}>
-              <MapPin size={14} color="var(--color-error)" /> Điểm kết thúc
-            </label>
-            {track.endLocation ? (
-              <div className={styles.selectedLocation}>
-                <span className={styles.selectedLocationName}>{track.endLocation.name}</span>
-                <button onClick={() => setTrack(prev => ({ ...prev, endLocation: null }))} className={styles.changeBtn}>Đổi</button>
-              </div>
-            ) : (
-              <SmartLocationInput
-                placeholder="Nhập điểm kết thúc chặng..."
-                onSelect={(dest) => {
-                  setTrack(prev => ({ ...prev, endLocation: dest }));
-                  onSearchBlur?.();
-                }}
-                onFocus={onSearchFocus}
-              />
-            )}
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 12 }}>
-          <h4 style={{ margin: "0 0 10px", fontSize: 14, fontWeight: 600 }}>Điểm đến trong chặng</h4>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {track.destinations.map((dest, i) => (
-              <div key={dest.id} className={styles.destItem}>
-                <div className={styles.destIndex}>{i + 1}</div>
-                <div className={styles.destInfo}>
-                  <div className={styles.destName}>{dest.name}</div>
-                  <div className={styles.destCategory}>{dest.category}</div>
-                </div>
-                <button onClick={() => handleRemoveDest(dest.id)} className={styles.destRemoveBtn}>
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {addingDest ? (
-          <div className={styles.addDestSearchBox}>
-            <div className={styles.addDestHeader}>
-              <span className={styles.addDestTitle}>Tìm điểm dừng</span>
-              <button onClick={handleCancelSearch} className={styles.addDestCancel}>Hủy</button>
-            </div>
-            <SmartLocationInput
-              placeholder="Nhập tên quán, điểm du lịch..."
-              onSelect={handleAddDest}
-              showCategoryChips={true}
-            />
-          </div>
-        ) : (
-          <button
-            onClick={handleStartSearch}
-            className={styles.addDestBtn}
-            style={{ marginTop: track.destinations.length > 0 ? 8 : 0 }}
-          >
-            <MapPin size={16} /> Thêm điểm dừng
-          </button>
         )}
       </div>
     </div>

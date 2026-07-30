@@ -8,6 +8,7 @@
     "npm:@modelcontextprotocol/sdk@1": "1.29.0_zod@4.4.3",
     "npm:@supabase/supabase-js@^2.45.0": "2.110.2",
     "npm:bcryptjs@^2.4.3": "2.4.3",
+    "npm:drizzle-kit@*": "0.31.10",
     "npm:drizzle-kit@~0.31.9": "0.31.10",
     "npm:drizzle-orm@~0.44.7": "0.44.7_pg@8.22.0_postgres@3.4.9",
     "npm:drizzle-zod@~0.8.1": "0.8.3_drizzle-orm@0.44.7__pg@8.22.0__postgres@3.4.9_zod@4.4.3_pg@8.22.0_postgres@3.4.9",

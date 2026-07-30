@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drivo Pre-Trip — Load Sample Trip</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #11161C; color: #F6F3ED;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    }
+    .container {
+      max-width: 520px; width: 100%; padding: 24px;
+    }
+    h1 {
+      font-size: 24px; margin-bottom: 8px;
+    }
+    h1 span { color: #FFC928; }
+    .subtitle { color: #AAB4BE; font-size: 14px; margin-bottom: 28px; }
+    .trip-card {
+      background: #0D1B2A; border: 1px solid #1E293B; border-radius: 12px;
+      padding: 20px; margin-bottom: 16px; cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .trip-card:hover { border-color: #FFC928; box-shadow: 0 0 20px rgba(255,201,40,0.1); }
+    .trip-card.selected { border-color: #FFC928; box-shadow: 0 0 24px rgba(255,201,40,0.2); }
+    .trip-card.selected::before {
+      content: '✓'; position: absolute; top: 12px; right: 16px;
+      background: #FFC928; color: #11161C; width: 24px; height: 24px;
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 13px; font-weight: bold;
+    }
+    .trip-number {
+      font-size: 12px; color: #FFC928; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 6px;
+    }
+    .trip-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+    .trip-route { font-size: 14px; color: #AAB4BE; margin-bottom: 10px; }
+    .trip-meta {
+      display: flex; gap: 16px; font-size: 12px; color: #64748B;
+    }
+    .trip-meta span { display: flex; align-items: center; gap: 4px; }
+    .trip-detail {
+      display: none; background: #0D1B2A; border: 1px solid #1E293B;
+      border-radius: 8px; padding: 12px 16px; margin-top: 10px; font-size: 13px;
+    }
+    .trip-card.selected .trip-detail { display: block; }
+    .track-row {
+      display: flex; align-items: center; gap: 8px; padding: 4px 0;
+      border-bottom: 1px solid #1E293B;
+    }
+    .track-row:last-child { border-bottom: none; }
+    .track-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .track-name { flex: 1; font-size: 12px; }
+    .track-dist { font-size: 11px; color: #64748B; }
+    .track-dests { font-size: 10px; color: #475569; }
+    .actions { margin-top: 28px; display: flex; gap: 12px; }
+    .btn {
+      flex: 1; padding: 14px; border-radius: 10px; border: none;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-load {
+      background: linear-gradient(135deg, #FFC928, #F59E0B);
+      color: #11161C;
+    }
+    .btn-load:disabled { background: #334155; color: #64748B; cursor: not-allowed; transform: none; }
+    .btn-reset { background: transparent; border: 1px solid #EF4444; color: #EF4444; }
+    .status {
+      margin-top: 16px; text-align: center; font-size: 13px; min-height: 20px;
+    }
+    .status.success { color: #10B981; }
+    .status.error { color: #EF4444; }
+    .status.info { color: #FFC928; }
+    .note {
+      margin-top: 32px; padding: 16px; background: #0D1B2A;
+      border: 1px solid #1E293B; border-radius: 8px; font-size: 12px;
+      color: #64748B; line-height: 1.7;
+    }
+    .note strong { color: #AAB4BE; }
+    .note code {
+      background: #1E293B; padding: 1px 5px; border-radius: 3px; font-size: 11px;
+    }
+    hr { border-color: #1E293B; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Drivo <span>Pre-Trip</span></h1>
+    <p class="subtitle">Load dữ liệu mẫu vào localStorage để demo hoàn chỉnh 3 màn hình Pre-Trip</p>
+
+    <div id="tripList"></div>
+
+    <div class="actions">
+      <button class="btn btn-load" id="btnLoad" disabled>Load Trip vào Drivo</button>
+      <button class="btn btn-reset" id="btnReset">Xóa dữ liệu</button>
+    </div>
+    <div class="status" id="status"></div>
+
+    <div class="note">
+      <strong>Cách dùng:</strong>
+      <br>1. Chọn 1 kịch bản bên trên
+      <br>2. Nhấn <strong>Load Trip vào Drivo</strong>
+      <br>3. Mở tab mới → <code>http://localhost:3000/dashboard/tracks/drivo</code>
+      <br><br>
+      <strong>Lưu ý:</strong>
+      <hr>
+      • Dữ liệu được ghi vào <code>localStorage</code> key <code>drivo-app-state</code> + <code>drivo-app-version</code><br>
+      • Drivo App phải chạy trên cùng domain (localhost:3000)<br>
+      • Nhấn <strong>Xóa dữ liệu</strong> để reset về trạng thái ban đầu
+    </div>
+  </div>
+
+  <script>
+    const TRIPS = [
+      {
+        id: "trip-hcm-dalat-001",
+        title: "Sài Gòn → Đà Lạt",
+        subtitle: "Phượt Cao Nguyên",
+        route: "TP.HCM → Long Khánh → Bảo Lộc → Đà Lạt",
+        distance: "~330km",
+        duration: "~8.5h",
+        tracks: 3,
+        file: "sample-trip-hcm-dalat.json",
+        trackColors: ["#F97316", "#10B981", "#8B5CF6"],
+        trackNames: [
+          { name: "Chặng 1: Sài Gòn → Đồng Nai", dist: "~100km", dests: 2 },
+          { name: "Chặng 2: Đồng Nai → Bảo Lộc", dist: "~120km", dests: 2 },
+          { name: "Chặng 3: Bảo Lộc → Đà Lạt", dist: "~110km", dests: 3 }
+        ]
+      },
+      {
+        id: "trip-hn-halong-001",
+        title: "Hà Nội → Hạ Long",
+        subtitle: "Weekend Biển",
+        route: "Hà Nội → Bắc Ninh → Hải Dương → Hạ Long",
+        distance: "~160km",
+        duration: "~3.5h",
+        tracks: 3,
+        file: "sample-trip-hanoi-halong.json",
+        trackColors: ["#F97316", "#3B82F6", "#EC4899"],
+        trackNames: [
+          { name: "Chặng 1: Hà Nội → Bắc Ninh", dist: "~35km", dests: 1 },
+          { name: "Chặng 2: Bắc Ninh → Hải Dương", dist: "~50km", dests: 2 },
+          { name: "Chặng 3: Hải Dương → Hạ Long", dist: "~65km", dests: 3 }
+        ]
+      },
+      {
+        id: "trip-dn-hue-001",
+        title: "Đà Nẵng → Huế",
+        subtitle: "Cung Đường Di Sản",
+        route: "Đà Nẵng → Hải Vân → Lăng Cô → Cầu Hai → Huế",
+        distance: "~155km",
+        duration: "~4h",
+        tracks: 4,
+        file: "sample-trip-danang-hue.json",
+        trackColors: ["#FFC928", "#F97316", "#10B981", "#8B5CF6"],
+        trackNames: [
+          { name: "Chặng 1: Đà Nẵng → Hải Vân", dist: "~30km", dests: 2 },
+          { name: "Chặng 2: Hải Vân → Lăng Cô", dist: "~25km", dests: 1 },
+          { name: "Chặng 3: Lăng Cô → Cầu Hai", dist: "~50km", dests: 2 },
+          { name: "Chặng 4: Cầu Hai → Huế", dist: "~45km", dests: 3 }
+        ]
+      }
+    ];
+
+    let selectedTripId = null;
+    const tripListEl = document.getElementById('tripList');
+    const btnLoad = document.getElementById('btnLoad');
+    const btnReset = document.getElementById('btnReset');
+    const statusEl = document.getElementById('status');
+
+    function setStatus(msg, type) {
+      statusEl.textContent = msg;
+      statusEl.className = 'status ' + (type || '');
+    }
+
+    function renderTrips() {
+      tripListEl.innerHTML = TRIPS.map((trip, i) => `
+        <div class="trip-card ${selectedTripId === trip.id ? 'selected' : ''}"
+             data-trip-id="${trip.id}">
+          <div class="trip-number">KỊCH BẢN ${i + 1}</div>
+          <div class="trip-title">${trip.title}</div>
+          <div class="trip-route">${trip.subtitle} — ${trip.route}</div>
+          <div class="trip-meta">
+            <span>📏 ${trip.distance}</span>
+            <span>⏱ ${trip.duration}</span>
+            <span>🛤 ${trip.tracks} chặng</span>
+          </div>
+          <div class="trip-detail">
+            ${trip.trackNames.map((t, j) => `
+              <div class="track-row">
+                <div class="track-dot" style="background:${trip.trackColors[j]}"></div>
+                <div class="track-name">${t.name}</div>
+                <div class="track-dist">${t.dist}</div>
+                <div class="track-dests">${t.dests} điểm dừng</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      // Add click handlers
+      tripListEl.querySelectorAll('.trip-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const tid = card.dataset.tripId;
+          if (selectedTripId === tid) {
+            selectedTripId = null;
+          } else {
+            selectedTripId = tid;
+          }
+          btnLoad.disabled = !selectedTripId;
+          renderTrips();
+        });
+      });
+    }
+
+    async function loadTrip() {
+      if (!selectedTripId) return;
+      const trip = TRIPS.find(t => t.id === selectedTripId);
+      if (!trip) return;
+
+      setStatus('Đang tải dữ liệu...', 'info');
+
+      try {
+        const res = await fetch(trip.file);
+        if (!res.ok) throw new Error(`HTTP ${res.status}: Không tìm thấy file ${trip.file}`);
+        const data = await res.json();
+
+        if (!data.screen || !data.plan || !Array.isArray(data.plan.tracks)) {
+          throw new Error('Dữ liệu JSON không đúng định dạng TripPlan');
+        }
+
+        localStorage.setItem('drivo-app-version', '2');
+        localStorage.setItem('drivo-app-state', JSON.stringify(data));
+        setStatus(`Đã load "${trip.title}" thành công! Mở http://localhost:3000/dashboard/tracks/drivo để xem.`, 'success');
+      } catch (err) {
+        setStatus('Lỗi: ' + err.message, 'error');
+      }
+    }
+
+    function resetData() {
+      localStorage.removeItem('drivo-app-state');
+      localStorage.removeItem('drivo-app-version');
+      selectedTripId = null;
+      btnLoad.disabled = true;
+      renderTrips();
+      setStatus('Đã xóa dữ liệu. Refresh Drivo để về trạng thái mặc định.', 'success');
+    }
+
+    btnLoad.addEventListener('click', loadTrip);
+    btnReset.addEventListener('click', resetData);
+
+    // Show current localStorage state
+    const current = localStorage.getItem('drivo-app-state');
+    if (current) {
+      try {
+        const parsed = JSON.parse(current);
+        if (parsed.plan && parsed.plan.name) {
+          setStatus(`Đang có trip: "${parsed.plan.name}" (${parsed.plan.tracks?.length || 0} chặng)`, 'info');
+        }
+      } catch {}
+    }
+
+    renderTrips();
+  </script>
+</body>
+</html>

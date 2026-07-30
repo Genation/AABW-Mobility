@@ -14,6 +14,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { RouteInfo } from "@/lib/osrm";
 import { DrivoDestination } from "../types";
+import { MapTapHandler } from "./MapTapHandler";
 
 function letterIcon(letter: string, color: string) {
   return L.divIcon({
@@ -38,12 +39,25 @@ function dotIcon(color: string) {
 const originIcon = letterIcon("A", "#3B82F6");
 const destIcon = letterIcon("B", "#EF4444");
 const waypointIcon = dotIcon("#10B981");
+const waypointIconSelected = dotIcon("#FFC928");
+const crosshairIconFactory = () => L.divIcon({
+  className: "",
+  html: `<div style="width:32px;height:32px;border:3px solid #FFC928;border-radius:50%;background:rgba(255,201,40,0.2);box-shadow:0 0 12px rgba(255,201,40,0.5);display:flex;align-items:center;justify-content:center;"><div style="width:8px;height:8px;background:#FFC928;border-radius:50%;"></div></div>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+});
+const crosshairIcon = crosshairIconFactory();
 
 interface Props {
   origin: DrivoDestination | null;
   destination: DrivoDestination | null;
   waypoints: DrivoDestination[];
   route: RouteInfo | null;
+  interactive?: boolean;
+  onMapClick?: (latlng: { lat: number; lng: number }) => void;
+  onMarkerDrag?: (id: string, lat: number, lng: number) => void;
+  selectedMarkerId?: string | null;
+  crosshairLatLng?: { lat: number; lng: number } | null;
 }
 
 function toPositions(route: RouteInfo | null): [number, number][] {
@@ -79,12 +93,23 @@ function MapAutoFit({
       return;
     }
     map.fitBounds(L.latLngBounds(points), { padding: [60, 60], maxZoom: 15 });
-  }, [map, key, origin, destination, waypoints]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, key]);
   
   return null;
 }
 
-export function DrivoMapInner({ origin, destination, waypoints, route }: Props) {
+export function DrivoMapInner({
+  origin,
+  destination,
+  waypoints,
+  route,
+  interactive,
+  onMapClick,
+  onMarkerDrag,
+  selectedMarkerId,
+  crosshairLatLng,
+}: Props) {
   const routePositions = useMemo(() => toPositions(route), [route]);
 
   // Default center if nothing is provided (Vietnam)
@@ -104,6 +129,19 @@ export function DrivoMapInner({ origin, destination, waypoints, route }: Props) 
       />
 
       <MapAutoFit origin={origin} destination={destination} waypoints={waypoints} />
+
+      {interactive && onMapClick && (
+        <MapTapHandler onTap={onMapClick} enabled={interactive} />
+      )}
+
+      {crosshairLatLng && (
+        <Marker
+          position={[crosshairLatLng.lat, crosshairLatLng.lng]}
+          icon={crosshairIcon}
+        >
+          <Popup>Thêm điểm dừng tại đây?</Popup>
+        </Marker>
+      )}
 
       {routePositions.length > 0 && (
         <Polyline
@@ -128,7 +166,23 @@ export function DrivoMapInner({ origin, destination, waypoints, route }: Props) 
       )}
 
       {waypoints.map((wp, index) => (
-        <Marker key={wp.id} position={[wp.lat, wp.lng]} icon={waypointIcon}>
+        <Marker
+          key={wp.id}
+          position={[wp.lat, wp.lng]}
+          icon={selectedMarkerId === wp.id ? waypointIconSelected : waypointIcon}
+          draggable={interactive && !!onMarkerDrag}
+          eventHandlers={
+            interactive && onMarkerDrag
+              ? {
+                  dragend(e) {
+                    const marker = e.target;
+                    const pos = marker.getLatLng();
+                    onMarkerDrag(wp.id, pos.lat, pos.lng);
+                  },
+                }
+              : undefined
+          }
+        >
           <Popup>
             <div style={{ fontWeight: "bold" }}>{wp.name}</div>
             <div style={{ fontSize: 11, color: "#666" }}>Điểm dừng {index + 1}</div>

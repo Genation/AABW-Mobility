@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+/* eslint-disable react-hooks/set-state-in-effect -- SSR-safe hydration: default start time depends on client clock, seeded only after mount */
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { SmartLocationInput } from "../components/SmartLocationInput";
+import { DrivoMap } from "../components/DrivoMap";
 import { DrivoDestination } from "../types";
 import { Calendar, MapPin, ArrowRight } from "lucide-react";
 import styles from "../drivo.module.css";
+
+const EMPTY_WAYPOINTS: DrivoDestination[] = [];
 
 interface Props {
   onPlanTrip: (start: DrivoDestination, end: DrivoDestination, time: Date) => void;
@@ -13,31 +18,58 @@ interface Props {
   initialEnd?: DrivoDestination | null;
 }
 
+function getDefaultTime() {
+  const now = new Date();
+  now.setMinutes(0, 0, 0);
+  now.setHours(now.getHours() + 1);
+  return now;
+}
+
 export function CreateTripScreen({ onPlanTrip, initialStart = null, initialEnd = null }: Props) {
   const [start, setStart] = useState<DrivoDestination | null>(initialStart);
   const [end, setEnd] = useState<DrivoDestination | null>(initialEnd);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setStartTime(getDefaultTime());
+  }, []);
 
   return (
     <div className={styles.createScreen}>
-      <div className={styles.createHeader}>
-        <Image
-          src="/DrivoLogo.png"
-          alt="Drivo"
-          width={160}
-          height={54}
-          priority
-          style={{ margin: "0 auto", marginBottom: '12px', display: "block" }}
+      <div className={styles.createMapPreview}>
+        <DrivoMap
+          origin={start}
+          destination={end}
+          waypoints={EMPTY_WAYPOINTS}
+          route={null}
         />
-        <p className={styles.createTagline}>Plan the drive. Live the story.</p>
+        {start && end && (
+          <div className={styles.createMapOverlay}>
+            <div className={styles.createRoutePreview}>
+              <MapPin size={14} color="#3B82F6" /> {start.name}
+              <ArrowRight size={14} />
+              <MapPin size={14} color="#EF4444" /> {end.name}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className={styles.formCard}>
-        <h2 className={styles.formTitle}>Tạo chuyến đi mới</h2>
+      <div className={styles.createForm}>
+        <div className={styles.createHeader}>
+          <Image
+            src="/DrivoLogo.png"
+            alt="Drivo"
+            width={120}
+            height={40}
+            priority
+          />
+          <p className={styles.createTagline}>Plan the drive. Live the story.</p>
+        </div>
 
         <div className={styles.formFields}>
           <div>
             <label className={styles.fieldLabel}>
-              <MapPin size={14} color="var(--color-primary)" /> Điểm xuất phát
+              <MapPin size={14} color="#3B82F6" /> Điểm xuất phát
             </label>
             {start ? (
               <div className={styles.selectedLocation}>
@@ -51,7 +83,7 @@ export function CreateTripScreen({ onPlanTrip, initialStart = null, initialEnd =
 
           <div>
             <label className={styles.fieldLabel}>
-              <MapPin size={14} color="var(--color-error)" /> Điểm đến
+              <MapPin size={14} color="#EF4444" /> Điểm đến
             </label>
             {end ? (
               <div className={styles.selectedLocation}>
@@ -69,7 +101,8 @@ export function CreateTripScreen({ onPlanTrip, initialStart = null, initialEnd =
             </label>
             <input
               type="datetime-local"
-              defaultValue={new Date().toISOString().slice(0, 16)}
+              value={startTime ? startTime.toISOString().slice(0, 16) : ""}
+              onChange={(e) => setStartTime(new Date(e.target.value))}
               className={styles.dateInput}
             />
           </div>
@@ -78,19 +111,17 @@ export function CreateTripScreen({ onPlanTrip, initialStart = null, initialEnd =
         <button
           disabled={!start || !end}
           onClick={() => {
-            if (start && end) {
-              onPlanTrip(start, end, new Date());
-            }
+            if (start && end && startTime) onPlanTrip(start, end, startTime);
           }}
           className={`${styles.submitBtn} ${start && end ? styles.submitBtnActive : styles.submitBtnDisabled}`}
         >
-          Bắt đầu lên kế hoạch
+          Lên kế hoạch
           <ArrowRight size={18} />
         </button>
-      </div>
 
-      <div className={styles.footerMeta}>
-        MVP Concept • Drivo Team
+        <div className={styles.footerMeta}>
+          MVP Concept • Drivo Team
+        </div>
       </div>
     </div>
   );
