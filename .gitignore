@@ -19,6 +19,7 @@ node_modules/
 # dev
 /frontend-docs
 /plans
+/docs-dev
 
 # env
 .env

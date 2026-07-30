@@ -63,6 +63,15 @@ export const TRACKS: TrackDefinition[] = [
     gradient: "linear-gradient(135deg, #0EA5E9, #22C55E)",
   },
   {
+    id: "drivo",
+    number: 14,
+    title: "Drivo",
+    description: "Plan the drive. Live the story. A comprehensive mobile-first trip planner.",
+    icon: "Navigation",
+    status: "active",
+    gradient: "linear-gradient(135deg, #FFC928, #F59E0B)",
+  },
+  {
     id: "track-5",
     number: 5,
     title: "Gamification",
@@ -147,7 +156,7 @@ export const ACTIVE_TRACKS = TRACKS.filter((t) => t.status === "active");
 export const ROUTES = {
   LOGIN: "/login",
   DASHBOARD: "/dashboard",
-  TRACK_DETAIL: (id: string) => `/dashboard/track/${id}`,
+  TRACK_DETAIL: (id: string) => id === "drivo" ? `/dashboard/tracks/drivo` : `/dashboard/track/${id}`,
 } as const;
 
 /** Auth credentials (hardcoded for demo) */

@@ -59,6 +59,21 @@
   line-height: 1;
 }
 
+/* Compact on mobile */
+@media (max-width: 768px) {
+  .nav {
+    height: 48px;
+  }
+
+  .item {
+    padding: var(--space-1) var(--space-2);
+    min-width: 48px;
+    min-height: 36px;
+    font-size: 9px;
+    gap: 1px;
+  }
+}
+
 /* Hide on desktop */
 @media (min-width: 769px) {
   .nav {

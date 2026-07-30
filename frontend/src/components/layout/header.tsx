@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ROUTES } from "@/lib/constants";
 import styles from "./header.module.css";
 
@@ -13,11 +14,15 @@ interface HeaderProps {
   onToggleSidebar: () => void;
 }
 
+const DRIVO_PATH = "/dashboard/tracks/drivo";
+
 /**
  * Dashboard header — logo, mobile menu toggle, theme toggle, user/logout.
  */
 export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
+  const isDrivo = pathname.startsWith(DRIVO_PATH);
 
   return (
     <header className={styles.header} id="dashboard-header">
@@ -32,14 +37,14 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         </button>
         <Link href={ROUTES.DASHBOARD} className={styles.logoLink}>
           <Image
-            src="/logo.webp"
-            alt="Tasco Logo"
-            width={28}
-            height={28}
+            src={isDrivo ? "/DrivoLogo.png" : "/logo.webp"}
+            alt={isDrivo ? "Drivo Logo" : "Tasco Logo"}
+            width={isDrivo ? 100 : 28}
+            height={isDrivo ? 48 : 28}
             className={styles.logoImg}
             priority
           />
-          <span className={styles.logo}>Tasco</span>
+          {!isDrivo && <span className={styles.logo}>Tasco</span>}
         </Link>
       </div>
 
