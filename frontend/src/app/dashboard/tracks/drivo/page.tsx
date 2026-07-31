@@ -8,7 +8,8 @@ export default function DrivoPage() {
   return (
     <div style={{
       width: "100%",
-      height: "calc(100dvh - var(--header-height) - var(--bottom-nav-height))",
+      height: "calc(100dvh - var(--bottom-nav-height))",
+      // height: "calc(100dvh - var(--header-height) - var(--bottom-nav-height))",
       position: "relative",
       overflow: "hidden",
     }}>

@@ -20,7 +20,7 @@ export function AIAdvisorWidget({ messages, unreadCount, open, onToggle }: Props
       {open && (
         <div className={styles.advisorPanel}>
           <div className={styles.advisorPanelHeader}>
-            <span>Gợi ý AI (demo)</span>
+            <span>Trợ lý hành trình</span>
             <button className={styles.advisorPanelCloseBtn} onClick={onToggle} aria-label="Đóng">
               <X size={16} />
             </button>

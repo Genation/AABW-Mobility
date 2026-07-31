@@ -150,12 +150,14 @@ export function TripItineraryScreen({
                 <div className={styles.itineraryTrackCardRow}>
                   <div className={styles.itineraryTrackLeft}>
                     <div className={styles.itineraryTrackColor} style={{ background: color }} />
-                    <GripVertical size={16} className={styles.itineraryTrackGrip} />
+                    {/* <GripVertical size={16} className={styles.itineraryTrackGrip} /> */}
                   </div>
                   <div className={styles.itineraryTrackBody}>
-                    <div className={styles.itineraryTrackName}>{track.name}</div>
-                    <div className={styles.itineraryTrackRoute}>
-                      {start?.name ?? "?"} → {end?.name ?? "?"}
+                    <div className={styles.itineraryTrackMain}>
+                      <div className={styles.itineraryTrackName}>{track.name}</div>
+                      <div className={styles.itineraryTrackRoute}>
+                        {start?.name ?? "?"} → {end?.name ?? "?"}
+                      </div>
                     </div>
                     <div className={styles.itineraryTrackMeta}>
                       {distStr && <span>{distStr}{distDegraded ? " (ước tính)" : ""}</span>}
@@ -174,16 +176,17 @@ export function TripItineraryScreen({
                   >
                     {openTrackIds.has(track.id) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                   </button>
-                  <button
-                    className={styles.itineraryTrackDelete}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteTrack?.(track.id);
-                    }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
                 </div>
+                <button
+                  className={styles.itineraryTrackDelete}
+                  title="Xoá chặng"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteTrack?.(track.id);
+                  }}
+                >
+                  <Trash2 size={14} />
+                </button>
                 {openTrackIds.has(track.id) && (
                   <div
                     className={styles.itineraryTrackAccordion}
