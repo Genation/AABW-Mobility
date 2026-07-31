@@ -8,9 +8,10 @@ import { CreateTripScreen } from "./screens/CreateTripScreen";
 import { TripItineraryScreen } from "./screens/TripItineraryScreen";
 import { TrackDetailScreen } from "./screens/TrackDetailScreen";
 import { DrivoMap } from "./components/DrivoMap";
-import { fetchOsrmRoute, sliceRouteRange, RouteInfo, LatLng } from "@/lib/osrm";
+import { AIAdvisorWidget } from "./components/AIAdvisorWidget";
+import { fetchOsrmRoute, RouteInfo, LatLng } from "@/lib/osrm";
 import { buildOrderedTripPoints, getTrackPointRanges, getEffectiveTrackStart } from "./track-chain-utils";
-import { TRACK_COLORS } from "./track-colors";
+import { AdvisorMessage, buildStopAdvisorMessage, buildTrackAdvisorMessage } from "./advisor-mock-rules";
 import styles from "./drivo.module.css";
 
 const STORAGE_KEY = "drivo-app-state";
@@ -101,6 +102,27 @@ export function DrivoApp() {
   const routeFailureCountRef = useRef(0);
   const routeBackoffUntilRef = useRef(0);
 
+  const [advisorMessages, setAdvisorMessages] = useState<AdvisorMessage[]>([]);
+  const [advisorUnread, setAdvisorUnread] = useState(0);
+  const [advisorOpen, setAdvisorOpen] = useState(false);
+
+  const pushAdvisorMessage = useCallback((m: AdvisorMessage) => {
+    setAdvisorMessages(prev => [m, ...prev].slice(0, 30));
+    setAdvisorUnread(prev => prev + 1);
+  }, []);
+  const dismissAdvisorMessagesFor = useCallback((destId: string) => {
+    setAdvisorMessages(prev => prev.filter(m => m.sourceDestId !== destId));
+  }, []);
+  const toggleAdvisor = useCallback(() => {
+    setAdvisorOpen(prev => {
+      if (!prev) setAdvisorUnread(0);
+      return !prev;
+    });
+  }, []);
+  const handleStopAdded = useCallback((d: DrivoDestination) => {
+    pushAdvisorMessage(buildStopAdvisorMessage(d));
+  }, [pushAdvisorMessage]);
+
   useEffect(() => {
     setMounted(true);
     const persisted = loadPersistedState();
@@ -151,6 +173,7 @@ export function DrivoApp() {
     }));
     setActiveTrackId(newTrack.id);
     setScreen("TRACK_DETAIL");
+    pushAdvisorMessage(buildTrackAdvisorMessage(newTrack.name));
   };
 
   const handleEditTrack = (track: DrivoTrack) => {
@@ -236,15 +259,6 @@ export function DrivoApp() {
 
   const isRouteFresh = route != null && routeCoordinateKey === coordinateKey;
 
-  const trackSegments = useMemo(() => {
-    if (!isRouteFresh || !route) return [];
-    return plan.tracks.map((t, i) => ({
-      trackId: t.id,
-      coordinates: sliceRouteRange(route, trackPointRanges[i].startIndex, trackPointRanges[i].endIndex).coordinates,
-      color: TRACK_COLORS[i % TRACK_COLORS.length],
-    }));
-  }, [isRouteFresh, route, plan.tracks, trackPointRanges]);
-
   const activeTrackIndex = useMemo(() => {
     return plan.tracks.findIndex(t => t.id === activeTrackId);
   }, [plan.tracks, activeTrackId]);
@@ -281,8 +295,7 @@ export function DrivoApp() {
               origin={plan.startLocation}
               destination={plan.endLocation}
               waypoints={mapWaypoints}
-              route={null}
-              trackSegments={trackSegments}
+              route={isRouteFresh ? route : null}
             />
             <button
               onClick={toggleMapSize}
@@ -335,6 +348,17 @@ export function DrivoApp() {
           routeDegraded={routeDegraded}
           trackPointRange={trackPointRanges.find(r => r.trackId === activeTrack.id)}
           currentCoordinateKey={coordinateKey}
+          onStopAdded={handleStopAdded}
+          onStopRemoved={dismissAdvisorMessagesFor}
+        />
+      )}
+
+      {screen !== "CREATE_TRIP" && (
+        <AIAdvisorWidget
+          messages={advisorMessages}
+          unreadCount={advisorUnread}
+          open={advisorOpen}
+          onToggle={toggleAdvisor}
         />
       )}
     </div>

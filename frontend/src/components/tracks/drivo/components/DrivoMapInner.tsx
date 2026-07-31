@@ -7,7 +7,6 @@ import {
   Marker,
   Polyline,
   Popup,
-  Tooltip,
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
@@ -16,30 +15,29 @@ import type { RouteInfo } from "@/lib/osrm";
 import { DrivoDestination } from "../types";
 import { MapTapHandler } from "./MapTapHandler";
 
-function letterIcon(letter: string, color: string) {
-  return L.divIcon({
+/** `label` is restricted (not `string`) so untrusted place names can never reach this `L.divIcon` innerHTML sink. */
+const badgeIconCache = new Map<string, L.DivIcon>();
+
+function badgeIcon(label: "A" | "B" | number, color: string, size: number): L.DivIcon {
+  const text = String(label);
+  const cacheKey = `${text}|${color}|${size}`;
+  const cached = badgeIconCache.get(cacheKey);
+  if (cached) return cached;
+
+  const fontSize = text.length > 1 ? Math.max(size <= 18 ? 9 : 10, 8) : (size <= 18 ? 10 : 11);
+  const icon = L.divIcon({
     className: "",
-    html: `<div style="width:30px;height:30px;background:${color};border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;font-family:system-ui,sans-serif;">${letter}</div>`,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-    popupAnchor: [0, -18],
+    html: `<div style="width:${size}px;height:${size}px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:${fontSize}px;color:#fff;font-family:system-ui,sans-serif;">${text}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -(size / 2 + 4)],
   });
+  badgeIconCache.set(cacheKey, icon);
+  return icon;
 }
 
-function dotIcon(color: string) {
-  return L.divIcon({
-    className: "",
-    html: `<div style="width:16px;height:16px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>`,
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-    popupAnchor: [0, -10],
-  });
-}
-
-const originIcon = letterIcon("A", "#3B82F6");
-const destIcon = letterIcon("B", "#EF4444");
-const waypointIcon = dotIcon("#10B981");
-const waypointIconSelected = dotIcon("#FFC928");
+const originIcon = badgeIcon("A", "#3B82F6", 22);
+const destIcon = badgeIcon("B", "#EF4444", 22);
 const crosshairIconFactory = () => L.divIcon({
   className: "",
   html: `<div style="width:32px;height:32px;border:3px solid #FFC928;border-radius:50%;background:rgba(255,201,40,0.2);box-shadow:0 0 12px rgba(255,201,40,0.5);display:flex;align-items:center;justify-content:center;"><div style="width:8px;height:8px;background:#FFC928;border-radius:50%;"></div></div>`,
@@ -48,21 +46,14 @@ const crosshairIconFactory = () => L.divIcon({
 });
 const crosshairIcon = crosshairIconFactory();
 
-/** Narrower shape accepted by `route`/segments — only coordinates are ever read here. */
+/** Narrower shape accepted by `route` — only coordinates are ever read here. */
 type RouteLike = Pick<RouteInfo, "coordinates" | "distanceMeters" | "durationSeconds">;
-
-export interface TrackSegment {
-  trackId: string;
-  coordinates: [number, number][];
-  color: string;
-}
 
 interface Props {
   origin: DrivoDestination | null;
   destination: DrivoDestination | null;
   waypoints: DrivoDestination[];
   route: RouteLike | null;
-  trackSegments?: TrackSegment[];
   interactive?: boolean;
   onMapClick?: (latlng: { lat: number; lng: number }) => void;
   onMarkerDrag?: (id: string, lat: number, lng: number) => void;
@@ -113,7 +104,6 @@ export function DrivoMapInner({
   destination,
   waypoints,
   route,
-  trackSegments,
   interactive,
   onMapClick,
   onMarkerDrag,
@@ -169,26 +159,9 @@ export function DrivoMapInner({
         />
       )}
 
-      {trackSegments?.map((seg) => (
-        <Polyline
-          key={seg.trackId}
-          positions={toPositions(seg.coordinates)}
-          pathOptions={{
-            color: seg.color,
-            weight: 5,
-            opacity: 0.8,
-            lineCap: "round",
-            lineJoin: "round"
-          }}
-        />
-      ))}
-
       {origin && (
         <Marker position={[origin.lat, origin.lng]} icon={originIcon}>
           <Popup>Điểm đi (A): {origin.name}</Popup>
-          <Tooltip permanent direction="top" offset={[0, -20]}>
-            {origin.name}
-          </Tooltip>
         </Marker>
       )}
 
@@ -196,7 +169,7 @@ export function DrivoMapInner({
         <Marker
           key={wp.id}
           position={[wp.lat, wp.lng]}
-          icon={selectedMarkerId === wp.id ? waypointIconSelected : waypointIcon}
+          icon={badgeIcon(index + 1, selectedMarkerId === wp.id ? "#FFC928" : "#10B981", 18)}
           draggable={interactive && !!onMarkerDrag}
           eventHandlers={
             interactive && onMarkerDrag
@@ -214,18 +187,12 @@ export function DrivoMapInner({
             <div style={{ fontWeight: "bold" }}>{wp.name}</div>
             <div style={{ fontSize: 11, color: "#666" }}>Điểm dừng {index + 1}</div>
           </Popup>
-          <Tooltip permanent direction="top" offset={[0, -14]}>
-            {wp.name}
-          </Tooltip>
         </Marker>
       ))}
 
       {destination && (
         <Marker position={[destination.lat, destination.lng]} icon={destIcon}>
           <Popup>Điểm đến (B): {destination.name}</Popup>
-          <Tooltip permanent direction="top" offset={[0, -20]}>
-            {destination.name}
-          </Tooltip>
         </Marker>
       )}
     </MapContainer>

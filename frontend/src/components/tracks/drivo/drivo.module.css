@@ -229,67 +229,90 @@
   overflow: hidden;
 }
 
-.itineraryHeader {
+/* ---------- RouteSummaryHeader (shared: TripItineraryScreen + TrackDetailScreen) ---------- */
+.routeSummaryHeader {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--color-border);
 }
 
-.itineraryBackBtn {
+.routeSummaryHeaderBackBtn {
   background: none;
   border: none;
   color: var(--color-text-secondary);
   cursor: pointer;
-  padding: 4px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
 }
 
-/* .itineraryBackBtn::after {
-  content: "Quay lại";
-} */
-
-.itineraryHeaderInfo {
+.routeSummaryHeaderInfo {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.itineraryTitle {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
+.routeSummaryHeaderLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.itineraryMeta {
+.routeSummaryHeaderIconStart {
+  color: #3B82F6;
+  flex-shrink: 0;
+}
+
+.routeSummaryHeaderIconEnd {
+  color: #EF4444;
+  flex-shrink: 0;
+}
+
+.routeSummaryHeaderText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routeSummaryHeaderMeta {
   display: flex;
   gap: 12px;
   margin-top: 4px;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-text-secondary);
 }
 
-.itineraryMeta span {
+.routeSummaryHeaderMeta span {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
+.routeSummaryHeaderRight {
+  flex-shrink: 0;
+}
+
 .itineraryTrackList {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 16px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .itineraryEmpty {
@@ -326,10 +349,10 @@
 
 .itineraryTrackCard {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 14px;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 8px 10px;
+  border-radius: 12px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   cursor: pointer;
@@ -341,6 +364,19 @@
   background: rgba(255, 201, 40, 0.14);
 }
 
+.itineraryTrackCardRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.itineraryTrackAccordion {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-border-subtle);
+  cursor: default;
+}
+
 .itineraryTrackLeft {
   display: flex;
   align-items: center;
@@ -349,7 +385,7 @@
 
 .itineraryTrackColor {
   width: 10px;
-  height: 40px;
+  height: 32px;
   border-radius: 5px;
   flex-shrink: 0;
 }
@@ -366,13 +402,13 @@
 }
 
 .itineraryTrackName {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--color-text);
 }
 
 .itineraryTrackRoute {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-text-secondary);
   margin-top: 2px;
   white-space: nowrap;
@@ -384,8 +420,28 @@
   display: flex;
   gap: 8px;
   margin-top: 4px;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--color-text-secondary);
+}
+
+.itineraryTrackChevron {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.itineraryTrackChevron:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
 }
 
 .itineraryTrackDelete {
@@ -394,7 +450,13 @@
   color: var(--color-text-secondary);
   opacity: 0;
   cursor: pointer;
-  padding: 4px;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   transition: all var(--transition-fast);
 }
 
@@ -405,6 +467,12 @@
 .itineraryTrackDelete:hover {
   opacity: 1 !important;
   color: #EF4444;
+}
+
+@media (hover: none) {
+  .itineraryTrackDelete {
+    opacity: 0.5;
+  }
 }
 
 .itineraryTrackDragging {
@@ -418,8 +486,8 @@
 }
 
 .itineraryActions {
-  padding: 12px 16px;
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  padding: 8px 12px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--color-border);
 }
 
@@ -709,25 +777,13 @@
     font-size: 11px;
   }
 
-  .itineraryHeader {
-    padding: 12px;
-  }
-
-  .itineraryTitle {
-    font-size: 14px;
+  .routeSummaryHeader {
+    padding: 8px 10px;
   }
 
   .itineraryTrackList {
-    padding: 10px 12px;
-    gap: 8px;
-  }
-
-  .itineraryTrackCard {
-    padding: 10px 12px;
-  }
-
-  .itineraryTrackName {
-    font-size: 13px;
+    padding: 6px 10px;
+    gap: 5px;
   }
 
   .itineraryAddBtn {
@@ -866,8 +922,18 @@
 .stopList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 8px 16px 16px;
+  gap: 6px;
+  padding: 6px 12px 12px;
+}
+
+.stopListCompact {
+  padding: 6px 0 2px;
+  gap: 4px;
+}
+
+.stopListCompact .stopRow {
+  padding: 6px 8px;
+  min-height: 40px;
 }
 
 .stopAddBetweenBtn {
@@ -876,13 +942,13 @@
   justify-content: center;
   gap: 6px;
   width: 100%;
-  padding: 8px;
+  padding: 6px;
   margin: 2px 0;
   border-radius: 10px;
   border: 2px dashed var(--color-border);
   background: transparent;
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   min-height: 32px;
@@ -899,13 +965,17 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 8px 12px;
   border-radius: 14px;
   background: var(--color-surface);
   border: 2px solid transparent;
   cursor: pointer;
   min-height: 44px;
   transition: all var(--transition-fast);
+}
+
+.stopRowStatic {
+  cursor: default;
 }
 
 .stopRowActive {
@@ -926,13 +996,13 @@
 }
 
 .stopRowIcon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: #FFC928;
   color: #11161C;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1164,8 +1234,8 @@
   right: 0;
   z-index: 10;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: stretch;
   padding: 12px 16px;
   padding-top: max(12px, env(safe-area-inset-top));
   background: linear-gradient(to bottom, var(--color-glass), transparent);
@@ -1174,6 +1244,22 @@
 
 .trackDetailHeader > * {
   pointer-events: auto;
+}
+
+.trackDetailHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.routeSummaryHeaderOverlay {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--color-glass);
+  backdrop-filter: blur(var(--blur-glass));
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+  border: 1px solid var(--color-glass-border);
+  border-radius: 12px;
 }
 
 .trackDetailBackBtn,
@@ -1257,7 +1343,7 @@
 .panelDragHandle {
   display: flex;
   justify-content: center;
-  padding: 8px 0;
+  padding: 6px 0;
   cursor: pointer;
 }
 
@@ -1266,4 +1352,135 @@
   height: 4px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---------- AIAdvisorWidget ---------- */
+.advisorFab {
+  position: fixed;
+  right: 16px;
+  bottom: 88px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFC928;
+  color: #11161C;
+  box-shadow: var(--shadow-lg);
+  z-index: calc(var(--z-overlay) + 10);
+}
+
+.advisorBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #EF4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-bg);
+}
+
+.advisorPanel {
+  position: fixed;
+  right: 16px;
+  bottom: 148px;
+  width: min(320px, calc(100vw - 32px));
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  z-index: calc(var(--z-overlay) + 10);
+}
+
+.advisorPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-glass-border);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.advisorPanelCloseBtn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.advisorPanelBody {
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.advisorEmpty {
+  padding: 24px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.advisorMsgRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--color-surface);
+}
+
+.advisorMsgIconWarning {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #F59E0B;
+}
+
+.advisorMsgIconTip {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #10B981;
+}
+
+.advisorMsgBody {
+  min-width: 0;
+}
+
+.advisorMsgText {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text);
+}
+
+.advisorMsgTime {
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--color-text-secondary);
 }

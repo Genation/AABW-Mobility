@@ -3,12 +3,14 @@
 import { useState, useMemo, useCallback } from "react";
 import { DrivoTrack, DrivoDestination } from "../types";
 import { DrivoMap } from "../components/DrivoMap";
-import { TrackStopsList, StopItem } from "../components/TrackStopsList";
+import { TrackStopsList } from "../components/TrackStopsList";
 import { SmartLocationInput } from "../components/SmartLocationInput";
 import { AISuggestions } from "../components/AISuggestions";
+import { RouteSummaryHeader } from "../components/RouteSummaryHeader";
 import { TrackPointRange } from "../track-chain-utils";
+import { buildStopItems, formatDistance } from "../stop-items-utils";
 import { PlaceCandidate } from "@/lib/api";
-import { haversineMeters, sliceRouteRange, RouteInfo } from "@/lib/osrm";
+import { sliceRouteRange, haversineMeters, RouteInfo } from "@/lib/osrm";
 import { ArrowLeft, Check } from "lucide-react";
 import styles from "../drivo.module.css";
 
@@ -25,10 +27,10 @@ interface Props {
   trackPointRange: TrackPointRange | undefined;
   /** Current buildOrderedTripPointsKey(plan) — staleness check against routeCoordinateKey. */
   currentCoordinateKey: string;
-}
-
-function formatDistance(m: number): string {
-  return m >= 1000 ? `${(m / 1000).toFixed(0)}km` : `${m.toFixed(0)}m`;
+  /** Fires after a stop is added via POI search (AI advisor trigger). */
+  onStopAdded?: (dest: DrivoDestination) => void;
+  /** Fires before a stop is removed, so callers can drop anything keyed to its id (AI advisor trigger). */
+  onStopRemoved?: (id: string) => void;
 }
 
 export function TrackDetailScreen({
@@ -41,6 +43,8 @@ export function TrackDetailScreen({
   routeDegraded,
   trackPointRange,
   currentCoordinateKey,
+  onStopAdded,
+  onStopRemoved,
 }: Props) {
   const [crosshair, setCrosshair] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
@@ -64,12 +68,14 @@ export function TrackDetailScreen({
     onUpdateTrack({ ...track, destinations: newDests });
     setCrosshair(null);
     setAddAfterId(null);
-  }, [track, addAfterId, onUpdateTrack]);
+    onStopAdded?.(dest);
+  }, [track, addAfterId, onUpdateTrack, onStopAdded]);
 
   const removeDestination = useCallback((id: string) => {
+    onStopRemoved?.(id);
     onUpdateTrack({ ...track, destinations: track.destinations.filter((d) => d.id !== id) });
     if (selectedMarkerId === id) setSelectedMarkerId(null);
-  }, [track, selectedMarkerId, onUpdateTrack]);
+  }, [track, selectedMarkerId, onUpdateTrack, onStopRemoved]);
 
   const handleMarkerDrag = useCallback((id: string, lat: number, lng: number) => {
     if (track.endLocation?.id === id) {
@@ -112,49 +118,26 @@ export function TrackDetailScreen({
     onUpdateTrack({ ...track, endLocation: dest });
   }, [track, onUpdateTrack]);
 
-  const stopItems: StopItem[] = useMemo(() => {
-    // A point that exactly matches its predecessor is dropped by buildOrderedTripPoints'
-    // dedup — mirror that rule here (same adjacency, since this track's own sequence is
-    // a contiguous sub-range of the global deduped list) so pointIndex never drifts out
-    // of sync with route.legs when a duplicate-coordinate stop exists.
-    function distanceFrom(pointIndex: number, prev: DrivoDestination | undefined, curr: DrivoDestination): { text?: string; degraded: boolean } {
-      if (prev && prev.lat === curr.lat && prev.lng === curr.lng) {
-        return { text: formatDistance(0), degraded: false };
-      }
-      if (isRouteFresh && trackPointRange && route) {
-        const { distanceMeters } = sliceRouteRange(route, pointIndex, pointIndex + 1);
-        return { text: formatDistance(distanceMeters), degraded: false };
-      }
-      if (prev) {
-        const m = haversineMeters(prev.lat, prev.lng, curr.lat, curr.lng);
-        return { text: formatDistance(m), degraded: routeDegraded };
-      }
-      return { degraded: false };
+  const stopItems = useMemo(
+    () => buildStopItems({ track, effectiveStartLocation, trackPointRange, route, routeDegraded, isRouteFresh }),
+    [track, trackPointRange, route, routeDegraded, isRouteFresh, effectiveStartLocation],
+  );
+
+  const trackDistanceText = useMemo(() => {
+    if (isRouteFresh && trackPointRange && route) {
+      return formatDistance(
+        sliceRouteRange(route, trackPointRange.startIndex, trackPointRange.endIndex).distanceMeters,
+      );
     }
-
-    const items: StopItem[] = [];
-    let pointIndex = trackPointRange?.startIndex ?? 0;
-    let prev: DrivoDestination | undefined = effectiveStartLocation ?? undefined;
-
-    if (effectiveStartLocation) {
-      items.push({ id: effectiveStartLocation.id, label: effectiveStartLocation.name, kind: "start", destination: effectiveStartLocation });
+    if (routeDegraded && effectiveStartLocation && track.endLocation) {
+      const estimated = haversineMeters(
+        effectiveStartLocation.lat, effectiveStartLocation.lng,
+        track.endLocation.lat, track.endLocation.lng,
+      );
+      return `${formatDistance(estimated)} (ước tính)`;
     }
-
-    for (const d of track.destinations) {
-      const isNewPoint = !prev || prev.lat !== d.lat || prev.lng !== d.lng;
-      const { text, degraded } = distanceFrom(pointIndex, prev, d);
-      items.push({ id: d.id, label: d.name, kind: "waypoint", destination: d, distanceFromPrev: text, degraded: !!text && degraded });
-      if (isNewPoint) pointIndex += 1;
-      prev = d;
-    }
-
-    if (track.endLocation) {
-      const { text, degraded } = distanceFrom(pointIndex, prev, track.endLocation);
-      items.push({ id: track.endLocation.id, label: track.endLocation.name, kind: "end", destination: track.endLocation, distanceFromPrev: text, degraded: !!text && degraded });
-    }
-
-    return items;
-  }, [track, trackPointRange, route, routeDegraded, isRouteFresh, effectiveStartLocation]);
+    return null;
+  }, [isRouteFresh, trackPointRange, route, routeDegraded, effectiveStartLocation, track.endLocation]);
 
   return (
     <div className={styles.trackDetailContainer}>
@@ -177,20 +160,35 @@ export function TrackDetailScreen({
       </div>
 
       <div className={styles.trackDetailHeader}>
-        <button onClick={onDone} className={styles.trackDetailBackBtn}>
-          <ArrowLeft size={22} />
-        </button>
-        <div className={styles.trackDetailHeaderInfo}>
-          <input
-            value={track.name}
-            onChange={(e) => onUpdateTrack({ ...track, name: e.target.value })}
-            className={styles.trackDetailNameInput}
-            placeholder="Tên chặng"
-          />
+        <div className={styles.trackDetailHeaderRow}>
+          <button onClick={onDone} className={styles.trackDetailBackBtn}>
+            <ArrowLeft size={22} />
+          </button>
+          <div className={styles.trackDetailHeaderInfo}>
+            <input
+              value={track.name}
+              onChange={(e) => onUpdateTrack({ ...track, name: e.target.value })}
+              className={styles.trackDetailNameInput}
+              placeholder="Tên chặng"
+            />
+          </div>
+          <button onClick={onDone} className={styles.trackDetailSaveBtn}>
+            <Check size={22} />
+          </button>
         </div>
-        <button onClick={onDone} className={styles.trackDetailSaveBtn}>
-          <Check size={22} />
-        </button>
+        {!isGated && (
+          <RouteSummaryHeader
+            variant="overlay"
+            startName={effectiveStartLocation?.name ?? "?"}
+            endName={track.endLocation?.name ?? "?"}
+            meta={
+              <>
+                {trackDistanceText && <span>{trackDistanceText}</span>}
+                <span>{track.destinations.length} điểm dừng</span>
+              </>
+            }
+          />
+        )}
       </div>
 
       {isGated ? (

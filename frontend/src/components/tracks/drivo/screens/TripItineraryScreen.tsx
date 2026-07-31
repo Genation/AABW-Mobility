@@ -1,20 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { TripPlan, DrivoTrack } from "../types";
 import { haversineMeters, sliceRouteRange, RouteInfo } from "@/lib/osrm";
 import { getTrackPointRanges, buildOrderedTripPointsKey, getEffectiveTrackStart, getEffectiveTrackEnd } from "../track-chain-utils";
+import { buildStopItems, formatDistance } from "../stop-items-utils";
 import { TRACK_COLORS } from "../track-colors";
-import { Plus, Navigation, Clock, ArrowLeft, GripVertical, Trash2, PlusCircle } from "lucide-react";
+import { RouteSummaryHeader } from "../components/RouteSummaryHeader";
+import { TrackStopsList } from "../components/TrackStopsList";
+import { Plus, Navigation, Clock, GripVertical, Trash2, PlusCircle, ChevronDown, ChevronRight } from "lucide-react";
 import styles from "../drivo.module.css";
 
 function formatDate(d: Date | null): string {
   if (!d || !(d instanceof Date) || isNaN(d.getTime())) return "Chưa định";
   return d.toLocaleDateString("vi-VN");
-}
-
-function formatDistance(m: number): string {
-  return m >= 1000 ? `${(m / 1000).toFixed(0)}km` : `${m.toFixed(0)}m`;
 }
 
 interface Props {
@@ -46,6 +45,15 @@ export function TripItineraryScreen({
   const trackPointRanges = useMemo(() => getTrackPointRanges(plan), [plan]);
   const currentCoordinateKey = useMemo(() => buildOrderedTripPointsKey(plan), [plan]);
   const isRouteFresh = route != null && routeCoordinateKey === currentCoordinateKey;
+  const [openTrackIds, setOpenTrackIds] = useState<Set<string>>(new Set());
+  const toggleTrack = (id: string) => {
+    setOpenTrackIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const totalDistance = useMemo(() => {
     if (isRouteFresh && route) return route.distanceMeters;
@@ -63,23 +71,20 @@ export function TripItineraryScreen({
 
   return (
     <div className={styles.itinerarySheet}>
-      <div className={styles.itineraryHeader}>
-        <button onClick={onCancelTrip} className={styles.itineraryBackBtn}>
-          <ArrowLeft size={18} />
-        </button>
-        <div className={styles.itineraryHeaderInfo}>
-          <h2 className={styles.itineraryTitle}>
-            {plan.startLocation?.name ?? "?"} → {plan.endLocation?.name ?? "?"}
-          </h2>
-          <div className={styles.itineraryMeta}>
+      <RouteSummaryHeader
+        onBack={onCancelTrip}
+        startName={plan.startLocation?.name ?? "?"}
+        endName={plan.endLocation?.name ?? "?"}
+        meta={
+          <>
             <span><Navigation size={12} /> {plan.tracks.length} chặng</span>
             <span><Clock size={12} /> {formatDate(plan.startTime)}</span>
             {totalDistance > 0 && (
               <span>{formatDistance(totalDistance)}{totalDistanceDegraded ? " (ước tính)" : ""}</span>
             )}
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className={styles.itineraryTrackList}>
         {plan.tracks.length === 0 && !plan.startLocation && !plan.endLocation ? (
@@ -142,29 +147,63 @@ export function TripItineraryScreen({
                   }
                 }}
               >
-                <div className={styles.itineraryTrackLeft}>
-                  <div className={styles.itineraryTrackColor} style={{ background: color }} />
-                  <GripVertical size={16} className={styles.itineraryTrackGrip} />
-                </div>
-                <div className={styles.itineraryTrackBody}>
-                  <div className={styles.itineraryTrackName}>{track.name}</div>
-                  <div className={styles.itineraryTrackRoute}>
-                    {start?.name ?? "?"} → {end?.name ?? "?"}
+                <div className={styles.itineraryTrackCardRow}>
+                  <div className={styles.itineraryTrackLeft}>
+                    <div className={styles.itineraryTrackColor} style={{ background: color }} />
+                    <GripVertical size={16} className={styles.itineraryTrackGrip} />
                   </div>
-                  <div className={styles.itineraryTrackMeta}>
-                    {distStr && <span>{distStr}{distDegraded ? " (ước tính)" : ""}</span>}
-                    <span>{track.destinations.length} điểm dừng</span>
+                  <div className={styles.itineraryTrackBody}>
+                    <div className={styles.itineraryTrackName}>{track.name}</div>
+                    <div className={styles.itineraryTrackRoute}>
+                      {start?.name ?? "?"} → {end?.name ?? "?"}
+                    </div>
+                    <div className={styles.itineraryTrackMeta}>
+                      {distStr && <span>{distStr}{distDegraded ? " (ước tính)" : ""}</span>}
+                      <span>{track.destinations.length} điểm dừng</span>
+                    </div>
                   </div>
+                  <button
+                    type="button"
+                    className={styles.itineraryTrackChevron}
+                    aria-expanded={openTrackIds.has(track.id)}
+                    aria-label={openTrackIds.has(track.id) ? "Thu gọn danh sách điểm dừng" : "Mở danh sách điểm dừng"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleTrack(track.id);
+                    }}
+                  >
+                    {openTrackIds.has(track.id) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                  </button>
+                  <button
+                    className={styles.itineraryTrackDelete}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteTrack?.(track.id);
+                    }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
-                <button
-                  className={styles.itineraryTrackDelete}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteTrack?.(track.id);
-                  }}
-                >
-                  <Trash2 size={16} />
-                </button>
+                {openTrackIds.has(track.id) && (
+                  <div
+                    className={styles.itineraryTrackAccordion}
+                    draggable={false}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <TrackStopsList
+                      readOnly
+                      compact
+                      waypoints={buildStopItems({
+                        track,
+                        effectiveStartLocation: start,
+                        trackPointRange: range,
+                        route,
+                        routeDegraded,
+                        isRouteFresh,
+                      })}
+                    />
+                  </div>
+                )}
               </div>
             );
           })

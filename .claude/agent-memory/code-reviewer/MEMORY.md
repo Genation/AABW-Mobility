@@ -1,0 +1,1 @@
+- [Drivo plan diff-review gates](project_drivo-plan-diff-review-gates.md) — AABW-Mobility drivo plans encode exact per-phase diff constraints on shared files; verify literally, check "known-intentional" list before flagging.
