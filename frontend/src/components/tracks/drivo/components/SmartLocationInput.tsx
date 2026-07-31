@@ -2,9 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Loader2, MapPin, Search, Sparkles } from "lucide-react";
-import { API } from "@/lib/constants";
 import {
-  fetchSuggestions,
   searchPlaces,
   understandQuery,
   type PlaceCandidate,
@@ -13,6 +11,7 @@ import {
 } from "@/lib/api";
 import { useRouteMap } from "@/hooks/use-route-map";
 import { filterSortByNearby } from "../nearby-search-utils";
+import { usePoiSuggestions } from "../use-poi-suggestions";
 import { DrivoDestination } from "../types";
 import styles from "../drivo.module.css";
 
@@ -41,7 +40,7 @@ const hasMapCoords = (c: PlaceCandidate): boolean =>
 export function SmartLocationInput({ placeholder = "Tìm địa điểm...", onSelect, style, showCategoryChips = false, onFocus }: Props) {
   const { userLocation } = useRouteMap();
   const [text, setText] = useState("");
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const { suggestions, requestSuggestions, clearSuggestions } = usePoiSuggestions();
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [candidates, setCandidates] = useState<PlaceCandidate[]>([]);
@@ -49,33 +48,16 @@ export function SmartLocationInput({ placeholder = "Tìm địa điểm...", onS
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const suggestAbort = useRef<AbortController | null>(null);
-  const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchAbort = useRef<AbortController | null>(null);
 
   const onTextChange = (value: string) => {
     setText(value);
     setShowSuggestions(true);
-    if (suggestTimer.current) clearTimeout(suggestTimer.current);
     if (!value.trim()) {
-      setSuggestions([]);
+      clearSuggestions();
       return;
     }
-    suggestTimer.current = setTimeout(async () => {
-      suggestAbort.current?.abort();
-      const ac = new AbortController();
-      suggestAbort.current = ac;
-      try {
-        const res = await fetchSuggestions(
-          value.trim(),
-          { limit: 6, endpoint: API.TRACK4_HAI_SUGGEST },
-          ac.signal,
-        );
-        setSuggestions(res.suggestions ?? []);
-      } catch {
-        // best-effort
-      }
-    }, 180);
+    requestSuggestions(value);
   };
 
   async function runSearch(query: string) {

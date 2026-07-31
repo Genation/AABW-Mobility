@@ -1,18 +1,10 @@
 "use client";
 
-import { Lightbulb, X } from "lucide-react";
+import { X } from "lucide-react";
 import Image from "next/image";
 import { TripAdvisorWarning } from "../types";
+import { AdvisorMessageList } from "./AdvisorMessageList";
 import styles from "../drivo.module.css";
-
-function formatRelativeTime(createdAt: number, now: number): string {
-  const diffSec = Math.max(0, Math.floor((now - createdAt) / 1000));
-  if (diffSec < 60) return "vừa xong";
-  const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `${diffMin} phút trước`;
-  const diffHour = Math.floor(diffMin / 60);
-  return `${diffHour} giờ trước`;
-}
 
 interface Props {
   messages: TripAdvisorWarning[];
@@ -35,8 +27,6 @@ export function AIAdvisorWidget({
   onToastClick,
   onToastDismiss,
 }: Props) {
-  const now = Date.now();
-
   return (
     <>
       {open && (
@@ -87,25 +77,11 @@ export function AIAdvisorWidget({
                   <span className={styles.advisorThinkingLoaderHint}>Đang xem xét thứ tự chặng, thời gian và điều kiện dọc đường...</span>
                 </div>
               </div>
-            ) : messages.length === 0 ? (
-              <div className={styles.advisorEmpty}>
-                <span>Chưa có gợi ý nào. Lưu chặng để AI phân tích toàn hành trình.</span>
-              </div>
             ) : (
-              messages.map((msg) => (
-                <div key={msg.id} className={styles.advisorMsgRow}>
-                  <Lightbulb size={16} className={styles.advisorMsgIconTip} />
-                  <div className={styles.advisorMsgBody}>
-                    <div className={styles.advisorMsgText}>
-                      {msg.message}
-                      {msg.confidence != null && (
-                        <span className={styles.advisorConfidence}>{Math.round(msg.confidence * 100)}%</span>
-                      )}
-                    </div>
-                    <div className={styles.advisorMsgTime}>{formatRelativeTime(msg.createdAt, now)}</div>
-                  </div>
-                </div>
-              ))
+              <AdvisorMessageList
+                messages={messages}
+                emptyText="Chưa có gợi ý nào. Lưu chặng để AI phân tích toàn hành trình."
+              />
             )}
           </div>
         </div>

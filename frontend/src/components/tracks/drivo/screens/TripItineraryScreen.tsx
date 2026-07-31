@@ -8,6 +8,9 @@ import { buildStopItems, formatDistance } from "../stop-items-utils";
 import { TRACK_COLORS } from "../track-colors";
 import { RouteSummaryHeader } from "../components/RouteSummaryHeader";
 import { TrackStopsList } from "../components/TrackStopsList";
+import { AdvisorMessageList } from "../components/AdvisorMessageList";
+import { TripAdvisorWarning } from "../types";
+import Image from "next/image";
 import { Plus, Navigation, Clock, GripVertical, Trash2, PlusCircle, ChevronDown, ChevronRight } from "lucide-react";
 import styles from "../drivo.module.css";
 
@@ -28,6 +31,8 @@ interface Props {
   route: RouteInfo | null;
   routeCoordinateKey: string | null;
   routeDegraded: boolean;
+  advisorMessages?: TripAdvisorWarning[];
+  advisorThinking?: boolean;
 }
 
 export function TripItineraryScreen({
@@ -41,6 +46,8 @@ export function TripItineraryScreen({
   route,
   routeCoordinateKey,
   routeDegraded,
+  advisorMessages = [],
+  advisorThinking = false,
 }: Props) {
   const trackPointRanges = useMemo(() => getTrackPointRanges(plan), [plan]);
   const currentCoordinateKey = useMemo(() => buildOrderedTripPointsKey(plan), [plan]);
@@ -218,6 +225,38 @@ export function TripItineraryScreen({
               </div>
             );
           })
+        )}
+
+        {(advisorMessages.length > 0 || advisorThinking) && (
+          <div className={styles.aiSuggestions} style={{ paddingTop: 16 }}>
+            <div className={styles.aiSuggestionsHeader}>
+              {advisorThinking ? "AI đang phân tích..." : "Gợi ý từ AI"}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {advisorThinking && advisorMessages.length === 0 ? (
+                <div className={styles.advisorThinkingLoader}>
+                  <Image
+                    src="/bot-ai-gif.gif"
+                    alt="Đang phân tích"
+                    width={64}
+                    height={64}
+                    priority
+                    unoptimized
+                    style={{ borderRadius: "50%" }}
+                  />
+                  <div className={styles.advisorThinkingLoaderText}>
+                    <span className={styles.advisorThinkingLoaderLabel}>Đang phân tích toàn hành trình</span>
+                    <div className={styles.advisorThinkingBar}>
+                      <div className={styles.advisorThinkingBarFill} />
+                    </div>
+                    <span className={styles.advisorThinkingLoaderHint}>Đang xem xét thứ tự chặng, thời gian và điều kiện dọc đường...</span>
+                  </div>
+                </div>
+              ) : (
+                <AdvisorMessageList messages={advisorMessages} emptyText="Lưu chặng để AI phân tích toàn hành trình." />
+              )}
+            </div>
+          </div>
         )}
       </div>
 

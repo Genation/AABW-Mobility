@@ -3,10 +3,11 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useState, useEffect, useRef } from "react";
-import { searchPlaces, PlaceCandidate } from "@/lib/api";
+import { searchPlaces, PlaceCandidate, Suggestion } from "@/lib/api";
 import { useRouteMap } from "@/hooks/use-route-map";
 import { filterSortByNearby, NearbyCenter } from "../nearby-search-utils";
 import { formatDistance } from "../stop-items-utils";
+import { usePoiSuggestions } from "../use-poi-suggestions";
 import { Plus, Loader2, MapPin, Search } from "lucide-react";
 import styles from "../drivo.module.css";
 
@@ -42,6 +43,8 @@ export function AISuggestions({
   const { userLocation } = useRouteMap();
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
+  const { suggestions, requestSuggestions, clearSuggestions } = usePoiSuggestions();
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [centerId, setCenterId] = useState("");
   const [results, setResults] = useState<ResultItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -106,12 +109,32 @@ export function AISuggestions({
     onCategoryChange(activeCategory === key ? "" : key);
     setQuery("");
     setSubmittedQuery("");
+    setShowSuggestions(false);
+    clearSuggestions();
   };
 
-  const runTextSearch = () => {
-    if (!query.trim()) return;
-    setSubmittedQuery(query.trim());
+  const runTextSearch = (text?: string) => {
+    const q = (text ?? query).trim();
+    if (!q) return;
+    setQuery(q);
+    setSubmittedQuery(q);
     onCategoryChange("");
+    setShowSuggestions(false);
+    clearSuggestions();
+  };
+
+  const onQueryChange = (value: string) => {
+    setQuery(value);
+    setShowSuggestions(true);
+    if (!value.trim()) {
+      clearSuggestions();
+      return;
+    }
+    requestSuggestions(value);
+  };
+
+  const pickSuggestion = (s: Suggestion) => {
+    runTextSearch(s.display || s.text);
   };
 
   const hasQuery = !!(submittedQuery || CATEGORIES.find((c) => c.key === activeCategory));
@@ -124,14 +147,32 @@ export function AISuggestions({
       <div className={styles.aiSearchRow}>
         <input
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => onQueryChange(e.target.value)}
+          onFocus={() => query && setShowSuggestions(true)}
           onKeyDown={(e) => e.key === "Enter" && runTextSearch()}
           placeholder="Tìm địa điểm..."
           className={styles.aiSearchInput}
         />
-        <button type="button" onClick={runTextSearch} disabled={!query.trim()} className={styles.aiSearchBtn}>
+        <button type="button" onClick={() => runTextSearch()} disabled={!query.trim()} className={styles.aiSearchBtn}>
           <Search size={14} /> Tìm
         </button>
+
+        {showSuggestions && suggestions.length > 0 && (
+          <div className={styles.locSuggestions}>
+            {suggestions.map((s, i) => (
+              <button
+                key={`${s.text}-${i}`}
+                type="button"
+                onClick={() => pickSuggestion(s)}
+                className={styles.locSuggestItem}
+              >
+                <MapPin size={12} className={styles.locSuggestIcon} />
+                <span>{s.display || s.text}</span>
+                <span className={styles.locSuggestType}>{s.type}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className={styles.categoryChips}>

@@ -301,6 +301,8 @@ export function DrivoApp() {
                 route={route}
                 routeCoordinateKey={routeCoordinateKey}
                 routeDegraded={routeDegraded}
+                advisorMessages={visibleAdvisorMessages}
+                advisorThinking={advisor.thinking}
                 onDeleteTrack={(id) => {
                   setPlan((prev) => ({
                     ...prev,
