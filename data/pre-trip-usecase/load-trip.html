@@ -236,7 +236,7 @@
           throw new Error('Dữ liệu JSON không đúng định dạng TripPlan');
         }
 
-        localStorage.setItem('drivo-app-version', '2');
+        localStorage.setItem('drivo-app-version', '4');
         localStorage.setItem('drivo-app-state', JSON.stringify(data));
         setStatus(`Đã load "${trip.title}" thành công! Mở http://localhost:3000/dashboard/tracks/drivo để xem.`, 'success');
       } catch (err) {

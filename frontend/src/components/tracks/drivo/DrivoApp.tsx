@@ -12,12 +12,12 @@ import { AIAdvisorWidget } from "./components/AIAdvisorWidget";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { fetchOsrmRoute, RouteInfo, LatLng } from "@/lib/osrm";
 import { buildOrderedTripPoints, getTrackPointRanges, getEffectiveTrackStart } from "./track-chain-utils";
-import { AdvisorMessage, buildStopAdvisorMessage, buildTrackAdvisorMessage } from "./advisor-mock-rules";
+import { useDrivoAdvisor } from "./use-drivo-advisor";
 import styles from "./drivo.module.css";
 
 const STORAGE_KEY = "drivo-app-state";
 const STORAGE_VERSION_KEY = "drivo-app-version";
-const CURRENT_VERSION = 3;
+const CURRENT_VERSION = 4;
 const ROUTE_FETCH_DEBOUNCE_MS = 300;
 const ROUTE_FAILURE_BACKOFF_MS = 30000;
 const ROUTE_FAILURE_THRESHOLD = 2;
@@ -103,36 +103,7 @@ export function DrivoApp() {
   const routeFailureCountRef = useRef(0);
   const routeBackoffUntilRef = useRef(0);
 
-  const [advisorMessages, setAdvisorMessages] = useState<AdvisorMessage[]>([]);
-  const [advisorUnread, setAdvisorUnread] = useState(0);
-  const [advisorOpen, setAdvisorOpen] = useState(false);
-  const [advisorThinking, setAdvisorThinking] = useState(false);
-  const advisorThinkingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const pushAdvisorMessage = useCallback((m: AdvisorMessage) => {
-    setAdvisorMessages(prev => [m, ...prev].slice(0, 30));
-    setAdvisorUnread(prev => prev + 1);
-  }, []);
-  const dismissAdvisorMessagesFor = useCallback((destId: string) => {
-    setAdvisorMessages(prev => prev.filter(m => m.sourceDestId !== destId));
-  }, []);
-  const toggleAdvisor = useCallback(() => {
-    setAdvisorOpen(prev => {
-      if (!prev) setAdvisorUnread(0);
-      return !prev;
-    });
-  }, []);
-  const handleStopAdded = useCallback((d: DrivoDestination) => {
-    setAdvisorThinking(true);
-    setAdvisorOpen(true);
-    setAdvisorUnread(0);
-    if (advisorThinkingTimerRef.current) clearTimeout(advisorThinkingTimerRef.current);
-    const msg = buildStopAdvisorMessage(d);
-    advisorThinkingTimerRef.current = setTimeout(() => {
-      setAdvisorThinking(false);
-      pushAdvisorMessage(msg);
-    }, 4000);
-  }, [pushAdvisorMessage]);
+  const advisor = useDrivoAdvisor();
 
   useEffect(() => {
     setMounted(true);
@@ -184,7 +155,6 @@ export function DrivoApp() {
     }));
     setActiveTrackId(newTrack.id);
     setScreen("TRACK_DETAIL");
-    pushAdvisorMessage(buildTrackAdvisorMessage(newTrack.name));
   };
 
   const handleEditTrack = (track: DrivoTrack) => {
@@ -202,7 +172,8 @@ export function DrivoApp() {
   const handleDoneTrack = useCallback(() => {
     setActiveTrackId(null);
     setScreen("TRIP_ITINERARY");
-  }, []);
+    advisor.runAnalysis(plan);
+  }, [plan, advisor]);
 
   const handleCancelTrip = () => {
     setScreen("CREATE_TRIP");
@@ -261,6 +232,13 @@ export function DrivoApp() {
   const activeTrackIndex = useMemo(() => {
     return plan.tracks.findIndex(t => t.id === activeTrackId);
   }, [plan.tracks, activeTrackId]);
+
+  const visibleAdvisorMessages = useMemo(() => {
+    if (screen === "TRACK_DETAIL") {
+      return advisor.messages.filter(m => m.track_id === activeTrackIndex + 1 || m.track_id === -1);
+    }
+    return advisor.messages;
+  }, [advisor.messages, screen, activeTrackIndex]);
 
   const mapOrigin = orderedPoints.length > 0 ? orderedPoints[0] : plan.startLocation;
   const mapDest = orderedPoints.length > 1 ? orderedPoints[orderedPoints.length - 1] : plan.endLocation;
@@ -354,18 +332,21 @@ export function DrivoApp() {
           routeDegraded={routeDegraded}
           trackPointRange={trackPointRanges.find(r => r.trackId === activeTrack.id)}
           currentCoordinateKey={coordinateKey}
-          onStopAdded={handleStopAdded}
-          onStopRemoved={dismissAdvisorMessagesFor}
+          hasNextTrack={activeTrackIndex >= 0 && activeTrackIndex < plan.tracks.length - 1}
+          startTime={plan.startTime}
         />
       )}
 
       {screen !== "CREATE_TRIP" && (
         <AIAdvisorWidget
-          messages={advisorMessages}
-          unreadCount={advisorUnread}
-          open={advisorOpen}
-          thinking={advisorThinking}
-          onToggle={toggleAdvisor}
+          messages={visibleAdvisorMessages}
+          unreadCount={advisor.unread}
+          open={advisor.open}
+          thinking={advisor.thinking}
+          toastVisible={advisor.toastVisible}
+          onToggle={advisor.toggle}
+          onToastClick={advisor.openFromToast}
+          onToastDismiss={advisor.dismissToast}
         />
       )}
     </div>

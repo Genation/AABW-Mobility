@@ -30,3 +30,12 @@ export interface TripPlan {
 }
 
 export type DrivoScreen = "CREATE_TRIP" | "TRIP_ITINERARY" | "TRACK_DETAIL";
+
+export interface TripAdvisorWarning {
+  id: string;
+  /** 1-based track position at analysis time; -1 = whole-trip message. */
+  track_id: number;
+  message: string;
+  confidence?: number;
+  createdAt: number;
+}

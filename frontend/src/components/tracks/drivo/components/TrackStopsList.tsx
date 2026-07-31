@@ -16,6 +16,8 @@ export interface StopItem {
   globalIndex?: number;
   /** True only for the very first and very last point of the entire trip. */
   isTripEndpoint?: boolean;
+  /** "Dự kiến đến: HH:mm" or "+X từ lúc khởi hành", set only when a route is available. */
+  etaText?: string;
 }
 
 interface Props {
@@ -97,6 +99,7 @@ export function TrackStopsList({ waypoints, activeId, onSelect, onAddBetween, on
                   {wp.degraded ? " (ước tính)" : ""}
                 </div>
               )}
+              {wp.etaText && <div className={styles.stopRowEta}>{wp.etaText}</div>}
             </div>
             {wp.kind === "waypoint" && showRemove && (
               <button

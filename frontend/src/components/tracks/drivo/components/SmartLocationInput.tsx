@@ -12,11 +12,9 @@ import {
   type UnderstandResult,
 } from "@/lib/api";
 import { useRouteMap } from "@/hooks/use-route-map";
-import { haversineMeters } from "@/lib/osrm";
+import { filterSortByNearby } from "../nearby-search-utils";
 import { DrivoDestination } from "../types";
 import styles from "../drivo.module.css";
-
-const NEARBY_RADIUS_M = 5000;
 
 interface Props {
   placeholder?: string;
@@ -118,15 +116,7 @@ export function SmartLocationInput({ placeholder = "Tìm địa điểm...", onS
 
       const results = sr.results ?? [];
       if (nearby) {
-        const near = results
-          .filter(hasMapCoords)
-          .map((r) => ({
-            r,
-            d: haversineMeters(userLocation.lat, userLocation.lng, r.lat!, r.lng!),
-          }))
-          .filter((x) => x.d <= NEARBY_RADIUS_M)
-          .sort((a, b) => a.d - b.d)
-          .map((x) => x.r);
+        const near = filterSortByNearby(results, userLocation).map((x) => x.item);
         setCandidates(near);
       } else {
         setCandidates(

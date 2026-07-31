@@ -73,8 +73,8 @@ export function TripItineraryScreen({
     <div className={styles.itinerarySheet}>
       <RouteSummaryHeader
         onBack={onCancelTrip}
-        startName={plan.startLocation?.name ?? "?"}
-        endName={plan.endLocation?.name ?? "?"}
+        startName={(plan.tracks.length ? getEffectiveTrackStart(plan, 0) : plan.startLocation)?.name ?? "?"}
+        endName={(plan.tracks.length ? getEffectiveTrackEnd(plan, plan.tracks.length - 1) : plan.endLocation)?.name ?? "?"}
         meta={
           <>
             <span><Navigation size={12} /> {plan.tracks.length} chặng</span>
@@ -205,6 +205,7 @@ export function TripItineraryScreen({
                           routeDegraded,
                           isRouteFresh,
                           globalWaypointStartIndex: (range?.startIndex ?? 0) + 1,
+                          startTime: plan.startTime,
                         });
                         // Mark only the very first point of the entire trip and the very last point
                         if (i === 0 && items.length > 0) items[0].isTripEndpoint = true;

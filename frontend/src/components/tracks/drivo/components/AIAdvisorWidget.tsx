@@ -1,19 +1,40 @@
 "use client";
 
-import { AlertTriangle, Lightbulb, X, Bot } from "lucide-react";
+import { Lightbulb, X } from "lucide-react";
 import Image from "next/image";
-import { AdvisorMessage, formatRelativeTime } from "../advisor-mock-rules";
+import { TripAdvisorWarning } from "../types";
 import styles from "../drivo.module.css";
 
+function formatRelativeTime(createdAt: number, now: number): string {
+  const diffSec = Math.max(0, Math.floor((now - createdAt) / 1000));
+  if (diffSec < 60) return "vừa xong";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} phút trước`;
+  const diffHour = Math.floor(diffMin / 60);
+  return `${diffHour} giờ trước`;
+}
+
 interface Props {
-  messages: AdvisorMessage[];
+  messages: TripAdvisorWarning[];
   unreadCount: number;
   open: boolean;
   thinking: boolean;
+  toastVisible: boolean;
   onToggle: () => void;
+  onToastClick: () => void;
+  onToastDismiss: () => void;
 }
 
-export function AIAdvisorWidget({ messages, unreadCount, open, thinking, onToggle }: Props) {
+export function AIAdvisorWidget({
+  messages,
+  unreadCount,
+  open,
+  thinking,
+  toastVisible,
+  onToggle,
+  onToastClick,
+  onToastDismiss,
+}: Props) {
   const now = Date.now();
 
   return (
@@ -59,28 +80,28 @@ export function AIAdvisorWidget({ messages, unreadCount, open, thinking, onToggl
                   style={{ borderRadius: "50%" }}
                 />
                 <div className={styles.advisorThinkingLoaderText}>
-                  <span className={styles.advisorThinkingLoaderLabel}>Đang phân tích điểm dừng</span>
+                  <span className={styles.advisorThinkingLoaderLabel}>Đang phân tích toàn hành trình</span>
                   <div className={styles.advisorThinkingBar}>
                     <div className={styles.advisorThinkingBarFill} />
                   </div>
-                  <span className={styles.advisorThinkingLoaderHint}>Đang đánh giá thời gian, độ an toàn và tiện ích xung quanh...</span>
+                  <span className={styles.advisorThinkingLoaderHint}>Đang xem xét thứ tự chặng, thời gian và điều kiện dọc đường...</span>
                 </div>
               </div>
             ) : messages.length === 0 ? (
               <div className={styles.advisorEmpty}>
-                {/* <Bot size={32} style={{ opacity: 0.3 }} /> */}
-                <span>Chưa có gợi ý nào. Thêm điểm dừng để nhận cảnh báo thông minh.</span>
+                <span>Chưa có gợi ý nào. Lưu chặng để AI phân tích toàn hành trình.</span>
               </div>
             ) : (
               messages.map((msg) => (
                 <div key={msg.id} className={styles.advisorMsgRow}>
-                  {msg.severity === "warning" ? (
-                    <AlertTriangle size={16} className={styles.advisorMsgIconWarning} />
-                  ) : (
-                    <Lightbulb size={16} className={styles.advisorMsgIconTip} />
-                  )}
+                  <Lightbulb size={16} className={styles.advisorMsgIconTip} />
                   <div className={styles.advisorMsgBody}>
-                    <div className={styles.advisorMsgText}>{msg.text}</div>
+                    <div className={styles.advisorMsgText}>
+                      {msg.message}
+                      {msg.confidence != null && (
+                        <span className={styles.advisorConfidence}>{Math.round(msg.confidence * 100)}%</span>
+                      )}
+                    </div>
                     <div className={styles.advisorMsgTime}>{formatRelativeTime(msg.createdAt, now)}</div>
                   </div>
                 </div>
@@ -91,11 +112,20 @@ export function AIAdvisorWidget({ messages, unreadCount, open, thinking, onToggl
       )}
 
       <div className={`${styles.advisorFabWrapper} ${open ? styles.advisorFabWrapperHidden : ""}`}>
-        {/* {!open && (
-          <span className={`${styles.advisorFabLabel} ${thinking ? styles.advisorFabLabelThinking : ""}`}>
-            {thinking ? "Đang phân tích..." : "Trợ lý"}
-          </span>
-        )} */}
+        {toastVisible && !open && (
+          <button type="button" className={styles.advisorToast} onClick={onToastClick}>
+            AI có gợi ý mới, click để xem
+            <span
+              className={styles.advisorToastClose}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToastDismiss();
+              }}
+            >
+              <X size={12} />
+            </span>
+          </button>
+        )}
         <button
           type="button"
           className={`${styles.advisorFab} ${thinking ? styles.advisorFabThinking : ""} ${open ? styles.advisorFabActive : ""}`}

@@ -7,8 +7,10 @@ import { TrackStopsList } from "../components/TrackStopsList";
 import { SmartLocationInput } from "../components/SmartLocationInput";
 import { AISuggestions } from "../components/AISuggestions";
 import { RouteSummaryHeader } from "../components/RouteSummaryHeader";
+import { TrackEndLocationEditor } from "../components/TrackEndLocationEditor";
 import { TrackPointRange } from "../track-chain-utils";
 import { buildStopItems, formatDistance } from "../stop-items-utils";
+import { NearbyCenter } from "../nearby-search-utils";
 import { PlaceCandidate } from "@/lib/api";
 import { sliceRouteRange, haversineMeters, RouteInfo } from "@/lib/osrm";
 import { ArrowLeft, Check } from "lucide-react";
@@ -27,10 +29,9 @@ interface Props {
   trackPointRange: TrackPointRange | undefined;
   /** Current buildOrderedTripPointsKey(plan) — staleness check against routeCoordinateKey. */
   currentCoordinateKey: string;
-  /** Fires after a stop is added via POI search (AI advisor trigger). */
-  onStopAdded?: (dest: DrivoDestination) => void;
-  /** Fires before a stop is removed, so callers can drop anything keyed to its id (AI advisor trigger). */
-  onStopRemoved?: (id: string) => void;
+  /** Whether a track exists after this one — shown as a hint when editing endLocation. */
+  hasNextTrack?: boolean;
+  startTime: Date | null;
 }
 
 export function TrackDetailScreen({
@@ -43,8 +44,8 @@ export function TrackDetailScreen({
   routeDegraded,
   trackPointRange,
   currentCoordinateKey,
-  onStopAdded,
-  onStopRemoved,
+  hasNextTrack,
+  startTime,
 }: Props) {
   const [crosshair, setCrosshair] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
@@ -52,6 +53,7 @@ export function TrackDetailScreen({
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [addAfterId, setAddAfterId] = useState<string | null>(null);
   const [gateSearchActive, setGateSearchActive] = useState(false);
+  const [editingEnd, setEditingEnd] = useState(false);
 
   const isGated = track.endLocation == null;
   const isRouteFresh = route != null && routeCoordinateKey === currentCoordinateKey;
@@ -68,14 +70,27 @@ export function TrackDetailScreen({
     onUpdateTrack({ ...track, destinations: newDests });
     setCrosshair(null);
     setAddAfterId(null);
-    onStopAdded?.(dest);
-  }, [track, addAfterId, onUpdateTrack, onStopAdded]);
+  }, [track, addAfterId, onUpdateTrack]);
+
+  /** Inserts a POI right next to the AISuggestions nearby-center it was found near, instead of always at the tail. */
+  const insertDestinationNear = useCallback((dest: DrivoDestination, centerId: string) => {
+    const newDests = [...track.destinations];
+    if (centerId === effectiveStartLocation?.id) {
+      newDests.unshift(dest);
+    } else {
+      const idx = newDests.findIndex((d) => d.id === centerId);
+      if (idx >= 0) newDests.splice(idx + 1, 0, dest);
+      else newDests.push(dest); // centerId is the endLocation, "gps", or not a track point
+    }
+    onUpdateTrack({ ...track, destinations: newDests });
+    setCrosshair(null);
+    setAddAfterId(null);
+  }, [track, effectiveStartLocation, onUpdateTrack]);
 
   const removeDestination = useCallback((id: string) => {
-    onStopRemoved?.(id);
     onUpdateTrack({ ...track, destinations: track.destinations.filter((d) => d.id !== id) });
     if (selectedMarkerId === id) setSelectedMarkerId(null);
-  }, [track, selectedMarkerId, onUpdateTrack, onStopRemoved]);
+  }, [track, selectedMarkerId, onUpdateTrack]);
 
   const handleMarkerDrag = useCallback((id: string, lat: number, lng: number) => {
     if (track.endLocation?.id === id) {
@@ -100,9 +115,9 @@ export function TrackDetailScreen({
     setPanelExpanded(true);
   }, []);
 
-  const handleAddPOI = useCallback((poi: PlaceCandidate) => {
+  const handleAddPOI = useCallback((poi: PlaceCandidate, centerId: string) => {
     if (poi.lat == null || poi.lng == null) return;
-    addDestination({
+    const dest: DrivoDestination = {
       id: `dest-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       name: poi.name,
       lat: poi.lat,
@@ -111,16 +126,31 @@ export function TrackDetailScreen({
       category: poi.category,
       score: poi.score,
       reasons: poi.reasons,
-    });
-  }, [addDestination]);
+    };
+    // A stop-based center (not "" route-search, not "gps") anchors the insert next to it.
+    if (centerId && centerId !== "gps") {
+      insertDestinationNear(dest, centerId);
+    } else {
+      addDestination(dest);
+    }
+  }, [addDestination, insertDestinationNear]);
 
   const handleSetEndLocation = useCallback((dest: DrivoDestination) => {
     onUpdateTrack({ ...track, endLocation: dest });
+    setEditingEnd(false);
   }, [track, onUpdateTrack]);
 
   const stopItems = useMemo(
-    () => buildStopItems({ track, effectiveStartLocation, trackPointRange, route, routeDegraded, isRouteFresh }),
-    [track, trackPointRange, route, routeDegraded, isRouteFresh, effectiveStartLocation],
+    () => buildStopItems({ track, effectiveStartLocation, trackPointRange, route, routeDegraded, isRouteFresh, startTime }),
+    [track, trackPointRange, route, routeDegraded, isRouteFresh, effectiveStartLocation, startTime],
+  );
+
+  const nearbyCenters: NearbyCenter[] = useMemo(
+    () =>
+      [effectiveStartLocation, ...track.destinations, track.endLocation]
+        .filter((d): d is DrivoDestination => !!d)
+        .map((d) => ({ id: d.id, label: d.name, lat: d.lat, lng: d.lng })),
+    [effectiveStartLocation, track.destinations, track.endLocation],
   );
 
   const trackDistanceText = useMemo(() => {
@@ -187,6 +217,19 @@ export function TrackDetailScreen({
                 <span>{track.destinations.length} điểm dừng</span>
               </>
             }
+            rightSlot={
+              <button type="button" className={styles.changeBtn} onClick={() => setEditingEnd(true)}>
+                Đổi
+              </button>
+            }
+          />
+        )}
+        {!isGated && editingEnd && (
+          <TrackEndLocationEditor
+            currentName={track.endLocation?.name ?? "?"}
+            hasNextTrack={!!hasNextTrack}
+            onSelect={handleSetEndLocation}
+            onCancel={() => setEditingEnd(false)}
           />
         )}
       </div>
@@ -215,17 +258,21 @@ export function TrackDetailScreen({
             <div className={styles.panelDragBar} />
           </div>
 
-          <TrackStopsList
-            waypoints={stopItems}
-            activeId={selectedMarkerId}
-            onSelect={setSelectedMarkerId}
-            onAddBetween={handleAddBetween}
-            onRemove={removeDestination}
-          />
+          <div className={styles.trackDetailStopsWrap}>
+            <TrackStopsList
+              compact
+              waypoints={stopItems}
+              activeId={selectedMarkerId}
+              onSelect={setSelectedMarkerId}
+              onAddBetween={handleAddBetween}
+              onRemove={removeDestination}
+            />
+          </div>
 
           {panelExpanded && (
             <AISuggestions
               routeLatLngs={route?.coordinates.map(([lng, lat]) => ({ lat, lng })) ?? []}
+              nearbyCenters={nearbyCenters}
               activeCategory={activeCategory}
               onCategoryChange={setActiveCategory}
               onAddPOI={handleAddPOI}

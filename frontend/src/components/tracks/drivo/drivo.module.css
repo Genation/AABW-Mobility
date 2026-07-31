@@ -967,6 +967,10 @@
   gap: 4px;
 }
 
+.trackDetailStopsWrap {
+  padding: 0 12px;
+}
+
 .stopListCompact .stopTimelineLine {
   left: 19px; /* 0px padding + 8px row padding + 12px half icon - 1px */
   top: 20px; /* 6px padding + 6px row padding + 8px half icon (compact icon might be smaller, but it's 24px so 12px) => 6+6+12 = 24px */
@@ -1072,6 +1076,13 @@
   white-space: nowrap;
 }
 
+.stopRowEta {
+  font-size: 11px;
+  font-weight: 600;
+  color: #FFC928;
+  white-space: nowrap;
+}
+
 .stopRowRemoveBtn {
   min-width: 28px;
   height: 28px;
@@ -1114,6 +1125,44 @@
   font-weight: 600;
   color: var(--color-text);
   margin-bottom: 10px;
+}
+
+.aiSearchRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.aiSearchInput {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  outline: none;
+}
+
+.aiSearchBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: none;
+  background: #FFC928;
+  color: #11161C;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.aiSearchBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .categoryChips {
@@ -1293,6 +1342,26 @@
   -webkit-backdrop-filter: blur(var(--blur-glass));
   border: 1px solid var(--color-glass-border);
   border-radius: 12px;
+}
+
+.trackEndEditBox {
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Reserve space so the "Huỷ" button doesn't sit under the fixed advisor FAB (top:135px right:16px). */
+.trackEndEditBox .selectedLocation {
+  padding-right: 52px;
+}
+
+.trackEndEditHint {
+  font-size: 11px;
+  color: var(--color-text-secondary);
 }
 
 .trackDetailBackBtn,
@@ -1769,4 +1838,40 @@
   font-size: 11px;
   color: var(--color-text-secondary);
   opacity: 0.7;
+}
+
+.advisorConfidence {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255, 201, 40, 0.18);
+  color: #FFC928;
+  vertical-align: middle;
+}
+
+.advisorToast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  animation: fadeInDown 0.25s ease;
+}
+
+.advisorToastClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
 }
