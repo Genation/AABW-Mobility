@@ -9,6 +9,7 @@ import { TripItineraryScreen } from "./screens/TripItineraryScreen";
 import { TrackDetailScreen } from "./screens/TrackDetailScreen";
 import { DrivoMap } from "./components/DrivoMap";
 import { AIAdvisorWidget } from "./components/AIAdvisorWidget";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { fetchOsrmRoute, RouteInfo, LatLng } from "@/lib/osrm";
 import { buildOrderedTripPoints, getTrackPointRanges, getEffectiveTrackStart } from "./track-chain-utils";
 import { AdvisorMessage, buildStopAdvisorMessage, buildTrackAdvisorMessage } from "./advisor-mock-rules";
@@ -302,7 +303,7 @@ export function DrivoApp() {
               className={styles.mapToggleBtn}
               title={mapExpanded ? "Thu nhỏ bản đồ" : "Mở rộng bản đồ"}
             >
-              {mapExpanded ? "▼" : "▲"}
+              {mapExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
           </div>
 

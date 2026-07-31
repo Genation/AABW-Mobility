@@ -14,6 +14,7 @@ interface BuildStopItemsParams {
   route: RouteInfo | null;
   routeDegraded: boolean;
   isRouteFresh: boolean;
+  globalWaypointStartIndex?: number;
 }
 
 /**
@@ -29,6 +30,7 @@ export function buildStopItems({
   route,
   routeDegraded,
   isRouteFresh,
+  globalWaypointStartIndex = 1,
 }: BuildStopItemsParams): StopItem[] {
   function distanceFrom(pointIndex: number, prev: DrivoDestination | undefined, curr: DrivoDestination): { text?: string; degraded: boolean } {
     if (prev && prev.lat === curr.lat && prev.lng === curr.lng) {
@@ -53,11 +55,22 @@ export function buildStopItems({
     items.push({ id: effectiveStartLocation.id, label: effectiveStartLocation.name, kind: "start", destination: effectiveStartLocation });
   }
 
+  let currentGlobalIndex = globalWaypointStartIndex;
+
   for (const d of track.destinations) {
     const isNewPoint = !prev || prev.lat !== d.lat || prev.lng !== d.lng;
     const { text, degraded } = distanceFrom(pointIndex, prev, d);
-    items.push({ id: d.id, label: d.name, kind: "waypoint", destination: d, distanceFromPrev: text, degraded: !!text && degraded });
+    items.push({ 
+      id: d.id, 
+      label: d.name, 
+      kind: "waypoint", 
+      destination: d, 
+      distanceFromPrev: text, 
+      degraded: !!text && degraded,
+      globalIndex: currentGlobalIndex
+    });
     if (isNewPoint) pointIndex += 1;
+    currentGlobalIndex += 1;
     prev = d;
   }
 

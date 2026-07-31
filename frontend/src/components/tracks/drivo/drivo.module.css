@@ -40,27 +40,27 @@
   bottom: 12px;
   right: 12px;
   z-index: 500;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-md);
-  color: var(--color-text-secondary);
-  font-size: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: rgba(17, 22, 28, 0.9);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
-  opacity: 0.9;
+  transition: all 0.2s ease;
 }
 
 .mapToggleBtn:hover {
-  opacity: 1;
-  background: var(--color-surface-hover);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #11161C;
+  transform: scale(1.05);
 }
 
 .panelSection {
@@ -510,19 +510,19 @@
 }
 
 .itineraryActions {
-  padding: 8px 12px;
+  padding: 4px 8px;
   padding-bottom: max(8px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--color-border);
 }
 
 .itineraryAddBtn {
   width: 100%;
-  padding: 12px;
+  padding: 4px;
   border-radius: 12px;
   border: 2px dashed var(--color-border);
   background: transparent;
   color: var(--color-text-secondary);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -752,7 +752,7 @@
 /* ---------- Mobile Responsive ---------- */
 @media (max-width: 768px) {
   .mapSection {
-    flex: 0 0 45%;
+    flex: 0 0 30%;
   }
 
   .mapExpanded {
@@ -811,8 +811,8 @@
   }
 
   .itineraryAddBtn {
-    padding: 10px;
-    font-size: 13px;
+    padding: 4px;
+    font-size: 12px;
   }
 
   .stopRow {
@@ -944,15 +944,33 @@
 }
 
 .stopList {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 6px 12px 12px;
+  z-index: 1;
+}
+
+.stopTimelineLine {
+  position: absolute;
+  top: 26px; /* 6px padding + 8px row padding + 12px half icon */
+  bottom: 32px; /* 12px padding + 8px row padding + 12px half icon */
+  left: 35px; /* 12px padding + 12px row padding + 12px half icon - 1px */
+  width: 2px;
+  background: var(--color-border);
+  z-index: -1;
 }
 
 .stopListCompact {
   padding: 6px 0 2px;
   gap: 4px;
+}
+
+.stopListCompact .stopTimelineLine {
+  left: 19px; /* 0px padding + 8px row padding + 12px half icon - 1px */
+  top: 20px; /* 6px padding + 6px row padding + 8px half icon (compact icon might be smaller, but it's 24px so 12px) => 6+6+12 = 24px */
+  bottom: 24px; /* 2px padding + 6px row padding + 12px half icon => 2+6+12 = 20px */
 }
 
 .stopListCompact .stopRow {
@@ -970,7 +988,7 @@
   margin: 2px 0;
   border-radius: 10px;
   border: 2px dashed var(--color-border);
-  background: transparent;
+  background: var(--color-bg);
   color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 600;
@@ -1011,13 +1029,13 @@
   color: #FFC928;
 }
 
-.stopRowStart {
+/* .stopRowStart {
   border-left: 3px solid #3B82F6;
 }
 
 .stopRowEnd {
   border-left: 3px solid #EF4444;
-}
+} */
 
 .stopRowIcon {
   width: 24px;

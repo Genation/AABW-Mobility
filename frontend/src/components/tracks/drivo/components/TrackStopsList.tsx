@@ -13,6 +13,7 @@ export interface StopItem {
   distanceFromPrev?: string;
   /** True when distanceFromPrev came from the haversine fallback while the route is degraded. */
   degraded?: boolean;
+  globalIndex?: number;
 }
 
 interface Props {
@@ -56,8 +57,9 @@ export function TrackStopsList({ waypoints, activeId, onSelect, onAddBetween, on
 
   return (
     <div className={[styles.stopList, compact ? styles.stopListCompact : ""].filter(Boolean).join(" ")}>
+      <div className={styles.stopTimelineLine} />
       {waypoints.map((wp, i) => (
-        <div key={wp.id}>
+        <div key={wp.id} className={styles.stopItemWrap}>
           {i > 0 && showAddBetween && (
             <button
               type="button"
@@ -84,7 +86,7 @@ export function TrackStopsList({ waypoints, activeId, onSelect, onAddBetween, on
             } : undefined}
           >
             <div className={styles.stopRowIcon}>
-              {wp.kind === "start" ? "A" : wp.kind === "end" ? "B" : i}
+              {wp.kind === "start" ? "A" : wp.kind === "end" ? "B" : wp.globalIndex ?? i}
             </div>
             <div className={styles.stopRowBody}>
               <div className={styles.stopRowName}>{wp.label}</div>

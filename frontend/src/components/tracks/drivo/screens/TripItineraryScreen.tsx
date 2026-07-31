@@ -203,7 +203,8 @@ export function TripItineraryScreen({
                         route,
                         routeDegraded,
                         isRouteFresh,
-                      })}
+                        globalWaypointStartIndex: plan.tracks.slice(0, i).reduce((sum, t) => sum + t.destinations.length, 1),
+                      }).filter(wp => wp.kind === "waypoint")}
                     />
                   </div>
                 )}
