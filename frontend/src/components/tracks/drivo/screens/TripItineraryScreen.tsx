@@ -196,15 +196,21 @@ export function TripItineraryScreen({
                     <TrackStopsList
                       readOnly
                       compact
-                      waypoints={buildStopItems({
-                        track,
-                        effectiveStartLocation: start,
-                        trackPointRange: range,
-                        route,
-                        routeDegraded,
-                        isRouteFresh,
-                        globalWaypointStartIndex: plan.tracks.slice(0, i).reduce((sum, t) => sum + t.destinations.length, 1),
-                      }).filter(wp => wp.kind === "waypoint")}
+                      waypoints={(() => {
+                        const items = buildStopItems({
+                          track,
+                          effectiveStartLocation: start,
+                          trackPointRange: range,
+                          route,
+                          routeDegraded,
+                          isRouteFresh,
+                          globalWaypointStartIndex: (range?.startIndex ?? 0) + 1,
+                        });
+                        // Mark only the very first point of the entire trip and the very last point
+                        if (i === 0 && items.length > 0) items[0].isTripEndpoint = true;
+                        if (i === plan.tracks.length - 1 && items.length > 0) items[items.length - 1].isTripEndpoint = true;
+                        return items;
+                      })()}
                     />
                   </div>
                 )}

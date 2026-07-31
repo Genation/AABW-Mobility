@@ -106,6 +106,8 @@ export function DrivoApp() {
   const [advisorMessages, setAdvisorMessages] = useState<AdvisorMessage[]>([]);
   const [advisorUnread, setAdvisorUnread] = useState(0);
   const [advisorOpen, setAdvisorOpen] = useState(false);
+  const [advisorThinking, setAdvisorThinking] = useState(false);
+  const advisorThinkingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const pushAdvisorMessage = useCallback((m: AdvisorMessage) => {
     setAdvisorMessages(prev => [m, ...prev].slice(0, 30));
@@ -121,7 +123,15 @@ export function DrivoApp() {
     });
   }, []);
   const handleStopAdded = useCallback((d: DrivoDestination) => {
-    pushAdvisorMessage(buildStopAdvisorMessage(d));
+    setAdvisorThinking(true);
+    setAdvisorOpen(true);
+    setAdvisorUnread(0);
+    if (advisorThinkingTimerRef.current) clearTimeout(advisorThinkingTimerRef.current);
+    const msg = buildStopAdvisorMessage(d);
+    advisorThinkingTimerRef.current = setTimeout(() => {
+      setAdvisorThinking(false);
+      pushAdvisorMessage(msg);
+    }, 4000);
   }, [pushAdvisorMessage]);
 
   useEffect(() => {
@@ -198,18 +208,6 @@ export function DrivoApp() {
     setScreen("CREATE_TRIP");
   };
 
-  // Display-only markers for the overview map: intermediate stops + each track's
-  // end point. Excludes plan.startLocation/endLocation (rendered separately as
-  // the A/B markers) and track.startLocation (always null for chained tracks —
-  // the previous track's real endLocation already occupies that slot).
-  const mapWaypoints = useMemo(() => {
-    return plan.tracks.flatMap(t => {
-      const points = [...t.destinations];
-      if (t.endLocation) points.push(t.endLocation);
-      return points;
-    });
-  }, [plan.tracks]);
-
   const orderedPoints = useMemo(() => buildOrderedTripPoints(plan), [plan]);
   const trackPointRanges = useMemo(() => getTrackPointRanges(plan), [plan]);
   const coordinateKey = useMemo(
@@ -263,6 +261,13 @@ export function DrivoApp() {
   const activeTrackIndex = useMemo(() => {
     return plan.tracks.findIndex(t => t.id === activeTrackId);
   }, [plan.tracks, activeTrackId]);
+
+  const mapOrigin = orderedPoints.length > 0 ? orderedPoints[0] : plan.startLocation;
+  const mapDest = orderedPoints.length > 1 ? orderedPoints[orderedPoints.length - 1] : plan.endLocation;
+  const mapWaypoints = useMemo(() => {
+    if (orderedPoints.length > 2) return orderedPoints.slice(1, -1);
+    return [];
+  }, [orderedPoints]);
   const activeTrack = activeTrackIndex >= 0 ? plan.tracks[activeTrackIndex] : undefined;
   const [mapExpanded, setMapExpanded] = useState(false);
 
@@ -293,8 +298,8 @@ export function DrivoApp() {
         <div className={styles.splitLayout}>
           <div className={mapClassName}>
             <DrivoMap
-              origin={plan.startLocation}
-              destination={plan.endLocation}
+              origin={mapOrigin}
+              destination={mapDest}
               waypoints={mapWaypoints}
               route={isRouteFresh ? route : null}
             />
@@ -359,6 +364,7 @@ export function DrivoApp() {
           messages={advisorMessages}
           unreadCount={advisorUnread}
           open={advisorOpen}
+          thinking={advisorThinking}
           onToggle={toggleAdvisor}
         />
       )}

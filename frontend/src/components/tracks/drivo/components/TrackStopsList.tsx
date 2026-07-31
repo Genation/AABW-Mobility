@@ -14,6 +14,8 @@ export interface StopItem {
   /** True when distanceFromPrev came from the haversine fallback while the route is degraded. */
   degraded?: boolean;
   globalIndex?: number;
+  /** True only for the very first and very last point of the entire trip. */
+  isTripEndpoint?: boolean;
 }
 
 interface Props {
@@ -77,8 +79,7 @@ export function TrackStopsList({ waypoints, activeId, onSelect, onAddBetween, on
               styles.stopRow,
               !onSelect ? styles.stopRowStatic : "",
               activeId === wp.id ? styles.stopRowActive : "",
-              wp.kind === "start" ? styles.stopRowStart : "",
-              wp.kind === "end" ? styles.stopRowEnd : "",
+              wp.isTripEndpoint ? styles.stopRowTripEndpoint : "",
             ].filter(Boolean).join(" ")}
             onClick={onSelect ? () => onSelect(wp.id) : undefined}
             onKeyDown={onSelect ? (e) => {
@@ -86,7 +87,7 @@ export function TrackStopsList({ waypoints, activeId, onSelect, onAddBetween, on
             } : undefined}
           >
             <div className={styles.stopRowIcon}>
-              {wp.kind === "start" ? "A" : wp.kind === "end" ? "B" : wp.globalIndex ?? i}
+              {wp.globalIndex ?? i}
             </div>
             <div className={styles.stopRowBody}>
               <div className={styles.stopRowName}>{wp.label}</div>

@@ -51,14 +51,22 @@ export function buildStopItems({
   let pointIndex = trackPointRange?.startIndex ?? 0;
   let prev: DrivoDestination | undefined = effectiveStartLocation ?? undefined;
 
-  if (effectiveStartLocation) {
-    items.push({ id: effectiveStartLocation.id, label: effectiveStartLocation.name, kind: "start", destination: effectiveStartLocation });
-  }
-
   let currentGlobalIndex = globalWaypointStartIndex;
+
+  if (effectiveStartLocation) {
+    items.push({ id: effectiveStartLocation.id, label: effectiveStartLocation.name, kind: "start", destination: effectiveStartLocation, globalIndex: currentGlobalIndex });
+    // We only increment if the track has destinations, but wait, the next point will check isNewPoint.
+    // If the next point is a destination and differs from start, isNewPoint will be true, so it will increment before assigning?
+    // Wait, in the existing code, it assigns currentGlobalIndex, THEN increments.
+    // So for start, we assign currentGlobalIndex. Then for the loop, we should increment FIRST if isNewPoint?
+  }
 
   for (const d of track.destinations) {
     const isNewPoint = !prev || prev.lat !== d.lat || prev.lng !== d.lng;
+    if (isNewPoint) {
+      pointIndex += 1;
+      currentGlobalIndex += 1;
+    }
     const { text, degraded } = distanceFrom(pointIndex, prev, d);
     items.push({ 
       id: d.id, 
@@ -69,14 +77,16 @@ export function buildStopItems({
       degraded: !!text && degraded,
       globalIndex: currentGlobalIndex
     });
-    if (isNewPoint) pointIndex += 1;
-    currentGlobalIndex += 1;
     prev = d;
   }
 
   if (track.endLocation) {
-    const { text, degraded } = distanceFrom(pointIndex, prev, track.endLocation);
-    items.push({ id: track.endLocation.id, label: track.endLocation.name, kind: "end", destination: track.endLocation, distanceFromPrev: text, degraded: !!text && degraded });
+    const isNewPoint = !prev || prev.lat !== track.endLocation.lat || prev.lng !== track.endLocation.lng;
+    if (isNewPoint) {
+      currentGlobalIndex += 1;
+    }
+    const { text, degraded } = distanceFrom(pointIndex + (isNewPoint ? 1 : 0), prev, track.endLocation);
+    items.push({ id: track.endLocation.id, label: track.endLocation.name, kind: "end", destination: track.endLocation, distanceFromPrev: text, degraded: !!text && degraded, globalIndex: currentGlobalIndex });
   }
 
   return items;

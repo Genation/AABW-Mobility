@@ -160,8 +160,8 @@ export function DrivoMapInner({
       )}
 
       {origin && (
-        <Marker position={[origin.lat, origin.lng]} icon={originIcon}>
-          <Popup>Điểm đi (A): {origin.name}</Popup>
+        <Marker position={[origin.lat, origin.lng]} icon={badgeIcon(1, "#3B82F6", 18)}>
+          <Popup>Điểm đi (1): {origin.name}</Popup>
         </Marker>
       )}
 
@@ -169,7 +169,7 @@ export function DrivoMapInner({
         <Marker
           key={wp.id}
           position={[wp.lat, wp.lng]}
-          icon={badgeIcon(index + 1, selectedMarkerId === wp.id ? "#FFC928" : "#10B981", 18)}
+          icon={badgeIcon(index + (origin ? 2 : 1), selectedMarkerId === wp.id ? "#FFC928" : "#10B981", 18)}
           draggable={interactive && !!onMarkerDrag}
           eventHandlers={
             interactive && onMarkerDrag
@@ -191,8 +191,8 @@ export function DrivoMapInner({
       ))}
 
       {destination && (
-        <Marker position={[destination.lat, destination.lng]} icon={destIcon}>
-          <Popup>Điểm đến (B): {destination.name}</Popup>
+        <Marker position={[destination.lat, destination.lng]} icon={badgeIcon(waypoints.length + (origin ? 2 : 1), "#3B82F6", 18)}>
+          <Popup>Điểm đến ({waypoints.length + (origin ? 2 : 1)}): {destination.name}</Popup>
         </Marker>
       )}
     </MapContainer>
